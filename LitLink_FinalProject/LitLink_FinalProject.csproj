@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Covers\Login.png" />
+    <None Remove="Covers\SignUp.png" />
+    <None Remove="Fonts\AlexBrush-Regular.ttf" />
+    <None Remove="Fonts\RobotoSlab-VariableFont_wght.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Model">
+      <HintPath>..\..\Liany34\LitLink_Liany\client\bin\Debug\net8.0\Model.dll</HintPath>
+    </Reference>
+    <Reference Include="Service">
+      <HintPath>..\..\Liany34\LitLink_Liany\client\bin\Debug\net8.0\Service.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Covers\Login.png" />
+    <Resource Include="Covers\SignUp.png" />
+    <Resource Include="Fonts\AlexBrush-Regular.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\RobotoSlab-VariableFont_wght.ttf" />
+  </ItemGroup>
+
+</Project>
