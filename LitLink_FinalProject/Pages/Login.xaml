@@ -13,9 +13,9 @@
             <ImageBrush ImageSource = "/Covers/Login.png" Stretch = "UniformToFill"/>
         </Grid.Background>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="230"/>
-            <ColumnDefinition Width="230"/>
-            <ColumnDefinition Width="340"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="170"/>
@@ -31,6 +31,7 @@
         <TextBox x:Name = "EmailInput" 
                  Grid.Row="1"
                  Grid.Column="1"
+                 HorizontalAlignment="Left"
                  Width = "230" 
                  Height = "40"
                  Text = "litlink@gmail.com"
@@ -60,7 +61,7 @@
                      Background="Transparent" 
                      BorderThickness="0"
                      Foreground="#6c3134" 
-                     FontFamily="/Fonts/Alex Brush"
+                     FontFamily="/Fonts/Roboto Slab"
                      FontSize="19"
                      VerticalContentAlignment="Center"/>
             <TextBlock x:Name="PasswordPlaceholder" 
@@ -82,8 +83,7 @@
                     PreviewMouseUp="TogglePasswordButton_PreviewMouseUp"/>
         </Grid>
         <TextBlock Grid.Row="4" Grid.Column="1">
-            <Hyperlink NavigateUri = "ResetPass.xaml" 
-                       RequestNavigate = "Navigate_ResetPass"
+            <Hyperlink Click = "Navigate_ResetPass"
                        FontFamily = "/Fonts/#Roboto Slab"
                        FontSize = "12"
                        Foreground = "#6C3134">
@@ -103,12 +103,11 @@
                 Click = "Login_Click"/>
         <StackPanel Orientation = "Horizontal" HorizontalAlignment = "Center" Grid.Row="7" Grid.Column="1">
             <TextBlock FontFamily = "/Fonts/#Roboto Slab"
-                        FontSize = "12"
-                        Foreground = "#F27F9B"
-                        Text = "Don't have an account? "/>
+                       FontSize = "12"
+                       Foreground = "#F27F9B"
+                       Text = "Don't have an account? "/>
             <TextBlock>
-                 <Hyperlink NavigateUri = "SignUp.xaml" 
-                            RequestNavigate = "Navigate_SignUp"
+                 <Hyperlink Click = "Navigate_SignUp"
                             FontFamily = "/Fonts/#Roboto Slab"
                             FontSize = "12"
                             Foreground = "#6C3134">

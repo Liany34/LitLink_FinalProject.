@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Resource Include="Covers\Login.png" />
+    <Resource Include="Covers\ResetPass.png" />
     <Resource Include="Covers\SignUp.png" />
     <Resource Include="Fonts\AlexBrush-Regular.ttf">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

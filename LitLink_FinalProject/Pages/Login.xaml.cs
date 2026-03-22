@@ -27,44 +27,51 @@ namespace LitLink_FinalProject.Pages
         {
             InitializeComponent();
         }
+
         private void EmailInput_GotFocus(object sender, RoutedEventArgs e)
         {
             if (EmailInput.Text == DefaultEmail)
             {
                 EmailInput.Text = "";
-                EmailInput.Foreground = Brushes.Black;
                 EmailInput.FontStyle = FontStyles.Normal;
+                EmailInput.FontFamily = new FontFamily("/Fonts/Roboto Slab;component/#Roboto Slab");
+                EmailInput.FontSize = 14;
             }
         }
+
         private void EmailInput_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(EmailInput.Text))
             {
-                EmailInput.Text = DefaultEmail;
-                EmailInput.Foreground = Brushes.Gray;
+                EmailInput.Text = "Please enter your email.";
+                EmailInput.Foreground = Brushes.DarkRed;
                 EmailInput.FontStyle = FontStyles.Italic;
+                EmailInput.FontFamily = new FontFamily("/Fonts/Roboto Slab;component/#Roboto Slab");
+                EmailInput.FontSize = 14;
             }
         }
 
-        private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e)
-        {
-            PasswordPlaceholder.Visibility = PasswordInput.Password.Length > 0
+        private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e) // שמתי תיבת טקסט מעל הסיסמה כדי שזה יחזיק
+        {                                                                            // את הטקס שאני רוצה, ברגע שאני מקלידה משהו
+            PasswordPlaceholder.Visibility = PasswordInput.Password.Length > 0       // זה מחביא את התיבת טקסט ושם את הסיסמה
                 ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void TogglePasswordButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            VisiblePasswordInput.Text = PasswordInput.Password;
-            PasswordInput.Visibility = Visibility.Collapsed;
+        private void TogglePasswordButton_PreviewMouseDown(object sender, MouseButtonEventArgs e) 
+        {                                                                           // כאשר אני לוחצת על העין זה מסתיר את הסיסמה 
+            VisiblePasswordInput.Text = PasswordInput.Password;                     // כנקודות ומראה את הטקסט עצמו (שורה 62) וכך
+            PasswordInput.Visibility = Visibility.Collapsed;                        // המשתמש יכול לראות את הסיסמה שלו
             VisiblePasswordInput.Visibility = Visibility.Visible;
             PasswordPlaceholder.Visibility = Visibility.Collapsed;
         }
+
         private void TogglePasswordButton_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            VisiblePasswordInput.Visibility = Visibility.Collapsed;
+        {                                                                           // כאשר אני משחררת את העין זה מחזיר את הסיסמה
+            VisiblePasswordInput.Visibility = Visibility.Collapsed;                 //  למצב של נקודות ומסתיר את הטקסט עצמו
             PasswordInput.Visibility = Visibility.Visible;
             if (string.IsNullOrEmpty(PasswordInput.Password)) PasswordPlaceholder.Visibility = Visibility.Visible;
         }
+
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
             Apiservice buyerService = new Apiservice();
@@ -86,14 +93,23 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void Navigate_SignUp(object sender, RequestNavigateEventArgs e)
+        private void Navigate_SignUp(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Uri("SignUp.xaml", UriKind.Relative));
+            this.NavigationService.Navigate(new SignUp());
         }
 
-        private void Navigate_ResetPass(object sender, RequestNavigateEventArgs e)
+        private void Navigate_ResetPass(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Uri("ResetPass.xaml", UriKind.Relative));
+            if (EmailInput.Text == DefaultEmail || string.IsNullOrWhiteSpace(EmailInput.Text))
+            {
+                MessageBox.Show("Please enter your email to reset your password.");
+                EmailInput.Focus();
+                return;
+            }
+            else
+            {
+                this.NavigationService.Navigate(new ResetPass(EmailInput.Text));
+            }
         }
     }
 }
