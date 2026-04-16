@@ -16,15 +16,13 @@ using System.Windows.Shapes;
 namespace LitLink_FinalProject.Pages
 {
     /// <summary>
-    /// Interaction logic for HomePage.xaml
+    /// Interaction logic for CartPage.xaml
     /// </summary>
-    public partial class HomePage : Page
+    public partial class CartPage : Page
     {
-        public HomePage()
+        public CartPage()
         {
             InitializeComponent();
         }
-
-       
     }
 }

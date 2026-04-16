@@ -1,15 +1,14 @@
-﻿<Page x:Class="LitLink_FinalProject.Pages.HomePage"
+﻿<Page x:Class="LitLink_FinalProject.Pages.AboutUs"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="550" d:DesignWidth="800"
-      Background="#E3DBCC"
-      Title="HomePage">
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="AboutUs">
 
     <Grid>
-      
+        
     </Grid>
 </Page>

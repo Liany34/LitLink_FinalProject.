@@ -5,12 +5,12 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="550" d:DesignWidth="800"
       Title="Login">
 
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource = "/Covers/Login.png" Stretch = "UniformToFill"/>
+            <ImageBrush ImageSource = "/Covers/Login.png"/>
         </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -18,14 +18,14 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="170"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="55"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="15"/>
+            <RowDefinition Height="200"/>
             <RowDefinition Height="30"/>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="15"/>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="25"/>
             <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
         <TextBox x:Name = "EmailInput" 

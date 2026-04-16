@@ -195,37 +195,45 @@ namespace LitLink_FinalProject.Pages
         }
 
         private async void SignUpButton_Click(object sender, RoutedEventArgs e)
-        {
-            bool everythingOkay = true;
-            if(PhoneInput.Text != @"^05\d-\d{7}$")
+        { 
+            bool isValid = true;
+            InvaildPhone.Visibility = Visibility.Collapsed;
+            InvalidEmail.Visibility = Visibility.Collapsed;
+            DiffPass.Visibility = Visibility.Collapsed;
+            if (!Regex.IsMatch(PhoneInput.Text, @"^0(5[0-9])\d{7}$"))
             {
                 InvaildPhone.Visibility = Visibility.Visible;
                 PhoneInput.Focus();
-                everythingOkay = false;
+                isValid = false;
             }
-            if(EmailInput.Text != @"^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+[a-zA-Z0-9]+$")
+            if(!Regex.IsMatch(EmailInput.Text, @"^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+[a-zA-Z0-9]+$"))
             {
                 InvalidEmail.Visibility = Visibility.Visible;
                 EmailInput.Focus();
-                everythingOkay = false;
+                isValid = false;
             }
             if (PasswordInput.Password != ReenterInput.Password)
             {
                 DiffPass.Visibility = Visibility.Visible;
                 ReenterInput.Focus();
-                everythingOkay = false;
+                isValid = false;
             }
             if(BirthDatePicker.SelectedDate == null)
             {
                 InvalidBirthDate.Visibility = Visibility.Visible;
                 BirthDatePicker.Focus();
+                isValid = false;
+            }
+            if(!isValid)
+            {
+                return;
             }
             else
             {
 
                 InvaildPhone.Visibility = Visibility.Collapsed;
                 Apiservice buyerService = new Apiservice();
-                if (everythingOkay && FirstNameInput.Text != DefaultFirstName && LastNameInput.Text != DefaultLastName && PhoneInput.Text != DefaultPhone && EmailInput.Text != DefaultEmail && UsernameInput.Text != DefaultUsername)
+                if (FirstNameInput.Text != DefaultFirstName && LastNameInput.Text != DefaultLastName && PhoneInput.Text != DefaultPhone && EmailInput.Text != DefaultEmail && UsernameInput.Text != DefaultUsername)
                 {
                     User newUser = new User
                     {

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <None Remove="Covers\Login.png" />
+    <None Remove="Covers\logo.png" />
     <None Remove="Covers\SignUp.png" />
     <None Remove="Fonts\AlexBrush-Regular.ttf" />
     <None Remove="Fonts\RobotoSlab-VariableFont_wght.ttf" />
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <Resource Include="Covers\Login.png" />
+    <Resource Include="Covers\Logo.png" />
     <Resource Include="Covers\ResetPass.png" />
     <Resource Include="Covers\SignUp.png" />
     <Resource Include="Fonts\AlexBrush-Regular.ttf">

@@ -81,9 +81,7 @@ namespace LitLink_FinalProject.Pages
             {
                 if (user.Email == EmailInput.Text && user.Pass == PasswordInput.Password)
                 {
-                    var homepagePage = new HomePage();
-                    Window.GetWindow(this).Content = homepagePage;
-                    wentIn = true;
+                    this.NavigationService.Navigate(new HomePage());
                     return;
                 }
             }

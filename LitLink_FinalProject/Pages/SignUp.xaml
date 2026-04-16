@@ -34,20 +34,20 @@
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="25"/>
-                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/> <!--space-->
                     <RowDefinition Height="25"/>
-                    <RowDefinition Height="17"/>
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="9"/>
-                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="20"/> <!--space-->
                     <RowDefinition Height="25"/>
                     <RowDefinition Height="9"/>
-                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="10"/> <!--space-->
                     <RowDefinition Height="25"/>
-                    <RowDefinition Height="17"/>
+                    <RowDefinition Height="9"/>
+                    <RowDefinition Height="10"/> <!--space-->
                     <RowDefinition Height="25"/>
-                    <RowDefinition Height="10"/>
-                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="20"/> <!--space-->
+                    <RowDefinition Height="15"/>
+                    <RowDefinition Height="9"/>
+                    <RowDefinition Height="10"/> <!--space-->
                     <RowDefinition Height="25"/>
                 </Grid.RowDefinitions>
                 <TextBox x:Name="FirstNameInput"

@@ -84,7 +84,13 @@ namespace LitLink_FinalProject.Pages
                 Apiservice buyerService = new Apiservice();
                 var users = await buyerService.GetAllUsers();
                 var user = users.Find(u => u.Email == _email);
+                var saveUser = user;
+                user.FirstName = saveUser.FirstName; 
+                user.LastName = saveUser.LastName;
+                user.PhoneNumber = saveUser.PhoneNumber;
+                user.Email = saveUser.Email;
                 user.Pass = PasswordInput.Password;
+                user.Username = saveUser.Username;
                 await buyerService.UpdateAUser(user);
                 MessageBox.Show("Password reset successful! Please log in with your new password.");
                 var loginPage = new Login();
