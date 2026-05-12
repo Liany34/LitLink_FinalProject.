@@ -91,7 +91,7 @@ namespace LitLink_FinalProject.Pages
                 user.Email = saveUser.Email;
                 user.Pass = PasswordInput.Password;
                 user.Username = saveUser.Username;
-                await buyerService.UpdateAUser(user);
+                await buyerService.UpdateUser(user);
                 MessageBox.Show("Password reset successful! Please log in with your new password.");
                 var loginPage = new Login();
                 Window.GetWindow(this).Content = loginPage;

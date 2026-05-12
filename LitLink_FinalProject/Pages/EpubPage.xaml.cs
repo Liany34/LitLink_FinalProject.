@@ -20,7 +20,7 @@ namespace LitLink_FinalProject.Pages
     /// </summary>
     public partial class EpubPage : Page
     {
-        public EpubPage()
+        public EpubPage(string booklink)
         {
             InitializeComponent();
         }
