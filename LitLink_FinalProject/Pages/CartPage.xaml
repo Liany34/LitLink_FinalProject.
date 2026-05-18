@@ -5,10 +5,152 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="CartPage">
+      d:DesignHeight="700" d:DesignWidth="1000"
+      Title="CartPage"
+      Background="#FFF0F5">
 
-    <Grid>
-        
+    <Page.Resources>
+        <Style x:Key="PinkRoundedButton" TargetType="Button">
+            <Setter Property="Background" Value="#FF1493"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="20">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CartCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#D06A8D"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <BulletDecorator Background="Transparent">
+                            <BulletDecorator.Bullet>
+                                <Border x:Name="Border" Width="20" Height="20" CornerRadius="10" 
+                                        BorderThickness="2" BorderBrush="#FFC0CB" Background="White">
+                                    <Grid>
+                                        <Ellipse x:Name="CheckMark" Width="10" Height="10" Fill="#FF1493" Visibility="Collapsed"/>
+                                    </Grid>
+                                </Border>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FF1493"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="25">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" Margin="0,0,20,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <CheckBox x:Name="ChkSelectAll" Content="Select All Items" 
+                          Style="{StaticResource CartCheckBoxStyle}" 
+                          Checked="ChkSelectAll_Checked" Unchecked="ChkSelectAll_Unchecked"/>
+                <TextBlock x:Name="TxtCartCount" Text=" (0 items)" FontSize="14" Foreground="#666666" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ListBox x:Name="LstCartItems" Background="Transparent" BorderThickness="0" 
+                         HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </ScrollViewer>
+        </Grid>
+
+        <Border Grid.Column="1" Background="#FFF0F5" BorderBrush="#FFC0CB" BorderThickness="2" CornerRadius="15" Padding="20">
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="Order Summary" FontSize="22" FontWeight="ExtraBold" Foreground="#4A4A4A" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                    <Grid Margin="0,0,0,12">
+                        <TextBlock Text="Books:" FontSize="15" FontWeight="SemiBold" Foreground="#666666"/>
+                        <TextBlock x:Name="TxtSummaryBooksCount" Text="0" FontSize="15" FontWeight="Bold" Foreground="#4A4A4A" HorizontalAlignment="Right"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,5">
+                        <TextBlock Text="Price:" FontSize="16" FontWeight="SemiBold" Foreground="#666666"/>
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <TextBlock x:Name="TxtOriginalPrice" Text="$0.00" FontSize="16" Foreground="#999999" Margin="0,0,8,0" TextDecorations="Strikethrough" Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtFinalPrice" Text="$0.00" FontSize="18" FontWeight="Bold" Foreground="#FF1493"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Separator Background="#FFC0CB" Height="1" Margin="0,15,0,15"/>
+
+                    <TextBlock Text="Discount Code:" FontSize="13" FontWeight="SemiBold" Foreground="#D06A8D" Margin="0,0,0,5"/>
+                    <Grid>
+                        <TextBox x:Name="TxtDiscountCode" Height="36" FontSize="14" Padding="5,0,35,0" 
+                                 VerticalContentAlignment="Center" Background="White" BorderBrush="#FFC0CB" BorderThickness="1.5">
+                            <TextBox.Resources>
+                                <VisualBrush x:Key="PlaceholderBrush" AlignmentX="Left" Stretch="None">
+                                    <VisualBrush.Visual>
+                                        <TextBlock Text="Enter code here..." Foreground="#999999" FontSize="14" Margin="5,0,0,0"/>
+                                    </VisualBrush.Visual>
+                                </VisualBrush>
+                            </TextBox.Resources>
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Background" Value="{StaticResource PlaceholderBrush}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+
+                        <Button x:Name="BtnApplyDiscount" Content="🔍" FontSize="14" Width="30" Height="30" 
+                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,3,0" 
+                                Click="BtnApplyDiscount_Click"/>
+                    </Grid>
+
+                    <TextBlock x:Name="TxtInvalidCodeError" Text="INVALID CODE" Foreground="Red" FontSize="12" FontWeight="Bold" Margin="2,5,0,0" Visibility="Collapsed"/>
+
+                    <Button x:Name="BtnCheckout" Content="Checkout" Style="{StaticResource PinkRoundedButton}" 
+                            Height="45" Margin="0,35,0,0" Click="BtnCheckout_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

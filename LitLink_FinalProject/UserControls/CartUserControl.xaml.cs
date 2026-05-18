@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace LitLink_FinalProject.Pages
+namespace LitLink_FinalProject.UserControls
 {
     /// <summary>
-    /// Interaction logic for EpubPage.xaml
+    /// Interaction logic for CartUserControl.xaml
     /// </summary>
-    public partial class EpubPage : Page
+    public partial class CartUserControl : UserControl
     {
-        public EpubPage(string booklink)
+        public CartUserControl()
         {
             InitializeComponent();
         }

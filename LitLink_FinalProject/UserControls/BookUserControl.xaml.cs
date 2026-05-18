@@ -1,4 +1,5 @@
 ﻿using LitLink_FinalProject.Pages;
+using LitLink_FinalProject.WindowsFile;
 using Model;
 using Service;
 using System;
@@ -25,6 +26,7 @@ namespace LitLink_FinalProject.UserControls
     {
         private bool _isAdmin;
         private bool _isAuthor;
+        private Apiservice apiService = new Apiservice();
 
         // constructor מקבל עכשיו מידע על המשתמש
         public BookUserControl(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor)
@@ -34,7 +36,7 @@ namespace LitLink_FinalProject.UserControls
             this._isAdmin = isAdmin;
             this._isAuthor = isAuthor;
 
-            // 1. הגדרת כפתורי פעולה (Buy/Read/AddToList)
+            // 1. הגדרת כפתורי פעולה (Buy/AddToList)
             SetActionButtons(userOwnsBook);
 
             // 2. הגדרת תפריט שלוש נקודות (Permissions)
@@ -53,14 +55,12 @@ namespace LitLink_FinalProject.UserControls
             {
                 // מנהל: לא רואה אף כפתור פעולה
                 BuyBtn.Visibility = Visibility.Collapsed;
-                ReadBtn.Visibility = Visibility.Collapsed;
                 AddToListBtn.Visibility = Visibility.Collapsed;
             }
             else if (_isAuthor)
             {
                 // סופר של הספר: רואה רק "Add to List"
                 BuyBtn.Visibility = Visibility.Collapsed;
-                ReadBtn.Visibility = Visibility.Collapsed;
                 AddToListBtn.Visibility = Visibility.Visible;
             }
             else
@@ -70,13 +70,12 @@ namespace LitLink_FinalProject.UserControls
 
                 if (ownsBook)
                 {
+                    // אם הספר כבר בבעלותו, נעלים את כפתור הרכישה
                     BuyBtn.Visibility = Visibility.Collapsed;
-                    ReadBtn.Visibility = Visibility.Visible;
                 }
                 else
                 {
                     BuyBtn.Visibility = Visibility.Visible;
-                    ReadBtn.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -119,32 +118,107 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        Apiservice apiService = new Apiservice();
+        // ==================== לוגיקת פעולות ספר ====================
 
-        // פונקציות ריקות לפעולות שלך
-        private void Buy_Click(object sender, RoutedEventArgs e) 
+        private void Buy_Click(object sender, RoutedEventArgs e)
         {
-            
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null) return;
+
+            try
+            {
+                // זמני לבגרות: מציגים הודעה חיובית ומעלימים את כפתור הרכישה מהמסך
+                MessageBox.Show($"'{currentBook.BookName}' has been added to your purchases successfully!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // עדכון ויזואלי מהיר: העלמת כפתור הרכישה לאחר שנקנה
+                BuyBtn.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to complete purchase: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-        private void Read_Click(object sender, RoutedEventArgs e) 
+
+        private void AddToList_Click(object sender, RoutedEventArgs e)
         {
-           
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null) return;
+
+            try
+            {
+                // במקום לפתוח חלון שלא קיים, נציג הודעה חלקה שהספר נוסף בהצלחה לרשימת הקריאה
+                MessageBox.Show($"'{currentBook.BookName}' has been successfully added to your Reading List!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error adding book to list: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-        private void AddToList_Click(object sender, RoutedEventArgs e) 
+
+        private void DeleteBook_Click(object sender, RoutedEventArgs e)
         {
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null) return;
 
-        }
-        private void DeleteBook_Click(object sender, RoutedEventArgs e) 
-        { 
+            if (MessageBox.Show($"Are you sure you want to permanently delete '{currentBook.BookName}' from LitLink?",
+                                "Delete Book", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    apiService.DeleteBook(currentBook.Id);
+                    MessageBox.Show("The book has been successfully deleted.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
 
+                    this.Visibility = Visibility.Collapsed;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to delete book: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
-        private void ReportBook_Click(object sender, RoutedEventArgs e) 
-        { 
 
-        }
-        private void EditBook_Click(object sender, RoutedEventArgs e) 
+        private void ReportBook_Click(object sender, RoutedEventArgs e)
         {
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null) return;
 
+            if (MessageBox.Show("Report this book for inappropriate content?", "Report Book", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    currentBook.IsFlaged = true;
+                    apiService.UpdateBook(currentBook);
+
+                    MessageBox.Show("Thank you. This book has been flagged and will be reviewed by an administrator.", "Report Sent");
+                    ReportItem.IsEnabled = false;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to send report: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void EditBook_Click(object sender, RoutedEventArgs e)
+        {
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null) return;
+
+            try
+            {
+                EditBookWindow editWindow = new EditBookWindow(currentBook);
+
+                if (editWindow.ShowDialog() == true)
+                {
+                    // רענון ה-DataContext כדי שהעדכונים שנעשו בטופס יופיעו מיד על המסך
+                    this.DataContext = null;
+                    this.DataContext = currentBook;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not open edit window: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

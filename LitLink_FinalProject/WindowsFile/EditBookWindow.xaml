@@ -1,0 +1,114 @@
+﻿<Window x:Class="LitLink_FinalProject.WindowsFile.EditBookWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LitLink_FinalProject.WindowsFile"
+        mc:Ignorable="d"
+        Title="EditBookWindow" Height="670" Width="450"
+        WindowStartupLocation="CenterScreen"
+        Background="#FFF0F5" ResizeMode="NoResize">
+    <Window.Resources>
+        <!-- סטייל לכפתורים העגולים של LitLink -->
+        <Style x:Key="PinkRoundedButton" TargetType="Button">
+            <Setter Property="Background" Value="#FF1493"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- סטייל אחיד לתיבות הטקסט, ה-DatePicker וה-ComboBox -->
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="5,2"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FFC0CB"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style TargetType="DatePicker">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#FFC0CB"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#FFC0CB"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- סטייל לכותרות של השדות -->
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="#D06A8D"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="25">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- כותרת ראשית -->
+                <TextBlock Text="Edit Book Details" FontSize="26" FontWeight="ExtraBold" 
+                           Foreground="#4A4A4A" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                <!-- שם הספר -->
+                <Label Content="Book Name:"/>
+                <TextBox x:Name="TxtBookName"/>
+
+                <!-- תקציר הספר -->
+                <Label Content="Summary / Description:"/>
+                <TextBox x:Name="TxtDescription" Height="80" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" Padding="5"/>
+
+                <!-- מחיר הספר -->
+                <Label Content="Price ($):"/>
+                <TextBox x:Name="TxtPrice"/>
+
+                <!-- תאריך הוצאה -->
+                <Label Content="Publication Date:"/>
+                <DatePicker x:Name="DpPublishDate"/>
+
+                <!-- שפה - נמשכת דינמית באמצעות ה-ItemsSource בקוד -->
+                <Label Content="Language:"/>
+                <ComboBox x:Name="CmbLanguage" DisplayMemberPath="LanguageName"/>
+
+                <!-- נתיב קובץ הספר (לקריאה) -->
+                <Label Content="Book File Path (EPUB format only):"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TxtFilePath" Grid.Column="0"/>
+                    <Button Content="Browse..." Grid.Column="1" Margin="5,0,0,0" Background="#D06A8D" Foreground="White" Click="BrowseFile_Click"/>
+                </Grid>
+
+                <!-- נתיב קובץ התמונה (קאבר) -->
+                <Label Content="Cover Image Path/URL:"/>
+                <TextBox x:Name="TxtCoverPath"/>
+
+                <!-- כפתורי שליטה בתחתית -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0">
+                    <Button Content="Save Changes" Width="130" Height="40" Style="{StaticResource PinkRoundedButton}" Click="Save_Click" Margin="0,0,15,0"/>
+                    <Button Content="Cancel" Width="130" Height="40" Style="{StaticResource PinkRoundedButton}" Background="#D06A8D" Click="Cancel_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

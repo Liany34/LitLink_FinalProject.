@@ -82,8 +82,7 @@
                     <Button x:Name="BuyBtn" Content="Buy Now" Style="{StaticResource PinkRoundedButton}" 
                             Height="45" Margin="0,0,0,10" Click="Buy_Click"/>
 
-                    <Button x:Name="ReadBtn" Content="Read Now" Style="{StaticResource PinkRoundedButton}" 
-                            Background="#D06A8D" Height="45" Margin="0,0,0,10" Visibility="Collapsed" Click="Read_Click"/>
+                    <!-- כפתור Read Now הוסר מכאן -->
 
                     <Button x:Name="AddToListBtn" Content="Add to List" Style="{StaticResource OutlineRoundedButton}" 
                             Height="45" Click="AddToList_Click"/>

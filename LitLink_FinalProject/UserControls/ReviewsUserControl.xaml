@@ -7,10 +7,36 @@
              mc:Ignorable="d" 
             d:DesignHeight="200" d:DesignWidth="500">
 
+    <UserControl.Resources>
+        <!-- סטייל לכפתורי השמירה והביטול של העריכה -->
+        <Style x:Key="MiniPinkButton" TargetType="Button">
+            <Setter Property="Background" Value="#FF1493"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <!-- רקע ורוד בהיר מאוד שמתאים לדף הספר -->
     <Border Background="#FFF0F5" CornerRadius="15" Margin="5" Padding="15">
         <Grid>
-            <!-- כפתור שלוש נקודות בפינה הימנית -->
+            <!-- שלב 1: הגדרת עמודות - חייב להיות ראשון בתוך ה-Grid למניעת שגיאות! -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="65"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- שלב 2: כפתור שלוש נקודות מוצמד לצד הכי ימני של העמודה הריקה -->
             <Button x:Name="CommentMenuBtn" 
                     Content="⋮" 
                     FontSize="22" 
@@ -18,9 +44,11 @@
                     BorderThickness="0" 
                     Foreground="#D06A8D" 
                     Cursor="Hand" 
+                    Grid.Column="1" 
                     HorizontalAlignment="Right" 
                     VerticalAlignment="Top" 
                     Panel.ZIndex="10"
+                    Margin="0,0,5,0"
                     Click="CommentMenuBtn_Click">
                 <Button.ContextMenu>
                     <ContextMenu x:Name="CommentContextMenu">
@@ -38,43 +66,53 @@
                 </Button.ContextMenu>
             </Button>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="65"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- תמונת פרופיל של הקורא -->
+            <!-- תמונת פרופיל של הקורא (בצד שמאל, עמודה 0) -->
             <Border Grid.Column="0" Width="50" Height="50" CornerRadius="25" 
-                    BorderBrush="#FFC0CB" BorderThickness="2" VerticalAlignment="Top" ClipToBounds="True">
+                    BorderBrush="#FFC0CB" BorderThickness="2" Background="Transparent" VerticalAlignment="Top" ClipToBounds="True">
                 <Image Source="{Binding idReader.ProfileImg}" Stretch="UniformToFill"/>
             </Border>
 
-            <!-- תוכן הביקורת -->
-            <StackPanel Grid.Column="1" Margin="12,0,25,0">
+            <!-- תוכן הביקורת (בעמודה 1, עם מרווח ימני של 35 שלא יגע בנקודות) -->
+            <StackPanel Grid.Column="1" Margin="12,0,35,0">
                 <TextBlock Text="{Binding idReader.DisplayName}" 
                            FontWeight="Bold" FontSize="15" Foreground="#4A4A4A"/>
 
                 <TextBlock Text="{Binding StarString}" 
                            Foreground="#FFD700" FontSize="14" Margin="0,2,0,5"/>
 
-                <TextBlock x:Name="CommentTextBlock" 
-                           Text="{Binding text}" 
-                           TextWrapping="Wrap" 
-                           FontSize="14" 
-                           Foreground="#333333" 
-                           LineHeight="20"
-                           MaxHeight="100"/>
+                <!-- אזור 1: מצב תצוגה רגיל -->
+                <StackPanel x:Name="DisplayArea" Visibility="Visible">
+                    <TextBlock x:Name="CommentTextBlock" 
+                               Text="{Binding text}" 
+                               TextWrapping="Wrap" 
+                               FontSize="14" 
+                               Foreground="#333333" 
+                               LineHeight="20"
+                               MaxHeight="100"/>
 
-                <Button x:Name="ReadMoreBtn" 
-                        Content="Read More" 
-                        HorizontalAlignment="Left" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Foreground="#FF1493" 
-                        FontWeight="Bold" 
-                        Cursor="Hand" 
-                        Margin="0,5,0,0"
-                        Click="ReadMoreBtn_Click"/>
+                    <Button x:Name="ReadMoreBtn" 
+                            Content="Read More" 
+                            HorizontalAlignment="Left" 
+                            Background="Transparent" 
+                            BorderThickness="0" 
+                            Foreground="#FF1493" 
+                            FontWeight="Bold" 
+                            Cursor="Hand" 
+                            Margin="0,5,0,0"
+                            Click="ReadMoreBtn_Click"/>
+                </StackPanel>
+
+                <!-- אזור 2: מצב עריכה במקום -->
+                <StackPanel x:Name="EditArea" Visibility="Collapsed" Margin="0,5,0,0">
+                    <TextBox x:Name="EditCommentTextBox" TextWrapping="Wrap" AcceptsReturn="True"
+                             FontSize="14" Padding="5" MinHeight="60" Background="White"
+                             BorderBrush="#FFC0CB" BorderThickness="1.5"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Save" Style="{StaticResource MiniPinkButton}" Click="SaveComment_Click" Margin="0,0,10,0"/>
+                        <Button Content="Cancel" Style="{StaticResource MiniPinkButton}" Background="#D06A8D" Click="CancelEdit_Click"/>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </Border>
