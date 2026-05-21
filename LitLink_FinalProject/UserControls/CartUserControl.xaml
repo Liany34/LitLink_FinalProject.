@@ -42,7 +42,13 @@
                 <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
 
-            <CheckBox Grid.Column="0" Style="{StaticResource CartCheckBoxStyle}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <CheckBox x:Name="CartCheckBox" 
+          Grid.Column="0" 
+          Style="{StaticResource CartCheckBoxStyle}" 
+          VerticalAlignment="Center" 
+          HorizontalAlignment="Center"
+          Checked="CartCheckBox_CheckedChange" 
+          Unchecked="CartCheckBox_CheckedChange"/>
 
             <Border Grid.Column="1" CornerRadius="8" ClipToBounds="True" Height="110" Width="80" HorizontalAlignment="Left">
                 <Image Source="{Binding Cover}" Stretch="UniformToFill"/>

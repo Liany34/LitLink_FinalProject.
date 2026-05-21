@@ -27,6 +27,7 @@ namespace LitLink_FinalProject.Pages
         private double _totalCartPrice = 0;
         private int _currentUserId; // שדה פנימי שישמור את ה-ID של המשתמש המחובר
         private List<CartUserControl> _loadedControls = new List<CartUserControl>();
+        private List<Book> _chosenBooks = new List<Book>();
 
         // תיקון: הבנאי מקבל כעת את ה-ID של המשתמש שצפה בעגלה
         public CartPage(int loggedInUserId)
@@ -106,11 +107,19 @@ namespace LitLink_FinalProject.Pages
         private void ChkSelectAll_Checked(object sender, RoutedEventArgs e)
         {
             SetAllItemsSelection(true);
+            foreach(CartUserControl bookControl in _loadedControls)
+            {
+                _chosenBooks.Add(bookControl.DataContext as Book);
+            }
         }
 
         private void ChkSelectAll_Unchecked(object sender, RoutedEventArgs e)
         {
             SetAllItemsSelection(false);
+            foreach (CartUserControl bookControl in _loadedControls)
+            {
+                _chosenBooks.Remove(bookControl.DataContext as Book);
+            }
         }
 
         private void SetAllItemsSelection(bool isSelected)
@@ -128,55 +137,55 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private async Task BtnApplyDiscount_Click(object sender, RoutedEventArgs e)
+        private void BtnApplyDiscount_Click(object sender, RoutedEventArgs e)
         {
             string enteredCode = TxtDiscountCode.Text.Trim().ToUpper();
-
             if (string.IsNullOrEmpty(enteredCode)) return;
 
-            try
+            // 2. הפעלת הקוד האסינכרוני בתוך Task בנפרד
+            Task.Run(async () =>
             {
-                ListDiscountCodes codes = await _apiService.GetAllDiscountCodes();
-                List<DiscountCodes> allCodes = codes.ToList();
-
-                // 2. חיפוש הקופון שהמשתמש הקליד בתוך הרשימה (השוואה באותיות גדולות ליתר ביטחון)
-                // בהנחה שבמודל DiscountCode יש שדות כמו Code (מחרוזת) ו-Percentage (מספר של אחוז ההנחה, למשל 20)
-                DiscountCodes matchingCoupon = allCodes.FirstOrDefault(c => c.CodeText.ToUpper() == enteredCode);
-
-                // 3. בדיקה האם הקופון נמצא והאם הוא בתוקף
-                if (matchingCoupon != null)
+                try
                 {
-                    TxtInvalidCodeError.Visibility = Visibility.Collapsed; // העלמת הודעת השגיאה במידה והייתה
+                    ListDiscountCodes codes = await _apiService.GetAllDiscountCodes();
 
-                    // חילוץ אחוז ההנחה מהקופון שנמצא (למשל, אם רשום 20, זה יהפוך ל-0.20)
-                    double discountPercentage = matchingCoupon.Amount / 100.0;
+                    // חיפוש הקופון (באמצעות האפשרות הראשונה שדיברנו עליה, בלי .ToList() )
+                    DiscountCodes matchingCoupon = codes.FirstOrDefault(c => c.CodeText.ToUpper() == enteredCode);
 
-                    // חישוב ההנחה והמחיר הסופי הדינמיים
-                    double discount = _totalCartPrice * discountPercentage;
-                    double finalPrice = _totalCartPrice - discount;
+                    // בגלל שאנחנו רצים ברקע, עדכון ה-UI (הטקסטים והמסך) חייב להתבצע דרך ה-Dispatcher
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (matchingCoupon != null)
+                        {
+                            TxtInvalidCodeError.Visibility = Visibility.Collapsed;
 
-                    // הצגת המחיר המקורי עם קו מחיקה מעליו
-                    TxtOriginalPrice.Visibility = Visibility.Visible;
-                    TxtOriginalPrice.Text = _totalCartPrice.ToString("C");
+                            double discountPercentage = matchingCoupon.Amount / 100.0;
+                            double discount = _totalCartPrice * discountPercentage;
+                            double finalPrice = _totalCartPrice - discount;
 
-                    // עדכון המחיר הסופי החדש על המסך לאחר ההנחה שחושבה
-                    TxtFinalPrice.Text = finalPrice.ToString("C");
+                            TxtOriginalPrice.Visibility = Visibility.Visible;
+                            TxtOriginalPrice.Text = _totalCartPrice.ToString("C");
+                            TxtFinalPrice.Text = finalPrice.ToString("C");
 
-                    MessageBox.Show($"Coupon '{enteredCode}' applied successfully! You received a {matchingCoupon.Amount}% discount.",
-                                    "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBox.Show($"Coupon '{enteredCode}' applied successfully! You received a {matchingCoupon.Amount}% discount.",
+                                            "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else
+                        {
+                            TxtInvalidCodeError.Visibility = Visibility.Visible;
+                            TxtOriginalPrice.Visibility = Visibility.Collapsed;
+                            TxtFinalPrice.Text = _totalCartPrice.ToString("C");
+                        }
+                    });
                 }
-                else
+                catch (Exception ex)
                 {
-                    // אם הקוד לא נמצא בטבלה - מציגים את הודעת השגיאה באדום
-                    TxtInvalidCodeError.Visibility = Visibility.Visible;
-                    TxtOriginalPrice.Visibility = Visibility.Collapsed;
-                    TxtFinalPrice.Text = _totalCartPrice.ToString("C"); // החזרת המחיר המקורי לתצוגה
+                    Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show("Error validating discount code: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error validating discount code: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            });
         }
 
         private void BtnCheckout_Click(object sender, RoutedEventArgs e)
@@ -189,7 +198,30 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                CheckOut checkoutPage = new CheckOut();
+                var allReaders = _apiService.GetAllReaders();
+                Reader logedinUser = allReaders.Result.FirstOrDefault(r => r.Id == _currentUserId);
+
+                foreach (CartUserControl bookControl in _loadedControls)
+                {
+                    var checkBox = bookControl.FindName("ItemCheckBox") as CheckBox;
+                    if (checkBox != null && checkBox.IsChecked == true)
+                    {
+                        Book selectedBook = bookControl.DataContext as Book;
+                        if (selectedBook != null)
+                        {
+                            _chosenBooks.Add(selectedBook);
+                        }
+                    }
+                }
+
+
+                Pages.CheckOut checkoutPage = new Pages.CheckOut();
+
+                // 2. הפעלת הפונקציה והעברת הנתונים (הספרים שבעגלה, אימייל וטלפון של המשתמש הנוכחי)
+                // שימי לב לשנות את השמות (MyCartList, App.CurrentUser) לשמות האמיתיים אצלך בפרויקט
+                checkoutPage.SetupCheckout(_chosenBooks, logedinUser.Email, logedinUser.PhoneNumber, 0);
+
+                // 3. ביצוע הניווט בתוך הפריים (MainFrame)
                 this.NavigationService.Navigate(checkoutPage);
             }
             catch (Exception ex)

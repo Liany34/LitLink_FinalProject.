@@ -4,7 +4,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
-      xmlns:controls="clr-namespace:LitLink_FinalProject.UserControls"
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="800"
       Title="CheckOut"
@@ -37,9 +36,31 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <controls:CheckOutBookUserControl BookTitle="{Binding Title}" 
-                                              BookPrice="{Binding Price}" 
-                                              BookImageUrl="{Binding ImageUrl}"/>
+                                <Border Background="White" BorderBrush="#F0F0F0" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,15,5" Width="200">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" CornerRadius="5" ClipToBounds="True" Margin="0,0,12,0" VerticalAlignment="Center">
+                                            <Image Source="{Binding ImageUrl}" Width="50" Height="72" Stretch="UniformToFill"/>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" 
+                                                       FontSize="14" 
+                                                       FontWeight="SemiBold" 
+                                                       Foreground="#333333" 
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="0,0,0,6"/>
+                                            <TextBlock Text="{Binding Price, StringFormat='{}{0:F2} ₪'}" 
+                                                       FontSize="13" 
+                                                       FontWeight="Bold" 
+                                                       Foreground="#FF6B8B"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

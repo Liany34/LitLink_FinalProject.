@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace LitLink_FinalProject.Pages
     {
         public static List<object> MyBooks { get; set; } = new List<object>();
 
-        private List<object> _selectedBooks;
+        private List<Book> _selectedBooks;
         private double _discountCodeAmount = 0;
 
         public CheckOut()
@@ -30,22 +31,30 @@ namespace LitLink_FinalProject.Pages
             InitializeComponent();
         }
 
-        // פונקציה להזרקת הנתונים והפעלת הדף
-        public void SetupCheckout(List<object> cartBooks, string currentUserEmail, string currentUserPhone, double discountAmount = 0)
+        /// <summary>
+        /// פונקציית הטענה ראשית שמקבלת את כל הנתונים בצורה דינמית ומפעילה את הדף
+        /// </summary>
+        public void SetupCheckout(List<Book> cartBooks, string currentUserEmail, string currentUserPhone, double discountAmount = 0)
         {
-            _selectedBooks = cartBooks ?? new List<object>();
+            _selectedBooks = cartBooks ?? new List<Book>();
             _discountCodeAmount = discountAmount;
 
+            // השמת הספרים לתוך ה-ItemsControl
             BooksItemsControl.ItemsSource = _selectedBooks;
+
+            // עדכון פרטי המשתמש במסך
             TxtConfirmEmail.Text = currentUserEmail;
             TxtConfirmPhone.Text = currentUserPhone;
 
+            // חישוב מחירים
             CalculatePrices();
         }
 
         private void CalculatePrices()
         {
             double subTotal = 0;
+
+            // סכימה דינמית באמצעות Reflection כדי שיתאים לכל מחלקה (Model) של ספר שיש לך בפרויקט
             foreach (var book in _selectedBooks)
             {
                 var priceProp = book.GetType().GetProperty("Price");
@@ -58,6 +67,7 @@ namespace LitLink_FinalProject.Pages
             double total = subTotal - _discountCodeAmount;
             if (total < 0) total = 0;
 
+            // עדכון השדות בסיכום ההזמנה
             TxtSubTotal.Text = $"{subTotal:F2} ₪";
             TxtDiscount.Text = $"{_discountCodeAmount:F2} ₪";
             TxtTotal.Text = $"{total:F2} ₪";
@@ -95,18 +105,21 @@ namespace LitLink_FinalProject.Pages
                 return;
             }
 
+            // יצירת הרשימה MyBooks במידה והיא לא אותחלה עדיין
             if (MyBooks == null) MyBooks = new List<object>();
+
+            // הוספת הספרים שנרכשו
             MyBooks.AddRange(_selectedBooks);
 
+            // הצגת חלון הודעה שהקנייה הושלמה בהצלחה
             MessageBox.Show("!הקנייה הושלמה בהצלחה\n.הספרים החדשים שלך נוספו בהצלחה לרשימת הספרים שלי", "LitLink Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // כפתור חזור באמצעות מנגנון הניווט הטבעי של Page
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (this.NavigationService != null && this.NavigationService.CanGoBack)
             {
-                this.NavigationService.GoBack(); // חוזר אוטומטית לעמוד העגלה שהיינו בו קודם
+                this.NavigationService.GoBack();
             }
         }
     }
