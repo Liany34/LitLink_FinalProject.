@@ -5,10 +5,24 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="BookPage">
+      d:DesignHeight="700" d:DesignWidth="900"
+      Title="BookPage"
+      Background="#FAFAFA">
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button Grid.Row="0" HorizontalAlignment="Left" Margin="20,15,0,0" 
+                Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BackButton_Click">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="←" FontSize="20" Foreground="#D06A8D" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBlock Text="Back to Catalog" FontSize="14" FontWeight="SemiBold" Foreground="#D06A8D" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+
+        <Grid x:Name="MainContainer" Grid.Row="1" Margin="10"/>
     </Grid>
 </Page>

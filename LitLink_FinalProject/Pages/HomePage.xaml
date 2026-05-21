@@ -5,11 +5,128 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="550" d:DesignWidth="800"
+      Height="700" Width="900" 
       Background="#E3DBCC"
       Title="HomePage">
 
-    <Grid>
-      
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBox x:Name="TxtSearch" Width="250" Height="30" Padding="5,2" VerticalContentAlignment="Center" 
+                         Text="Search books or authors..." Foreground="Gray" GotFocus="TxtSearch_GotFocus" LostFocus="TxtSearch_LostFocus"/>
+                <Button Content="🔍" Width="35" Height="30" Margin="5,0,0,0" Background="#FF1493" Foreground="White" BorderThickness="0" Click="BtnSearch_Click"/>
+            </StackPanel>
+
+            <Grid Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
+                <StackPanel x:Name="GuestPanel" Orientation="Horizontal" Visibility="Visible">
+                    <Button x:Name="BtnLogin" Content="Login" Width="80" Height="30" Background="#FF1493" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="BtnLogin_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="15"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel x:Name="UserPanel" Orientation="Horizontal" Visibility="Collapsed">
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                        <TextBlock x:Name="TxtGreeting" Text="Good Morning," FontSize="12" Foreground="#D06A8D" TextAlignment="Right"/>
+                        <TextBlock x:Name="TxtUsername" Text="Guest" FontSize="14" FontWeight="Bold" Foreground="#4A4A4A" TextAlignment="Right"/>
+                    </StackPanel>
+                    <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="1">
+                        <Image x:Name="ImgProfile" Stretch="UniformToFill" Source="pack://application:,,,/Assets/default_user.png"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <Button Grid.Column="2" Content="☰" FontSize="24" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" Cursor="Hand" VerticalAlignment="Center" Click="MenuBtn_Click">
+                <Button.ContextMenu>
+                    <ContextMenu x:Name="MainMenu">
+                        <MenuItem Header="About Us" Click="AboutUs_Click"/>
+                        <Separator x:Name="MenuSeparator" Visibility="Collapsed"/>
+                        <MenuItem Header="Cart" x:Name="CartItem" Visibility="Collapsed" Click="Cart_Click"/>
+                        <MenuItem Header="My Profile" x:Name="ProfileItem" Visibility="Collapsed" Click="Profile_Click"/>
+                        <MenuItem Header="Become Author" x:Name="BecomeAuthorItem" Visibility="Collapsed" Click="BecomeAuthor_Click"/>
+                        <MenuItem Header="Log Out" x:Name="LogOutItem" Visibility="Collapsed" Foreground="Red" Click="LogOut_Click"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="220"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="CatalogStackPanel" Padding="0,0,10,0">
+
+                    <TextBlock Text="Romance" FontSize="20" FontWeight="Bold" Foreground="#D06A8D" Margin="0,10,0,10"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="150">
+                        <ItemsControl x:Name="RomanceItemsControl" MouseDown="Book_Click">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <uc:CatalogBookControl/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBlock Text="Fantasy / Romantasy" FontSize="20" FontWeight="Bold" Foreground="#D06A8D" Margin="0,20,0,10"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="150">
+                        <ItemsControl x:Name="FantasyItemsControl" MouseDown="Book_Click">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <uc:CatalogBookControl/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="10" BorderBrush="#FFF0F5" BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Author News" FontSize="16" FontWeight="Bold" Foreground="#FF1493" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                    <ListBox Grid.Row="1" x:Name="NewsListBox" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,5,0,10">
+                                    <TextBlock Text="{Binding AuthorName}" FontWeight="Bold" FontSize="13" Foreground="#D06A8D"/>
+                                    <TextBlock Text="{Binding ContentText}" TextWrapping="Wrap" FontSize="12" Foreground="#333333" Margin="0,2,0,0"/>
+                                    <Rectangle Height="0.5" Fill="#FFC0CB" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
