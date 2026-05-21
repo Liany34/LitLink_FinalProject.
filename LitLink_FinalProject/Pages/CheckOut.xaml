@@ -4,11 +4,158 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
+      xmlns:controls="clr-namespace:LitLink_FinalProject.UserControls"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="CheckOut">
+      d:DesignHeight="650" d:DesignWidth="800"
+      Title="CheckOut"
+      Background="#FAFAFA">
 
-    <Grid>
-        
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button Grid.Row="0" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BackButton_Click">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="←" FontSize="18" Foreground="#555" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBlock Text="Go back to cart" FontSize="14" FontFamily="Segoe UI" Foreground="#555" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+
+        <StackPanel Grid.Row="1" Margin="0,20,0,20">
+            <TextBlock Text="Chosen Books:" FontSize="16" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,10"/>
+
+            <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Background="White" Padding="10">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="105">
+                    <ItemsControl Name="BooksItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:CheckOutBookUserControl BookTitle="{Binding Title}" 
+                                              BookPrice="{Binding Price}" 
+                                              BookImageUrl="{Binding ImageUrl}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </StackPanel>
+
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#FFF0F3" CornerRadius="15" Padding="25" VerticalAlignment="Top" MinHeight="300">
+                <Grid>
+                    <StackPanel x:Name="ConfirmInfoPanel" Visibility="Visible">
+                        <TextBlock Text="Confirm Information" FontSize="20" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Email:" FontSize="14" Foreground="#777"/>
+                        <TextBlock x:Name="TxtConfirmEmail" FontSize="16" Margin="0,5,0,0" FontWeight="Medium"/>
+                        <Rectangle Height="1" Fill="#D8B4BC" Margin="0,5,0,20"/>
+
+                        <TextBlock Text="Phone Number:" FontSize="14" Foreground="#777"/>
+                        <TextBlock x:Name="TxtConfirmPhone" FontSize="16" Margin="0,5,0,0" FontWeight="Medium"/>
+                        <Rectangle Height="1" Fill="#D8B4BC" Margin="0,5,0,30"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="Correct Information" Width="150" Height="40" Margin="0,0,15,0" Background="#FF6B8B" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Click="CorrectInfo_Click">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="20"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                            <Button Content="Incorrect Information" Width="150" Height="40" Background="Transparent" Foreground="#FF6B8B" BorderBrush="#FF6B8B" BorderThickness="1.5" FontWeight="SemiBold" Click="IncorrectInfo_Click">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="20"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel x:Name="EditInfoPanel" Visibility="Collapsed">
+                        <TextBlock Text="Edit Information" FontSize="20" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Edit Email:" FontSize="14" Foreground="#777"/>
+                        <TextBox x:Name="EditEmailBox" FontSize="14" Margin="0,5,0,15" Padding="5"/>
+
+                        <TextBlock Text="Edit Phone:" FontSize="14" Foreground="#777"/>
+                        <TextBox x:Name="EditPhoneBox" FontSize="14" Margin="0,5,0,25" Padding="5"/>
+
+                        <Button Content="Save &amp; Return" Width="150" Height="40" Background="#FF6B8B" Foreground="White" FontWeight="SemiBold" BorderThickness="0" HorizontalAlignment="Center" Click="SaveInfo_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="20"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel x:Name="CreditCardPanel" Visibility="Collapsed">
+                        <TextBlock Text="Credit Information" FontSize="20" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Card Number:" FontSize="14" Foreground="#777"/>
+                        <TextBox x:Name="TxtCardNumber" FontSize="14" Margin="0,5,0,15" Padding="5"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Expiration Date:" FontSize="14" Foreground="#777"/>
+                                <TextBox x:Name="TxtExpiration" FontSize="14" Margin="0,5,0,15" Padding="5" Text="MM/YY"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="CVV:" FontSize="14" Foreground="#777"/>
+                                <TextBox x:Name="TxtCVV" FontSize="14" Margin="0,5,0,15" Padding="5"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Button Content="Pay Now" Width="150" Height="40" Background="#2ECC71" Foreground="White" FontWeight="SemiBold" BorderThickness="0" HorizontalAlignment="Center" Margin="0,15,0,0" Click="PayNow_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="20"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Column="2" VerticalAlignment="Top">
+                <TextBlock Text="Order Summary" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,20"/>
+
+                <Grid Margin="0,5">
+                    <TextBlock Text="SubTotal" FontSize="14" Foreground="#555"/>
+                    <TextBlock x:Name="TxtSubTotal" FontSize="14" HorizontalAlignment="Right" FontWeight="Medium"/>
+                </Grid>
+
+                <Grid Margin="0,5">
+                    <TextBlock Text="Discount" FontSize="14" Foreground="#555"/>
+                    <TextBlock x:Name="TxtDiscount" FontSize="14" HorizontalAlignment="Right" Foreground="Green" FontWeight="Medium"/>
+                </Grid>
+
+                <Rectangle Height="1" Fill="#DDD" Margin="0,15"/>
+
+                <Grid Margin="0,5">
+                    <TextBlock Text="Total" FontSize="18" FontWeight="Bold" Foreground="#333"/>
+                    <TextBlock x:Name="TxtTotal" FontSize="18" HorizontalAlignment="Right" Foreground="#FF6B8B" FontWeight="Bold"/>
+                </Grid>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>
