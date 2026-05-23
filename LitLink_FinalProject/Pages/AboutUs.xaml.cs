@@ -24,5 +24,6 @@ namespace LitLink_FinalProject.Pages
         {
             InitializeComponent();
         }
+        private void Home_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
     }
 }

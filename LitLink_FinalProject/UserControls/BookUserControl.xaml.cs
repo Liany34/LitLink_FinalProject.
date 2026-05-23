@@ -29,6 +29,12 @@ namespace LitLink_FinalProject.UserControls
         private Apiservice apiService = new Apiservice();
 
         // constructor מקבל עכשיו מידע על המשתמש
+
+        public BookUserControl()
+        {
+            InitializeComponent();
+        }
+
         public BookUserControl(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor)
         {
             InitializeComponent();

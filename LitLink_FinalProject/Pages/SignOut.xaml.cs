@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace LitLink_FinalProject.Pages
 {
@@ -20,9 +21,24 @@ namespace LitLink_FinalProject.Pages
     /// </summary>
     public partial class SignOut : Page
     {
+        private DispatcherTimer timer;
         public SignOut()
         {
             InitializeComponent();
+            StartTimer();
+        }
+        private void StartTimer()
+        {
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(5);
+            timer.Tick += Timer_Tick; // ברגע שעוברות 5 שניות נשלח לפעולה שדואגת שהטיימר יפסיק
+            timer.Start();
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            timer.Stop();
+            NavigationService.Navigate(new HomePage());
         }
     }
 }

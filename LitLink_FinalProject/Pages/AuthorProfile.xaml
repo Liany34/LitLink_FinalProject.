@@ -5,10 +5,111 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      Height="750" Width="900" 
+      Background="#E3DBCC"
       Title="AuthorProfile">
 
-    <Grid>
-        
+    <Page.Resources>
+        <DropShadowEffect x:Key="MenuShadow" Color="#BCB3A4" BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.5"/>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="2">
+                    <Image x:Name="ImgAuthorProfile" Source="/Covers/DefultUser.png" Stretch="UniformToFill"/>
+                </Border>
+                <Button x:Name="BtnEditProfile" Content="Edit Profile" Margin="0,8,0,0" Padding="10,4" 
+                        Background="Transparent" BorderBrush="#D06A8D" BorderThickness="1" Foreground="#D06A8D" FontWeight="SemiBold" Cursor="Hand" Click="BtnEditProfile_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="12"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
+                <TextBlock x:Name="TxtHelloAuthor" Text="Hello, PenName" FontSize="28" FontWeight="Bold" Foreground="#4A4A4A"/>
+                <StackPanel Orientation="Horizontal" Margin="2,5,0,0">
+                    <TextBlock Text="🦋 " FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtFollowersCount" Text="0 Followers" FontSize="14" FontWeight="SemiBold" Foreground="#666666" VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Button Grid.Column="2" Content="☰" FontSize="26" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Cursor="Hand" VerticalAlignment="Top" Margin="0,10,10,0" Click="BtnMenu_Click"/>
+        </Grid>
+
+        <Rectangle Grid.Row="1" Height="1" Fill="#BCB3A4" Margin="0,5,0,15"/>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <UniformGrid Grid.Row="0" Columns="3" Margin="0,0,0,15">
+                <Button x:Name="BtnTabMyBooks" Content="My Books" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Click="TabMyBooks_Click"/>
+                <Button x:Name="BtnTabMyNews" Content="My News" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabMyNews_Click"/>
+                <Button x:Name="BtnTabSalesData" Content="Sales Data" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabSalesData_Click"/>
+            </UniformGrid>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <StackPanel x:Name="AuthorBooksContainer" Visibility="Visible"/>
+
+                    <StackPanel x:Name="AuthorNewsContainer" Visibility="Collapsed"/>
+
+                    <StackPanel x:Name="AuthorSalesContainer" Visibility="Collapsed">
+                        <Border Background="White" CornerRadius="12" Padding="20" Effect="{StaticResource MenuShadow}" Margin="0,10,10,10">
+                            <StackPanel>
+                                <TextBlock Text="📊 Financial &amp; Sales Overview" FontSize="18" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,0,0,15"/>
+                                <UniformGrid Columns="2" Margin="0,0,0,15">
+                                    <StackPanel Margin="10">
+                                        <TextBlock Text="Total Copies Sold" FontSize="14" Foreground="Gray"/>
+                                        <TextBlock x:Name="TxtTotalSales" Text="0" FontSize="24" FontWeight="Bold" Foreground="#D06A8D"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="10">
+                                        <TextBlock Text="Total Revenue" FontSize="14" Foreground="Gray"/>
+                                        <TextBlock x:Name="TxtTotalRevenue" Text="$0.00" FontSize="24" FontWeight="Bold" Foreground="#2ECC71"/>
+                                    </StackPanel>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid x:Name="AuthorMenuPopup" Grid.RowSpan="3" Background="#80000000" Visibility="Collapsed" MouseDown="OutsideMenu_MouseDown">
+            <Border HorizontalAlignment="Right" Background="#FFF5F7" Width="260" Padding="20" Effect="{StaticResource MenuShadow}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,25">
+                        <TextBlock Text="Author Menu" FontSize="18" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
+                        <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" FontSize="16" Foreground="Gray" Cursor="Hand" Click="CloseMenu_Click"/>
+                    </Grid>
+
+                    <Button Content="➕ Add New Book" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddBook_Click"/>
+                    <Button Content="📰 Add News Update" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddNews_Click"/>
+                    <Button Content="ℹ️ About Us" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,25" Cursor="Hand" Click="AboutUs_Click"/>
+
+                    <Button Content="🔄 Reader View" Background="#E3DBCC" Foreground="#4A4A4A" FontWeight="SemiBold" HorizontalContentAlignment="Center" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="ReaderView_Click"/>
+
+                    <Button Content="🚪 Log Out" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand" Click="LogOut_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Page>

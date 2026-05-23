@@ -5,10 +5,92 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      Height="750" Width="900" 
+      Background="#E3DBCC"
       Title="ReaderProfile">
 
-    <Grid>
-        
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="2">
+                    <Image x:Name="ImgReaderProfile" Source="/Covers/DefultUser.png" Stretch="UniformToFill"/>
+                </Border>
+                <Button x:Name="BtnEditProfile" Content="Edit Profile" Margin="0,8,0,0" Padding="10,4" 
+                        Background="Transparent" BorderBrush="#D06A8D" BorderThickness="1" Foreground="#D06A8D" FontWeight="SemiBold" Cursor="Hand" Click="BtnEditProfile_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="12"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
+                <TextBlock x:Name="TxtHelloUser" Text="Hello, Name" FontSize="28" FontWeight="Bold" Foreground="#4A4A4A"/>
+                <Button Content="log out" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" HorizontalAlignment="Left" Margin="2,5,0,0" Cursor="Hand" Click="LogOut_Click"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,10,10,0">
+                <Button Content="🏠" FontSize="22" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,15,0" Click="Home_Click"/>
+                <Button Content="🛍️" FontSize="22" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="Cart_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <Rectangle Grid.Row="1" Height="1" Fill="#BCB3A4" Margin="0,5,0,15"/>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,15">
+                <Button x:Name="BtnTabList" Content="List" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Click="FilterList_Click"/>
+                <Button x:Name="BtnTabReviews" Content="Reviews" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="FilterReviews_Click"/>
+                <Button x:Name="BtnTabMyBooks" Content="My Books" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="FilterMyBooks_Click"/>
+                <Button x:Name="BtnTabFollowing" Content="Following" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="FilterFollowing_Click" Height="23" VerticalAlignment="Top"/>
+            </UniformGrid>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="UserListsContainer" Margin="0,0,10,0"/>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid x:Name="EditProfilePopup" Grid.RowSpan="3" Background="#80000000" Visibility="Collapsed" MouseDown="OutsidePopup_MouseDown">
+            <Border HorizontalAlignment="Right" Background="#FFF5F7" Width="300" Padding="20">
+                <StackPanel>
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="Edit Profile" FontSize="20" FontWeight="Bold" Foreground="#4A4A4A"/>
+                        <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" FontSize="16" FontWeight="Bold" Foreground="Gray" Click="CloseEditProfile_Click" Cursor="Hand"/>
+                    </Grid>
+
+                    <TextBlock Text="Account" FontSize="14" FontWeight="Bold" Foreground="#D06A8D" Margin="0,10,0,5"/>
+                    <Button Content="Manage Profile ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,5" Click="EditDetails_Click" Cursor="Hand"/>
+                    <Button Content="Password ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,15" Click="ResetPassword_Click" Cursor="Hand"/>
+
+                    <TextBlock Text="Preference" FontSize="14" FontWeight="Bold" Foreground="#D06A8D" Margin="0,5,0,5"/>
+                    <Button Content="Theme ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,5" Cursor="Hand" Click="Preference_Click"/>
+                    <Button Content="Text Size ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,15" Cursor="Hand" Click="Preference_Click"/>
+
+                    <TextBlock Text="Support" FontSize="14" FontWeight="Bold" Foreground="#D06A8D" Margin="0,5,0,5"/>
+                    <Button Content="Help Center ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,5" Cursor="Hand" Click="Support_Click"/>
+                    <Button Content="Contact Us ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,25" Cursor="Hand" Click="Support_Click"/>
+
+                    <Button Content="Delete Account" Background="Transparent" BorderThickness="0" Foreground="Red" FontWeight="Bold" Click="DeleteAccount_Click" Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Page>

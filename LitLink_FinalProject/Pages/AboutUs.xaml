@@ -9,6 +9,19 @@
       Title="AboutUs">
 
     <Grid>
-        
+        <Grid.Background>
+            <ImageBrush ImageSource="/Covers/AboutUs.png"/>
+        </Grid.Background>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.5*"/>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition Height="1.5*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Content="🏠" FontSize="22" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,15,0" Click="Home_Click"/>
     </Grid>
 </Page>

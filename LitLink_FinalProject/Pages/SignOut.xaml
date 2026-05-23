@@ -9,6 +9,8 @@
       Title="SignOut">
 
     <Grid>
-        
+        <Grid.Background>
+            <ImageBrush ImageSource="/Covers/SignOut.png"/>
+        </Grid.Background>
     </Grid>
 </Page>
