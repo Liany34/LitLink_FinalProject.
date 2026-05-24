@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using LitLink_FinalProject.UserControls;
+using LitLink_FinalProject.WindowsFile;
 
 namespace LitLink_FinalProject.Pages
 {
@@ -164,7 +165,7 @@ namespace LitLink_FinalProject.Pages
             {
                 // שליפת כל החדשות מה-Access שמסוננות לפי ה-Id של הסופר המחובר
                 List<News> allNews = await _apiService.GetAllNews();
-                List<News> authorNews = allNews.Where(n => n.IdUser.Id == _currentAuthorData.Id).OrderByDescending(n => n.Time).ToList();
+                List<News> authorNews = allNews.Where(n => n.IdUser.Id == _currentAuthorData.Id).ToList();
 
                 if (authorNews == null || authorNews.Count == 0)
                 {
@@ -174,63 +175,24 @@ namespace LitLink_FinalProject.Pages
 
                 foreach (var news in authorNews)
                 {
-                    // בניית כרטיס תצוגה לבן לכל הודעה
-                    Border newsCard = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(15), Margin = new Thickness(0, 0, 0, 10), Effect = (System.Windows.Media.Effects.Effect)FindResource("MenuShadow") };
-                    StackPanel sp = new StackPanel();
+                    // 1. יצירת מופע חדש של ה-UserControl שכתבנו
+                    NewsUserControl newsControl = new NewsUserControl();
 
-                    sp.Children.Add(new TextBlock { Text = news., FontSize = 16, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)) });
-                    sp.Children.Add(new TextBlock { Text = news.PublishDate.ToShortDateString(), FontSize = 11, Foreground = Brushes.Gray, Margin = new Thickness(0, 2, 0, 8) });
-                    sp.Children.Add(new TextBlock { Text = news.Content, FontSize = 14, TextWrapping = TextWrapping.Wrap, Foreground = new SolidColorBrush(Color.FromRgb(100, 100, 100)) });
+                    // 2. הזרקת הנתונים של הכתבה הנוכחית לתוך ה-DataContext של הרכיב
+                    newsControl.DataContext = news;
 
-                    // פאנל כפתורי ניהול (Edit / Delete) לכל הודעה
-                    StackPanel btnSp = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
-                    Button btnEdit = new Button { Content = "Edit", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141)), Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
-                    Button btnDelete = new Button { Content = "Delete", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand };
+                    // 3. הרשמה לאירוע שינוי/מחיקה כדי לרענן את הטאב מיד על המסך
+                    newsControl.NewsChanged += () => { LoadMyNewsTab(); };
 
-                    // 🛠️ קוד פעולת עריכת הודעת חדשות קיימת
-                    btnEdit.Click += (s, e) =>
-                    {
-                        // פתיחת חלון העריכה והעברת אובייקט החדשות הנוכחי אליו
-                        EditNewsWindow editNewsWin = new EditNewsWindow(news);
-                        if (editNewsWin.ShowDialog() == true)
-                        {
-                            LoadMyNewsTab(); // רענון הרשימה לאחר עדכון מוצלח
-                        }
-                    };
-
-                    // 🛠️ קוד פעולת מחיקת הודעת חדשות לצמיתות מה-Access
-                    btnDelete.Click += async (s, e) =>
-                    {
-                        if (MessageBox.Show($"Are you sure you want to permanently delete the update '{news.Title}'?", "LitLink", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                        {
-                            await _apiService.DeleteNews(news.Id);
-                            List<News> updatedNewsList = await _apiService.GetAllNews();
-                            bool success = false;
-                            if(!updatedNewsList.Contains(news))
-                            {
-                                success = true;
-                            }
-                            if (success)
-                            {
-                                MessageBox.Show("News update deleted successfully.", "LitLink");
-                                LoadMyNewsTab(); // רענון התצוגה
-                            }
-                        }
-                    };
-
-                    btnSp.Children.Add(btnEdit);
-                    btnSp.Children.Add(btnDelete);
-                    sp.Children.Add(btnSp);
-                    newsCard.Child = sp;
-                    AuthorNewsContainer.Children.Add(newsCard);
+                    // 4. הוספת הרכיב המעוצב השלם לתוך הקונטיינר של עמוד הסופר
+                    AuthorNewsContainer.Children.Add(newsControl);
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Error loading author news: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("Error rendering author news control: " + ex.Message);
             }
         }
-
         /// <summary>
         /// טאב ג': שליפת נתוני מכירות וחישוב הכנסות כספיות דינמיות מה-Access עבור הסופר הנוכחי
         /// </summary>
@@ -238,13 +200,34 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                // פנייה ל-API שמחשב בזמן אמת את סך הרכישות שבוצעו על ספריו של סופר זה
-                SalesSummary summary = await _apiService.GetSalesSummaryByAuthorId(_currentAuthorData.Id);
+                int bookThisMonth = 0;
+                int bookTotal = 0;
+                double incomeThisMonth = 0;
+                double incomeTotal = 0;
+                int booksAddedToCarts = 0;
+                int booksAddedTolists = 0;
+                int followersCount;
+                List<Following> allFollowings = await _apiService.GetAllFollowings();
+                List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == _currentAuthorData.Id).ToList();
+                followersCount = authorFollowings.Count;
 
-                if (summary != null)
+                List<Cart_Detail> allCartDetails = await _apiService.GetAllCartDetails();
+                foreach(Cart_Detail cd in allCartDetails)
                 {
-                    TxtTotalSales.Text = summary.TotalCopiesSold.ToString();
-                    TxtTotalRevenue.Text = $"{summary.TotalRevenue:F2} ₪";
+                    if (cd.IdBook.IdAuthor.Id == _currentAuthorData.Id)
+                    {
+                        booksAddedToCarts++;
+                        if(cd.IsPurchased)
+                        {
+                            if (cd.PurchaseDate.Month == DateTime.Now.Month && cd.PurchaseDate.Year == DateTime.Now.Year)
+                            {
+                                bookThisMonth++;
+                                incomeThisMonth += cd.IdBook.Price ?? 0.0;
+                            }
+                            bookTotal++;
+                            incomeTotal += cd.IdBook.Price ?? 0.0;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -276,8 +259,34 @@ namespace LitLink_FinalProject.Pages
         }
 
         // מעבר לעמודים השונים דרך תפריט הניהול
-        private void AddBook_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AddBookPage.xaml", UriKind.Relative));
-        private void AddNews_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AddNewsPage.xaml", UriKind.Relative));
+        private void AddBook_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. יצירת מופע של חלון הוספת הספר החדש
+            WindowsFile.AddBookWindow addBookWin = new WindowsFile.AddBookWindow();
+
+            // 2. פתיחת החלון כחלון דיאלוג (ShowDialog)
+            if (addBookWin.ShowDialog() == true)
+            {
+                // 3. אם הספר פורסם בהצלחה - נטען מחדש את רשימת הספרים של הסופר על המסך
+                LoadAuthorData();
+            }
+        }
+        private void AddNews_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. יצירת מופע של חלון פרסום החדשות
+            WindowsFile.AddNewsWindow addNewsWin = new WindowsFile.AddNewsWindow();
+
+            // 2. פתיחת החלון כחלון דיאלוג (ShowDialog)
+            if (addNewsWin.ShowDialog() == true)
+            {
+                // 3. אם הסופר פרסם בהצלחה - נרענן את טאב החדשות שלו באופן אוטומטי!
+                LoadMyNewsTab();
+
+                // בונוס: אם את רוצה שזה יתעדכן גם בעמוד הבית מיד
+                // BuildDynamicCatalog(); 
+            }
+        }
+        private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
 
         /// <summary>
         /// 🔄 כפתור ה-Reader View: מאפשר לסופר לחזור מיידית לתצוגת קורא רגיל באפליקציה

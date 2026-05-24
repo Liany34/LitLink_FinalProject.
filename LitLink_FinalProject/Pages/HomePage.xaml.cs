@@ -24,16 +24,18 @@ namespace LitLink_FinalProject.Pages
     public partial class HomePage : Page
     {
         private Apiservice _apiService = new Apiservice();
+        private User currentUser;
 
         public HomePage()
         {
             InitializeComponent();
             CheckUserSession();
-            BuildDynamicCatalog();
+            BuildDynamicCatalog(); // טעינת הספרים והחדשות מיד עם פתיחת המסך
+            currentUser = this.DataContext as User;
         }
 
         /// <summary>
-        /// קריאה לטבלאות מה-Access ובנייה דינמית של שורות הז'אנרים על המסך
+        /// קריאה לטבלאות מה-Access ובנייה דינמית של שורות הז'אנרים והחדשות על המסך
         /// </summary>
         private async void BuildDynamicCatalog()
         {
@@ -68,8 +70,9 @@ namespace LitLink_FinalProject.Pages
                     DynamicGenresContainer.Children.Add(genreRow);
                 }
 
-                // טעינת טור החדשות בסוף
-                // NewsListBox.ItemsSource = await _apiService.GetAllAuthorNews();
+                // 🌟 עדכון: שליפת החדשות האמיתיות מטבלת ה-Access והזרקתן ל-ListBox
+                List<News> allNews = await _apiService.GetAllNews(); // ודאי שזה שם הפעולה ב-ApiService
+                NewsListBox.ItemsSource = allNews;
             }
             catch (Exception ex)
             {
@@ -78,14 +81,28 @@ namespace LitLink_FinalProject.Pages
         }
 
         // ברגע שנבחר ספר מאחת השורות, ננווט לעמוד הפירוט המלא
-        private void GenreRow_BookSelected(object sender, Book selectedBook)
+        private async void GenreRow_BookSelected(object sender, Book selectedBook)
         {
             if (selectedBook == null) return;
 
-            // בדיקת הרשאות (שני למשתנים האמיתיים אצלך, למשל App.CurrentUser)
-            bool ownsBook = false;
-            bool isAdmin = false;
-            bool isAuthor = false;
+            List<Cart> allCarts = await _apiService.GetAllCarts();
+            List<Cart> cartUser = allCarts.Where(c => c.IdReader.Id == currentUser.Id).ToList();
+            List<Cart_Detail> bookDetailsList = await _apiService.GetAllCartDetails();
+            List<Cart_Detail> bookDetailsUser = bookDetailsList.Where(cd => cartUser.Any(c => c.Id == cd.IdCart.Id)).ToList();
+            List<Book> ownedBooks = new List<Book>();
+            foreach (Cart_Detail detail in bookDetailsUser)
+            {
+                if(detail.IsPurchased == true)
+                {
+                    ownedBooks.Add(detail.IdBook);
+                }
+            }
+            List<Admin> allAdmins = await _apiService.GetAllAdmins();
+            List<Author> allAuthors = await _apiService.GetAllAuthors();
+
+            bool ownsBook = currentUser != null && ownedBooks != null && ownedBooks.Contains(selectedBook);
+            bool isAdmin = currentUser != null && allAdmins.Contains(currentUser);
+            bool isAuthor = currentUser != null && allAuthors.Contains(currentUser);
 
             // ניווט לעמוד הפירוט המלא של הספר
             BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin, isAuthor);
@@ -94,7 +111,7 @@ namespace LitLink_FinalProject.Pages
 
         private void CheckUserSession()
         {
-            // לוגיקת ברכת המשתמש לפי שעות היום שהגדרנו קודם...
+            // לוגיקת ברכת המשתמש לפי שעות היום
             int hour = DateTime.Now.Hour;
             if (hour >= 5 && hour < 12) TxtGreeting.Text = "Good Morning,";
             else if (hour >= 12 && hour < 17) TxtGreeting.Text = "Good Noon,";
@@ -106,22 +123,24 @@ namespace LitLink_FinalProject.Pages
         {
             string query = TxtSearch.Text.Trim();
 
-            // בדיקה שהמשתמש באמת הקליד משהו ולא השאיר את טקסט הפלייסהולדר
             if (string.IsNullOrEmpty(query) || query == "Search books or authors...")
             {
                 MessageBox.Show("Please enter a book name or author name to search.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // 1. יצירת מופע של עמוד תוצאות החיפוש החדש
             SearchResultsPage resultsPage = new SearchResultsPage();
-
-            // 2. הפעלת פונקציית החיפוש הדינמית בתוך העמוד והעברת המחרוזת
             resultsPage.ExecuteSearch(query);
-
-            // 3. ניווט לעמוד התוצאות בתוך ה-Frame
             this.NavigationService?.Navigate(resultsPage);
         }
+
+        // 🌟 תיקון השגיאה: החלפת הפונקציה הלא קיימת בקריאה ל-BuildDynamicCatalog() שמחדשת את כל הדף
+        private void NewsListBox_Refresh()
+        {
+            BuildDynamicCatalog();
+        }
+
+        // פעולות ניווט מהירות דרך התפריטים
         private void MenuBtn_Click(object sender, RoutedEventArgs e) { MainMenu.PlacementTarget = sender as Button; MainMenu.IsOpen = true; }
         private void BtnLogin_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/Login.xaml", UriKind.Relative));
         private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
@@ -129,6 +148,7 @@ namespace LitLink_FinalProject.Pages
         private void Profile_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/ReaderProfile.xaml", UriKind.Relative));
         private void BecomeAuthor_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/BecomeAuthor.xaml", UriKind.Relative));
         private void LogOut_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/SignOut.xaml", UriKind.Relative));
+
         private void TxtSearch_GotFocus(object sender, RoutedEventArgs e) { if (TxtSearch.Text == "Search books or authors...") { TxtSearch.Text = ""; TxtSearch.Foreground = Brushes.Black; } }
         private void TxtSearch_LostFocus(object sender, RoutedEventArgs e) { if (string.IsNullOrWhiteSpace(TxtSearch.Text)) { TxtSearch.Text = "Search books or authors..."; TxtSearch.Foreground = Brushes.Gray; } }
     }

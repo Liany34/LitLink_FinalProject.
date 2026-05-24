@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="LitLink_FinalProject.UserControls.NewsUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LitLink_FinalProject.UserControls"
+             mc:Ignorable="d" 
+             d:DesignWidth="300" Margin="0,0,0,15">
+
+    <Border Background="White" CornerRadius="12" Padding="15" BorderBrush="#FFF0F5" BorderThickness="1">
+        <Border.Resources>
+            <DropShadowEffect x:Key="CardShadow" Color="#BCB3A4" BlurRadius="8" Direction="270" ShadowDepth="1" Opacity="0.3"/>
+        </Border.Resources>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Width="45" Height="45" CornerRadius="22.5" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="1" VerticalAlignment="Top">
+                    <Image Source="{Binding AuthorProfileImg, FallbackValue='/Covers/DefultUser.png'}" Stretch="UniformToFill"/>
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold" Foreground="#4A4A4A" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding AuthorName, StringFormat='@{0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#D06A8D"/>
+                    <TextBlock Text="{Binding PublishDate, StringFormat={}{0:dd/MM/yyyy}}" FontSize="10" Foreground="Gray" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" x:Name="BtnNewsMenu" Content="⋮" FontSize="20" Background="Transparent" BorderThickness="0" 
+                        Foreground="Gray" FontWeight="Bold" VerticalAlignment="Top" Cursor="Hand" Click="BtnNewsMenu_Click">
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="NewsContextMenu">
+                            <MenuItem x:Name="MenuEditNews" Header="Edit Update" Click="MenuEditNews_Click"/>
+                            <MenuItem x:Name="MenuDeleteNews" Header="Delete Update" Foreground="Red" Click="MenuDeleteNews_Click"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+            </Grid>
+
+            <Rectangle Grid.Row="1" Height="1" Fill="#FFF0F5" Margin="0,0,0,10"/>
+
+            <StackPanel Grid.Row="2">
+                <TextBlock x:Name="TxtNewsContent" Text="{Binding ContentText}" TextWrapping="Wrap" 
+                           FontSize="13" LineHeight="18" Foreground="#333333" MaxHeight="60" VerticalAlignment="Top"/>
+
+                <Button x:Name="BtnReadMore" Content="Read More" HorizontalAlignment="Left" 
+                        Background="Transparent" BorderThickness="0" Foreground="#FF1493" 
+                        FontWeight="Bold" FontSize="11" Margin="0,5,0,0" Cursor="Hand" Click="BtnReadMore_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

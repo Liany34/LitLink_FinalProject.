@@ -82,14 +82,10 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Text="News And Announcements" FontSize="16" FontWeight="Bold" Foreground="#FF1493" Margin="0,0,0,10" HorizontalAlignment="Center"/>
-                    <ListBox Grid.Row="1" x:Name="NewsListBox" Background="Transparent" BorderThickness="0">
+                    <ListBox Grid.Row="1" x:Name="NewsListBox" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="0,5,0,10">
-                                    <TextBlock Text="{Binding AuthorName}" FontWeight="Bold" FontSize="13" Foreground="#D06A8D"/>
-                                    <TextBlock Text="{Binding ContentText}" TextWrapping="Wrap" FontSize="12" Foreground="#333333" Margin="0,2,0,0"/>
-                                    <Rectangle Height="0.5" Fill="#FFC0CB" Margin="0,5,0,0"/>
-                                </StackPanel>
+                                <uc:NewsUserControl NewsChanged="NewsListBox_Refresh"/>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
