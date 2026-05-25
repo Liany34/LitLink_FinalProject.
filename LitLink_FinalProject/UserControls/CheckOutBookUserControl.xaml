@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:LitLink_FinalProject.UserControls"
              mc:Ignorable="d" 
              d:DesignHeight="90" d:DesignWidth="200">
+    
     <Border Background="White" BorderBrush="#F0F0F0" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,15,5">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -24,11 +25,10 @@
                            Foreground="#333333" 
                            TextTrimming="CharacterEllipsis"
                            Margin="0,0,0,6"/>
-
                 <TextBlock x:Name="TxtPrice" 
                            FontSize="13" 
                            FontWeight="Bold" 
-                           Foreground="#FF6B8B"/>
+                           Foreground="#333333"/>
             </StackPanel>
         </Grid>
     </Border>

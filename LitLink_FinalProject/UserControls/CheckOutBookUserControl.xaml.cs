@@ -15,18 +15,14 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.UserControls
 {
-    /// <summary>
-    /// Interaction logic for CheckOutBookUserControl.xaml
-    /// </summary>
     public partial class CheckOutBookUserControl : UserControl
     {
         public CheckOutBookUserControl()
         {
             InitializeComponent();
-            this.DataContext = this; // מאפשר Bindings פנימיים אם נרצה
+            this.DataContext = this;
         }
 
-        // 1. פרופרטי דינמי עבור כותרת הספר
         public string BookTitle
         {
             get { return (string)GetValue(BookTitleProperty); }
@@ -43,8 +39,6 @@ namespace LitLink_FinalProject.UserControls
             if (control != null) control.TxtTitle.Text = e.NewValue?.ToString();
         }
 
-
-        // 2. פרופרטי דינמי עבור המחיר הסופי
         public double BookPrice
         {
             get { return (double)GetValue(BookPriceProperty); }
@@ -64,8 +58,6 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-
-        // 3. פרופרטי דינמי עבור נתיב/URL של התמונה
         public string BookImageUrl
         {
             get { return (string)GetValue(BookImageUrlProperty); }
@@ -87,7 +79,6 @@ namespace LitLink_FinalProject.UserControls
                 }
                 catch
                 {
-                    // תמונת ברירת מחדל במקרה והקישור שבור או ריק
                     control.ImgBook.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_book.png", UriKind.RelativeOrAbsolute));
                 }
             }

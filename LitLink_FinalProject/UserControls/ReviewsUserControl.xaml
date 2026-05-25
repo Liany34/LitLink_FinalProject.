@@ -53,7 +53,6 @@
                 <Button.ContextMenu>
                     <ContextMenu x:Name="CommentContextMenu">
                         <!-- אפשרויות לבעל התגובה -->
-                        <MenuItem Header="Edit Comment" x:Name="EditItem" Click="EditComment_Click"/>
                         <MenuItem Header="Delete My Comment" x:Name="DeleteOwnItem" Click="DeleteComment_Click" Foreground="Red"/>
 
                         <!-- אפשרות דיווח לאחרים -->

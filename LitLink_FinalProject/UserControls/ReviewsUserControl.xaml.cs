@@ -47,7 +47,6 @@ namespace LitLink_FinalProject.UserControls
             bool isMyComment = (_review.IdReader.Id == currentUserId);
 
             // 1. הגדרות לבעל התגובה
-            EditItem.Visibility = isMyComment ? Visibility.Visible : Visibility.Collapsed;
             DeleteOwnItem.Visibility = isMyComment ? Visibility.Visible : Visibility.Collapsed;
 
             // 2. הגדרות דיווח (מוצג רק אם זה לא המנהל וזו לא התגובה שלו)
@@ -79,18 +78,6 @@ namespace LitLink_FinalProject.UserControls
         }
 
         // ==================== לוגיקת עריכה, מחיקה ודיווח ====================
-
-        // 1. לחיצה על עריכה מתפריט ה-3 נקודות
-        private void EditComment_Click(object sender, RoutedEventArgs e) 
-        { 
-            // מעבירים את הטקסט הנוכחי לתוך תיבת הטקסט של העריכה
-            EditCommentTextBox.Text = _review.Text;
-
-            // מחליפים את הראות של הפאנלים (מציגים את אזור העריכה)
-            DisplayArea.Visibility = Visibility.Collapsed;
-            EditArea.Visibility = Visibility.Visible;
-            CommentMenuBtn.Visibility = Visibility.Collapsed; // מסתירים את ה-3 נקודות זמנית
-        }
 
         // 2. לחיצה על כפתור Save (שומר את הטקסט החדש לאקסס ומעדכן את המסך)
         private void SaveComment_Click(object sender, RoutedEventArgs e)

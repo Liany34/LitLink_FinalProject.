@@ -6,15 +6,14 @@
              xmlns:local="clr-namespace:LitLink_FinalProject.UserControls"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="900"
-             Background="#FFF0F5">
+             Background="#F6DCDA">
 
     <UserControl.Resources>
-        <!-- Style for Rounded Buttons with Padding support -->
         <Style x:Key="PinkRoundedButton" TargetType="Button">
-            <Setter Property="Background" Value="#FF1493"/>
+            <Setter Property="Background" Value="#AA3954"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="Padding" Value="15,5"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -33,8 +32,8 @@
 
         <Style x:Key="OutlineRoundedButton" TargetType="Button" BasedOn="{StaticResource PinkRoundedButton}">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#FF1493"/>
-            <Setter Property="BorderBrush" Value="#FF1493"/>
+            <Setter Property="Foreground" Value="#AA3954"/>
+            <Setter Property="BorderBrush" Value="#AA3954"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
     </UserControl.Resources>
@@ -45,11 +44,17 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- MENU BUTTON (Top Right) -->
-        <Button x:Name="MenuBtn" Content="⋮" FontSize="30" Background="Transparent" 
-                BorderThickness="0" Foreground="#D06A8D" Cursor="Hand" 
-                HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="1"
-                Panel.ZIndex="10" Click="MenuBtn_Click">
+        <Button x:Name="MenuBtn" 
+                Content="⋮" FontSize="40" 
+                Background="Transparent" 
+                BorderThickness="0" 
+                Foreground="#6C3134" 
+                Cursor="Hand" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Top" 
+                Grid.Column="1"
+                Panel.ZIndex="10" 
+                Click="MenuBtn_Click">
             <Button.ContextMenu>
                 <ContextMenu x:Name="BookContextMenu">
                     <MenuItem Header="Edit Cover" x:Name="EditCoverItem" Click="EditBook_Click"/>
@@ -64,7 +69,6 @@
             </Button.ContextMenu>
         </Button>
 
-        <!-- LEFT COLUMN: Identity -->
         <Border Grid.Column="0" Padding="0,0,20,0">
             <StackPanel>
                 <Border CornerRadius="15" ClipToBounds="True" Background="White" 
@@ -72,44 +76,81 @@
                     <Image Source="{Binding cover}" Stretch="UniformToFill"/>
                 </Border>
 
-                <TextBlock Text="{Binding idAuthor.PenName}" FontSize="18" FontWeight="SemiBold" 
-                           Foreground="#D06A8D" Margin="0,15,0,5" TextAlignment="Center" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding idAuthor.PenName}" 
+                           FontSize="20" FontWeight="SemiBold" 
+                           Foreground="#D06A8D" 
+                           Margin="0,25,0,10" 
+                           TextAlignment="Left" 
+                           TextWrapping="Wrap"/>
 
-                <TextBlock Text="{Binding price, StringFormat={}{0:C}}" FontSize="24" FontWeight="Bold" 
-                           Foreground="#FF1493" TextAlignment="Center"/>
+                <TextBlock Text="{Binding price, StringFormat={}{0:C}}" 
+                           FontSize="25" 
+                           FontWeight="Bold" 
+                           Foreground="#FF1493" 
+                           TextAlignment="Left"/>
 
-                <StackPanel Margin="0,20,0,0">
-                    <Button x:Name="BuyBtn" Content="Buy Now" Style="{StaticResource PinkRoundedButton}" 
-                            Height="45" Margin="0,0,0,10" Click="Buy_Click"/>
-
-                    <!-- כפתור Read Now הוסר מכאן -->
-
-                    <Button x:Name="AddToListBtn" Content="Add to List" Style="{StaticResource OutlineRoundedButton}" 
-                            Height="45" Click="AddToList_Click"/>
+                <StackPanel Margin="0,200,0,0">
+                    <Button x:Name="BuyBtn" 
+                            Content="Buy Now" 
+                            Style="{StaticResource PinkRoundedButton}" 
+                            Height="45" 
+                            Margin="0,0,0,10" 
+                            Click="Buy_Click"/>
+                    <Button x:Name="AddToListBtn" 
+                            Content="Add to List" 
+                            Style="{StaticResource OutlineRoundedButton}" 
+                            Height="45" 
+                            Click="AddToList_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <!-- RIGHT COLUMN: Info -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Border Padding="15,45,15,0">
                 <StackPanel>
-                    <TextBlock Text="{Binding bookName}" FontSize="36" FontWeight="ExtraBold" Foreground="#4A4A4A" Margin="0,0,0,15" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding bookName}" 
+                               FontSize="36" 
+                               FontWeight="ExtraBold" 
+                               Foreground="#4A4A4A" 
+                               Margin="0,0,0,15" 
+                               TextWrapping="Wrap"/>
 
-                    <TextBlock Text="Summary" FontSize="22" FontWeight="Bold" Foreground="#D06A8D" Margin="0,0,0,10"/>
-                    <TextBlock x:Name="DescriptionTextBlock" Text="{Binding description}" TextWrapping="Wrap" 
-                               FontSize="16" LineHeight="24" Foreground="#333333" MaxHeight="120" VerticalAlignment="Top"/>
+                    <TextBlock Text="Summary" 
+                               FontSize="22" 
+                               FontWeight="Bold" 
+                               Foreground="#D06A8D" 
+                               Margin="0,0,0,10"/>
+                    <TextBlock x:Name="DescriptionTextBlock" 
+                               Text="{Binding description}" 
+                               TextWrapping="Wrap" 
+                               FontSize="16" 
+                               LineHeight="24" 
+                               Foreground="#333333" 
+                               MaxHeight="120" 
+                               VerticalAlignment="Top"/>
 
-                    <Button x:Name="ReadMoreBtn" Content="Read More" HorizontalAlignment="Left" 
-                            Background="Transparent" BorderThickness="0" Foreground="#FF1493" 
-                            FontWeight="Bold" Click="ReadMoreBtn_Click" Margin="0,5,0,20"/>
+                    <Button x:Name="ReadMoreBtn" 
+                            Content="Read More" 
+                            HorizontalAlignment="Left" 
+                            Background="Transparent" 
+                            BorderThickness="0" 
+                            Foreground="#FF1493" 
+                            FontWeight="Bold" 
+                            Click="ReadMoreBtn_Click" 
+                            Margin="0,5,0,20"/>
 
                     <Separator Background="Black" Height="1" Margin="0,10,0,15"/>
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                        <TextBlock Text="Reviews" FontSize="22" FontWeight="Bold" Foreground="Black"/>
+                        <TextBlock Text="Reviews" 
+                                   FontSize="22" 
+                                   FontWeight="Bold" 
+                                   Foreground="Black"/>
                         <TextBlock Text="{Binding TotalReviewsCount, StringFormat='({0})'}" 
-                                   FontSize="16" Foreground="#666666" Margin="8,0,0,4" VerticalAlignment="Bottom"/>
+                                   FontSize="16" 
+                                   Foreground="#666666" 
+                                   Margin="8,0,0,4" 
+                                   VerticalAlignment="Bottom"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding AverageStarsString}" FontSize="22" Foreground="#FFD700" Margin="0,5,0,20"/>

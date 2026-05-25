@@ -15,9 +15,6 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.UserControls
 {
-    /// <summary>
-    /// Interaction logic for CatalogUserControl.xaml
-    /// </summary>
     public partial class CatalogUserControl : UserControl
     {
         public CatalogUserControl()

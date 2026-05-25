@@ -19,16 +19,11 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.UserControls
 {
-    /// <summary>
-    /// Interaction logic for BookUserControl.xaml
-    /// </summary>
     public partial class BookUserControl : UserControl
     {
-        private bool _isAdmin;
-        private bool _isAuthor;
+        private bool isAdmin;
+        private bool isAuthor;
         private Apiservice apiService = new Apiservice();
-
-        // constructor מקבל עכשיו מידע על המשתמש
 
         public BookUserControl()
         {
@@ -39,16 +34,12 @@ namespace LitLink_FinalProject.UserControls
         {
             InitializeComponent();
             this.DataContext = bookData;
-            this._isAdmin = isAdmin;
-            this._isAuthor = isAuthor;
+            this.isAdmin = isAdmin;
+            this.isAuthor = isAuthor;
 
-            // 1. הגדרת כפתורי פעולה (Buy/AddToList)
             SetActionButtons(userOwnsBook);
-
-            // 2. הגדרת תפריט שלוש נקודות (Permissions)
             SetupPermissions();
 
-            // 3. בדיקת אורך טקסט
             this.Loaded += (s, e) => {
                 if (DescriptionTextBlock.ActualHeight < 120)
                     ReadMoreBtn.Visibility = Visibility.Collapsed;
@@ -57,26 +48,21 @@ namespace LitLink_FinalProject.UserControls
 
         private void SetActionButtons(bool ownsBook)
         {
-            if (_isAdmin)
+            if (isAdmin)
             {
-                // מנהל: לא רואה אף כפתור פעולה
                 BuyBtn.Visibility = Visibility.Collapsed;
                 AddToListBtn.Visibility = Visibility.Collapsed;
             }
-            else if (_isAuthor)
+            else if (isAuthor)
             {
-                // סופר של הספר: רואה רק "Add to List"
                 BuyBtn.Visibility = Visibility.Collapsed;
                 AddToListBtn.Visibility = Visibility.Visible;
             }
             else
             {
-                // קורא רגיל: רואה Add to List ותלוי אם קנה את הספר או לא
                 AddToListBtn.Visibility = Visibility.Visible;
-
-                if (ownsBook)
+                if(ownsBook)
                 {
-                    // אם הספר כבר בבעלותו, נעלים את כפתור הרכישה
                     BuyBtn.Visibility = Visibility.Collapsed;
                 }
                 else
@@ -88,10 +74,8 @@ namespace LitLink_FinalProject.UserControls
 
         private void SetupPermissions()
         {
-            // מנהל או סופר רואים אפשרויות עריכה
-            Visibility editVis = (_isAdmin || _isAuthor) ? Visibility.Visible : Visibility.Collapsed;
-            // רק קורא (שאינו מנהל/סופר הספר) רואה דיווח
-            Visibility reportVis = (_isAdmin || _isAuthor) ? Visibility.Collapsed : Visibility.Visible;
+            Visibility editVis = (isAdmin || isAuthor) ? Visibility.Visible : Visibility.Collapsed;
+            Visibility reportVis = (isAdmin || isAuthor) ? Visibility.Collapsed : Visibility.Visible;
 
             EditCoverItem.Visibility = editVis;
             EditNameItem.Visibility = editVis;
@@ -100,7 +84,6 @@ namespace LitLink_FinalProject.UserControls
             EditDateItem.Visibility = editVis;
             DeleteItem.Visibility = editVis;
             AdminSeparator.Visibility = editVis;
-
             ReportItem.Visibility = reportVis;
         }
 
@@ -124,8 +107,6 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        // ==================== לוגיקת פעולות ספר ====================
-
         private void Buy_Click(object sender, RoutedEventArgs e)
         {
             Book currentBook = this.DataContext as Book;
@@ -133,10 +114,7 @@ namespace LitLink_FinalProject.UserControls
 
             try
             {
-                // זמני לבגרות: מציגים הודעה חיובית ומעלימים את כפתור הרכישה מהמסך
                 MessageBox.Show($"'{currentBook.BookName}' has been added to your purchases successfully!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // עדכון ויזואלי מהיר: העלמת כפתור הרכישה לאחר שנקנה
                 BuyBtn.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
@@ -152,7 +130,6 @@ namespace LitLink_FinalProject.UserControls
 
             try
             {
-                // במקום לפתוח חלון שלא קיים, נציג הודעה חלקה שהספר נוסף בהצלחה לרשימת הקריאה
                 MessageBox.Show($"'{currentBook.BookName}' has been successfully added to your Reading List!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -216,7 +193,6 @@ namespace LitLink_FinalProject.UserControls
 
                 if (editWindow.ShowDialog() == true)
                 {
-                    // רענון ה-DataContext כדי שהעדכונים שנעשו בטופס יופיעו מיד על המסך
                     this.DataContext = null;
                     this.DataContext = currentBook;
                 }

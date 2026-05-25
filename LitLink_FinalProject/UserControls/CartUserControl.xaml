@@ -55,18 +55,44 @@
             </Border>
 
             <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0">
-                <TextBlock Text="{Binding BookName}" FontSize="18" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,0,0,5" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding BookName}" 
+                           FontSize="18" 
+                           FontWeight="Bold" 
+                           Foreground="#4A4A4A" 
+                           Margin="0,0,0,5" 
+                           TextWrapping="Wrap"/>
 
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding OriginalPrice, StringFormat={}{0:C}}" FontSize="14" Foreground="#999999" TextDecorations="Strikethrough" Margin="0,0,8,0" 
+                    <TextBlock Text="{Binding OriginalPrice, StringFormat={}{0:C}}" 
+                               FontSize="14" 
+                               Foreground="#999999" 
+                               TextDecorations="Strikethrough" 
+                               Margin="0,0,8,0" 
                                Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                    <TextBlock Text="{Binding Price, StringFormat={}{0:C}}" FontSize="16" FontWeight="Bold" Foreground="#FF1493"/>
+                    <TextBlock Text="{Binding Price, StringFormat={}{0:C}}" 
+                               FontSize="16" 
+                               FontWeight="Bold" 
+                               Foreground="#FF1493"/>
                 </StackPanel>
             </StackPanel>
 
             <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0">
-                <Button Content="♥" FontSize="26" Foreground="#FF1493" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Center"/>
-                <Button Content="MOVE TO WISH LIST" FontSize="11" FontWeight="Bold" Foreground="#D06A8D" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,2,0,0" Click="MoveToWishList_Click"/>
+                <Button Content="♥" 
+                        FontSize="26" 
+                        Foreground="#FF1493" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand" 
+                        HorizontalAlignment="Center"/>
+                <Button Content="MOVE TO WISH LIST" 
+                        FontSize="11" 
+                        FontWeight="Bold" 
+                        Foreground="#D06A8D" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand" 
+                        Margin="0,2,0,0" 
+                        Click="MoveToWishList_Click"/>
             </StackPanel>
         </Grid>
     </Border>

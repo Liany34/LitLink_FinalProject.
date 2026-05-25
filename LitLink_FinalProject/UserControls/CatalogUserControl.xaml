@@ -12,10 +12,19 @@
             <Border CornerRadius="5" ClipToBounds="True" Height="110" Width="90" HorizontalAlignment="Center">
                 <Image Source="{Binding cover}" Stretch="UniformToFill"/>
             </Border>
-            <TextBlock Text="{Binding bookName}" FontSize="12" FontWeight="Bold" Foreground="#4A4A4A" 
-                       HorizontalAlignment="Center" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,5,0,2"/>
-            <TextBlock Text="{Binding price, StringFormat={}{0:C}}" FontSize="11" FontWeight="SemiBold" 
-                       Foreground="#FF1493" HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding bookName}" 
+                       FontSize="12" 
+                       FontWeight="Bold" 
+                       Foreground="#4A4A4A" 
+                       HorizontalAlignment="Center" 
+                       TextAlignment="Center" 
+                       TextTrimming="CharacterEllipsis" 
+                       Margin="0,5,0,2"/>
+            <TextBlock Text="{Binding price, StringFormat={}{0:C}}" 
+                       FontSize="11" 
+                       FontWeight="SemiBold" 
+                       Foreground="#FF1493" 
+                       HorizontalAlignment="Center"/>
         </StackPanel>
     </Border>
 </UserControl>
