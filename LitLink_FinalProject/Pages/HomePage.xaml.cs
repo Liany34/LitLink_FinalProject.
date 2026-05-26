@@ -18,9 +18,6 @@ using LitLink_FinalProject.UserControls;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for HomePage.xaml
-    /// </summary>
     public partial class HomePage : Page
     {
         private Apiservice _apiService = new Apiservice();
@@ -30,48 +27,35 @@ namespace LitLink_FinalProject.Pages
         {
             InitializeComponent();
             CheckUserSession();
-            BuildDynamicCatalog(); // טעינת הספרים והחדשות מיד עם פתיחת המסך
+            BuildDynamicCatalog(); 
             currentUser = this.DataContext as User;
         }
 
-        /// <summary>
-        /// קריאה לטבלאות מה-Access ובנייה דינמית של שורות הז'אנרים והחדשות על המסך
-        /// </summary>
         private async void BuildDynamicCatalog()
         {
             try
             {
-                // 1. שליפת כל הז'אנרים וכל הספרים מטבלאות ה-Access דרך ה-ApiService שלך
                 List<Genre> allGenres = await _apiService.GetAllGenres();
                 List<Book_Genre> allBookGenres = await _apiService.GetAllBookGenres();
 
-                // ניקוי הקונטיינר למקרה של רענון
                 DynamicGenresContainer.Children.Clear();
 
-                // 2. לולאה שרצה על כל קטגוריית ז'אנר שחזרה מה-Access
                 foreach (Genre currentGenre in allGenres)
                 {
-                    // סינון הספרים השייכים אך ורק לז'אנר הנוכחי
                     List<Book> relatedBooks = allBookGenres.Where(b => b.IdGenre.Id == currentGenre.Id).Select(b => b.IdBook).ToList();
 
-                    // אם אין ספרים בז'אנר הזה, נדלג עליו כדי שלא יופיע שורה ריקה
                     if (relatedBooks.Count == 0) continue;
 
-                    // 3. יצירת מופע חדש של ה-UserControl של השורה
                     GenreUserControl genreRow = new GenreUserControl();
 
-                    // הזרקת הנתונים (שם הז'אנר ורשימת הספרים שלו) לתוך השורה
                     genreRow.SetupGenreRow(currentGenre.Name, relatedBooks);
 
-                    // 4. הרשמה לאירוע הלחיצה על ספר בשורה הזו כדי לפתוח את דף הפירוט
                     genreRow.BookSelected += GenreRow_BookSelected;
 
-                    // 5. הוספת השורה השלמה לתוך ה-StackPanel המרכזי בעמוד הבית
                     DynamicGenresContainer.Children.Add(genreRow);
                 }
 
-                // 🌟 עדכון: שליפת החדשות האמיתיות מטבלת ה-Access והזרקתן ל-ListBox
-                List<News> allNews = await _apiService.GetAllNews(); // ודאי שזה שם הפעולה ב-ApiService
+                List<News> allNews = await _apiService.GetAllNews(); 
                 NewsListBox.ItemsSource = allNews;
             }
             catch (Exception ex)
@@ -80,7 +64,6 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        // ברגע שנבחר ספר מאחת השורות, ננווט לעמוד הפירוט המלא
         private async void GenreRow_BookSelected(object sender, Book selectedBook)
         {
             if (selectedBook == null) return;
@@ -104,14 +87,12 @@ namespace LitLink_FinalProject.Pages
             bool isAdmin = currentUser != null && allAdmins.Contains(currentUser);
             bool isAuthor = currentUser != null && allAuthors.Contains(currentUser);
 
-            // ניווט לעמוד הפירוט המלא של הספר
             BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin, isAuthor);
             this.NavigationService?.Navigate(detailsPage);
         }
 
         private void CheckUserSession()
         {
-            // לוגיקת ברכת המשתמש לפי שעות היום
             int hour = DateTime.Now.Hour;
             if (hour >= 5 && hour < 12) TxtGreeting.Text = "Good Morning,";
             else if (hour >= 12 && hour < 17) TxtGreeting.Text = "Good Noon,";
@@ -134,13 +115,11 @@ namespace LitLink_FinalProject.Pages
             this.NavigationService?.Navigate(resultsPage);
         }
 
-        // 🌟 תיקון השגיאה: החלפת הפונקציה הלא קיימת בקריאה ל-BuildDynamicCatalog() שמחדשת את כל הדף
         private void NewsListBox_Refresh()
         {
             BuildDynamicCatalog();
         }
 
-        // פעולות ניווט מהירות דרך התפריטים
         private void MenuBtn_Click(object sender, RoutedEventArgs e) { MainMenu.PlacementTarget = sender as Button; MainMenu.IsOpen = true; }
         private void BtnLogin_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/Login.xaml", UriKind.Relative));
         private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));

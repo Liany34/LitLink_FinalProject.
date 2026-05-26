@@ -17,12 +17,9 @@ using Service;
 
 namespace LitLink_FinalProject.WindowsFile
 {
-    /// <summary>
-    /// Interaction logic for EditReaderProfileWindow.xaml
-    /// </summary>
     public partial class EditReaderProfileWindow : Window
     {
-        private Apiservice _apiService = new Apiservice();
+        private Apiservice apiService = new Apiservice();
         private Reader currentReader;
 
         public EditReaderProfileWindow()
@@ -37,7 +34,7 @@ namespace LitLink_FinalProject.WindowsFile
             if (currentReader != null)
             {
                 TxtEditUsername.Text = currentReader.Username;
-                TxtEditNickname.Text = currentReader.Nickname; // ודאי שיש לך שדה כזה ב-Model.User
+                TxtEditNickname.Text = currentReader.Nickname; 
                 TxtEditFirstName.Text = currentReader.FirstName;
                 TxtEditLastName.Text = currentReader.LastName;
                 TxtEditPhone.Text = currentReader.PhoneNumber;
@@ -48,7 +45,6 @@ namespace LitLink_FinalProject.WindowsFile
 
         private async void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            // בדיקה ששדות חובה לא ריקים
             if (string.IsNullOrWhiteSpace(TxtEditUsername.Text) || string.IsNullOrWhiteSpace(TxtEditEmail.Text))
             {
                 MessageBox.Show("Username and Email are required Fields 🌸", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -57,7 +53,6 @@ namespace LitLink_FinalProject.WindowsFile
 
             try
             {
-                // עדכון האובייקט הגלובלי בזיכרון של האפליקציה
                 currentReader.Username = TxtEditUsername.Text.Trim();
                 currentReader.Nickname = TxtEditNickname.Text.Trim();
                 currentReader.FirstName = TxtEditFirstName.Text.Trim();
@@ -66,9 +61,8 @@ namespace LitLink_FinalProject.WindowsFile
                 currentReader.Email = TxtEditEmail.Text.Trim();
                 currentReader.Picture = TxtEditImgUrl.Text.Trim();
 
-                // שמירה דינמית ב-Access
-                await _apiService.UpdateUser(currentReader);
-                List<Reader> updatedReaders = await _apiService.GetAllReaders();
+                await apiService.UpdateUser(currentReader);
+                List<Reader> updatedReaders = await apiService.GetAllReaders();
                 bool isSuccess = updatedReaders.Any(r => r.Id == currentReader.Id && r.Username == currentReader.Username && r.Email == currentReader.Email && r.Nickname == currentReader.Nickname && r.FirstName == currentReader.FirstName && r.LastName == currentReader.LastName && r.PhoneNumber == currentReader.PhoneNumber && r.Picture == currentReader.Picture);
                 if (isSuccess)
                 {

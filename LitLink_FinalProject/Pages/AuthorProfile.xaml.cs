@@ -19,14 +19,11 @@ using LitLink_FinalProject.WindowsFile;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for AuthorProfile.xaml
-    /// </summary>
     public partial class AuthorProfile : Page
     {
-        private Apiservice _apiService = new Apiservice();
-        private Author _currentAuthorData;
-        private List<Book> _authorBooks = new List<Book>();
+        private Apiservice apiService = new Apiservice();
+        private Author currentAuthorData;
+        private List<Book> authorBooks = new List<Book>();
         private User currentUser;
 
         public AuthorProfile()
@@ -35,20 +32,14 @@ namespace LitLink_FinalProject.Pages
             this.Loaded += AuthorProfilePage_Loaded;
             currentUser = this.DataContext as User;
         }
-
-        // טעינה ורענון של נתוני הסופר בכל פעם שהעמוד עולה למסך
         private void AuthorProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadAuthorData();
         }
 
-        /// <summary>
-        /// שליפת נתוני הסופר המחובר באופן דינמי לחלוטין מטבלאות ה-Access
-        /// </summary>
         private async void LoadAuthorData()
         {
-            List<Author> allAuthors = await _apiService.GetAllAuthors();
-            // אבטחה: הגנה מפני כניסה של אורח או משתמש שאינו סופר
+            List<Author> allAuthors = await apiService.GetAllAuthors();
             if (currentUser == null || !allAuthors.Contains(currentUser))
             {
                 MessageBox.Show("Unauthorized access. Redirecting to Home.", "LitLink Security", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -58,32 +49,26 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                // 1. שליפת רשומת הסופר מטבלת Authors לפי ה-UserId של המשתמש המחובר כרגע
-                _currentAuthorData = allAuthors.FirstOrDefault(a => a.Id == currentUser.Id);
+                currentAuthorData = allAuthors.FirstOrDefault(a => a.Id == currentUser.Id);
 
-                if (_currentAuthorData != null)
+                if (currentAuthorData != null)
                 {
-                    // עדכון ה-PenName והעוקבים באופן דינמי למסך
-                    TxtHelloAuthor.Text = $"Hello, {_currentAuthorData.PenName}";
+                    TxtHelloAuthor.Text = $"Hello, {currentAuthorData.PenName}";
 
-                    List<Following> allFollowings = await _apiService.GetAllFollowings();
-                    List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == _currentAuthorData.Id).ToList();
+                    List<Following> allFollowings = await apiService.GetAllFollowings();
+                    List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthorData.Id).ToList();
 
                     int followersCount = authorFollowings.Count;
                     TxtFollowersCount.Text = $"{followersCount} Followers";
                 }
 
-                // טעינת תמונת הפרופיל האישית של המשתמש מה-Database
                 if (!string.IsNullOrEmpty(currentUser.Picture))
                 {
                     try { ImgAuthorProfile.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(currentUser.Picture, UriKind.RelativeOrAbsolute)); } catch { }
                 }
+                List<Book> allBooks = await apiService.GetAllBooks();
+                authorBooks = allBooks.Where(b => b.IdAuthor.Id == currentAuthorData.Id).ToList();
 
-                // 2. שליפת כל הספרים של הסופר הזה בלבד (לפי ה-AuthorId שלו)
-                List<Book> allBooks = await _apiService.GetAllBooks();
-                _authorBooks = allBooks.Where(b => b.IdAuthor.Id == _currentAuthorData.Id).ToList();
-
-                // ברירת מחדל: טעינת הטאב הראשון של הספרים
                 LoadMyBooksTab();
             }
             catch (Exception ex)
@@ -91,8 +76,6 @@ namespace LitLink_FinalProject.Pages
                 System.Diagnostics.Debug.WriteLine("Error loading author profile: " + ex.Message);
             }
         }
-
-        // ==================== לוגיקת הטאבים (הסליידר התחתון) ====================
 
         private void TabMyBooks_Click(object sender, RoutedEventArgs e)
         {
@@ -121,24 +104,19 @@ namespace LitLink_FinalProject.Pages
             LoadSalesDataTab();
         }
 
-        /// <summary>
-        /// טאב א': הצגת הספרים של הסופר מסודרים בשורות אופקיות (כמו אצל הקורא)
-        /// </summary>
         private void LoadMyBooksTab()
         {
             AuthorBooksContainer.Children.Clear();
 
-            if (_authorBooks.Count == 0)
+            if (authorBooks.Count == 0)
             {
                 AuthorBooksContainer.Children.Add(CreateEmptyMessageTextBlock("You haven't published any books yet."));
                 return;
             }
 
-            // שימוש ברכיב ה-UserControl של השורה שיצרנו עם החצים והגלילה
             GenreUserControl authorRow = new GenreUserControl();
-            authorRow.SetupGenreRow("Published Works", _authorBooks);
+            authorRow.SetupGenreRow("Published Works", authorBooks);
 
-            // רישום לאירוע הלחיצה על ספר שיפתח את עמוד הספר עם הרשאות ניהול של סופר
             authorRow.BookSelected += AuthorRow_BookSelected;
 
             AuthorBooksContainer.Children.Add(authorRow);
@@ -148,24 +126,18 @@ namespace LitLink_FinalProject.Pages
         {
             if (selectedBook == null) return;
 
-            // ניווט לעמוד הספר (BookPage), הסופר מקבל הרשאות מיוחדות (isAuthor = true)
-            // בעמוד הספר, הנתון הזה יציג לו אוטומטית כפתורי עריכה, מחיקה או ניהול תגובות!
             BookPage bookPage = new BookPage(selectedBook, true, false, true);
             this.NavigationService?.Navigate(bookPage);
         }
 
-        /// <summary>
-        /// טאב ב': טעינה, הצגה וניהול מלא (עריכה/מחיקה) של כל הודעות החדשות שהסופר פרסם ב-Access
-        /// </summary>
         private async void LoadMyNewsTab()
         {
             AuthorNewsContainer.Children.Clear();
 
             try
             {
-                // שליפת כל החדשות מה-Access שמסוננות לפי ה-Id של הסופר המחובר
-                List<News> allNews = await _apiService.GetAllNews();
-                List<News> authorNews = allNews.Where(n => n.IdUser.Id == _currentAuthorData.Id).ToList();
+                List<News> allNews = await apiService.GetAllNews();
+                List<News> authorNews = allNews.Where(n => n.IdUser.Id == currentAuthorData.Id).ToList();
 
                 if (authorNews == null || authorNews.Count == 0)
                 {
@@ -175,16 +147,12 @@ namespace LitLink_FinalProject.Pages
 
                 foreach (var news in authorNews)
                 {
-                    // 1. יצירת מופע חדש של ה-UserControl שכתבנו
                     NewsUserControl newsControl = new NewsUserControl();
 
-                    // 2. הזרקת הנתונים של הכתבה הנוכחית לתוך ה-DataContext של הרכיב
                     newsControl.DataContext = news;
 
-                    // 3. הרשמה לאירוע שינוי/מחיקה כדי לרענן את הטאב מיד על המסך
                     newsControl.NewsChanged += () => { LoadMyNewsTab(); };
 
-                    // 4. הוספת הרכיב המעוצב השלם לתוך הקונטיינר של עמוד הסופר
                     AuthorNewsContainer.Children.Add(newsControl);
                 }
             }
@@ -193,9 +161,6 @@ namespace LitLink_FinalProject.Pages
                 System.Diagnostics.Debug.WriteLine("Error rendering author news control: " + ex.Message);
             }
         }
-        /// <summary>
-        /// טאב ג': שליפת נתוני מכירות וחישוב הכנסות כספיות דינמיות מה-Access עבור הסופר הנוכחי
-        /// </summary>
         private async void LoadSalesDataTab()
         {
             try
@@ -207,19 +172,19 @@ namespace LitLink_FinalProject.Pages
                 int booksAddedToCarts = 0;
                 int booksAddedTolists = 0;
                 int followersCount;
-                List<Following> allFollowings = await _apiService.GetAllFollowings();
-                List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == _currentAuthorData.Id).ToList();
+                List<Following> allFollowings = await apiService.GetAllFollowings();
+                List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthorData.Id).ToList();
                 followersCount = authorFollowings.Count;
 
-                List<Cart_Detail> allCartDetails = await _apiService.GetAllCartDetails();
+                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
                 foreach(Cart_Detail cd in allCartDetails)
                 {
-                    if (cd.IdBook.IdAuthor.Id == _currentAuthorData.Id)
+                    if (cd.IdBook.IdAuthor.Id == currentAuthorData.Id)
                     {
                         booksAddedToCarts++;
                         if(cd.IsPurchased)
                         {
-                            if (cd.PurchaseDate.Month == DateTime.Now.Month && cd.PurchaseDate.Year == DateTime.Now.Year)
+                            if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
                             {
                                 bookThisMonth++;
                                 incomeThisMonth += cd.IdBook.Price ?? 0.0;
@@ -236,8 +201,6 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        // ==================== ניהול תפריט המבורגר (Popup) וניווטים ====================
-
         private void BtnMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Visible;
         private void CloseMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Collapsed;
         private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e)
@@ -245,66 +208,41 @@ namespace LitLink_FinalProject.Pages
             if (e.OriginalSource == AuthorMenuPopup) AuthorMenuPopup.Visibility = Visibility.Collapsed;
         }
 
-        // 🛠️ קוד פעולת עריכת פרופיל הסופר (Edit Profile)
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentAuthorData == null) return;
+            if (currentAuthorData == null) return;
 
-            // פתיחת חלון העריכה הייעודי לסופר (PenName ומידע אודותיו)
-            EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(_currentAuthorData);
+            EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(currentAuthorData);
             if (editWin.ShowDialog() == true)
             {
-                LoadAuthorData(); // רענון הנתונים בדף הראשי לאחר שמירה
+                LoadAuthorData(); 
             }
         }
 
-        // מעבר לעמודים השונים דרך תפריט הניהול
         private void AddBook_Click(object sender, RoutedEventArgs e)
         {
-            // 1. יצירת מופע של חלון הוספת הספר החדש
             WindowsFile.AddBookWindow addBookWin = new WindowsFile.AddBookWindow();
 
-            // 2. פתיחת החלון כחלון דיאלוג (ShowDialog)
             if (addBookWin.ShowDialog() == true)
             {
-                // 3. אם הספר פורסם בהצלחה - נטען מחדש את רשימת הספרים של הסופר על המסך
                 LoadAuthorData();
             }
         }
         private void AddNews_Click(object sender, RoutedEventArgs e)
         {
-            // 1. יצירת מופע של חלון פרסום החדשות
             WindowsFile.AddNewsWindow addNewsWin = new WindowsFile.AddNewsWindow();
 
-            // 2. פתיחת החלון כחלון דיאלוג (ShowDialog)
             if (addNewsWin.ShowDialog() == true)
             {
-                // 3. אם הסופר פרסם בהצלחה - נרענן את טאב החדשות שלו באופן אוטומטי!
                 LoadMyNewsTab();
-
-                // בונוס: אם את רוצה שזה יתעדכן גם בעמוד הבית מיד
-                // BuildDynamicCatalog(); 
             }
         }
         private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
-
-        /// <summary>
-        /// 🔄 כפתור ה-Reader View: מאפשר לסופר לחזור מיידית לתצוגת קורא רגיל באפליקציה
-        /// </summary>
-        private void ReaderView_Click(object sender, RoutedEventArgs e)
-        {
-            // ניווט ישיר לעמוד הפרופיל של הקורא (ReaderProfilePage)
-            this.NavigationService?.Navigate(new Uri("Pages/ReaderProfile.xaml", UriKind.Relative));
-        }
-
-        // התנתקות מלאה ואיפוס ה-Session
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
-            currentUser = null; // מחיקת המשתמש מהזיכרון
+            currentUser = null; 
             this.NavigationService?.Navigate(new Uri("Pages/SignOut.xaml", UriKind.Relative));
         }
-
-        // ==================== פונקציות עזר עיצוביות ====================
 
         private void HighlightTab(Button activeBtn)
         {

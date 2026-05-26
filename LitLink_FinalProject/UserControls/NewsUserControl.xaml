@@ -40,7 +40,6 @@
                         Foreground="Gray" FontWeight="Bold" VerticalAlignment="Top" Cursor="Hand" Click="BtnNewsMenu_Click">
                     <Button.ContextMenu>
                         <ContextMenu x:Name="NewsContextMenu">
-                            <MenuItem x:Name="MenuEditNews" Header="Edit Update" Click="MenuEditNews_Click"/>
                             <MenuItem x:Name="MenuDeleteNews" Header="Delete Update" Foreground="Red" Click="MenuDeleteNews_Click"/>
                         </ContextMenu>
                     </Button.ContextMenu>

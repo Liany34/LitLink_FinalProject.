@@ -16,30 +16,25 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.WindowsFile
 {
-    /// <summary>
-    /// Interaction logic for EditAuthorProfileWindow.xaml
-    /// </summary>
     public partial class EditAuthorProfileWindow : Window
     {
-        private Apiservice _apiService = new Apiservice();
-        private Author _authorToEdit;
+        private Apiservice apiService = new Apiservice();
+        private Author authorToEdit;
         private Author currentAuthor;
 
         public EditAuthorProfileWindow(Author currentAuthor)
         {
             InitializeComponent();
-            _authorToEdit = currentAuthor;
+            authorToEdit = currentAuthor;
             LoadAuthorAndUserData();
             currentAuthor = this.DataContext as Author;
         }
 
         private void LoadAuthorAndUserData()
         {
-            // 1. טעינת נתוני הסופר לשדות
-            TxtEditPenName.Text = _authorToEdit.PenName;
-            TxtEditBio.Text = _authorToEdit.InformationAboutAuthor;
+            TxtEditPenName.Text = authorToEdit.PenName;
+            TxtEditBio.Text = authorToEdit.InformationAboutAuthor;
 
-            // 2. טעינת נתוני המשתמש הכלליים מתוך ה-Session
             if (currentAuthor != null)
             {
                 TxtEditUsername.Text = currentAuthor.Username;
@@ -62,11 +57,9 @@ namespace LitLink_FinalProject.WindowsFile
 
             try
             {
-                // 1. עדכון אובייקט הסופר ושמירתו בטבלת Authors
-                _authorToEdit.PenName = TxtEditPenName.Text.Trim();
-                _authorToEdit.InformationAboutAuthor = TxtEditBio.Text.Trim();
+                authorToEdit.PenName = TxtEditPenName.Text.Trim();
+                authorToEdit.InformationAboutAuthor = TxtEditBio.Text.Trim();
 
-                // 2. עדכון אובייקט המשתמש הגלובלי ושמירתו בטבלת Users
                 currentAuthor.Username = TxtEditUsername.Text.Trim();
                 currentAuthor.Username = TxtEditNickname.Text.Trim();
                 currentAuthor.FirstName = TxtEditFirstName.Text.Trim();
@@ -74,9 +67,9 @@ namespace LitLink_FinalProject.WindowsFile
                 currentAuthor.PhoneNumber = TxtEditPhone.Text.Trim();
                 currentAuthor.Email = TxtEditEmail.Text.Trim();
                 currentAuthor.Picture = TxtEditImgUrl.Text.Trim();
-                await _apiService.UpdateAuthor(_authorToEdit);
-                List<Author> authors = await _apiService.GetAllAuthors();
-                bool authorSuccess = authors.Any(a => a.Id == _authorToEdit.Id && a.Username == _authorToEdit.Username && a.PenName == _authorToEdit.PenName && a.InformationAboutAuthor == _authorToEdit.InformationAboutAuthor && a.FirstName == _authorToEdit.FirstName && a.LastName == _authorToEdit.LastName && a.Email == _authorToEdit.Email && a.PhoneNumber == _authorToEdit.PhoneNumber && a.Picture == _authorToEdit.Picture);
+                await apiService.UpdateAuthor(authorToEdit);
+                List<Author> authors = await apiService.GetAllAuthors();
+                bool authorSuccess = authors.Any(a => a.Id == authorToEdit.Id && a.Username == authorToEdit.Username && a.PenName == authorToEdit.PenName && a.InformationAboutAuthor == authorToEdit.InformationAboutAuthor && a.FirstName == authorToEdit.FirstName && a.LastName == authorToEdit.LastName && a.Email == authorToEdit.Email && a.PhoneNumber == authorToEdit.PhoneNumber && a.Picture == authorToEdit.Picture);
 
                 if (authorSuccess)
                 {

@@ -18,16 +18,12 @@ using Service;
 
 namespace LitLink_FinalProject.UserControls
 {
-    /// <summary>
-    /// Interaction logic for NewsUserControl.xaml
-    /// </summary>
     public partial class NewsUserControl : UserControl
     {
-        private Apiservice _apiService = new Apiservice();
-        private News _currentNewsData;
+        private Apiservice apiService = new Apiservice();
+        private News currentNewsData;
         private User currentUser;
 
-        // אירוע שמופעל לאחר מחיקה מוצלח כדי שהעמוד המארח יתרענן
         public event Action NewsChanged;
 
         public NewsUserControl()
@@ -40,10 +36,9 @@ namespace LitLink_FinalProject.UserControls
 
         private void NewsUserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            _currentNewsData = this.DataContext as News;
-            if (_currentNewsData == null) return;
+            currentNewsData = this.DataContext as News;
+            if (currentNewsData == null) return;
 
-            // בדיקה דינמית אם להציג את כפתור Read More לפי אורך הטקסט
             if (TxtNewsContent.ActualHeight < 60)
             {
                 BtnReadMore.Visibility = Visibility.Collapsed;
@@ -52,37 +47,32 @@ namespace LitLink_FinalProject.UserControls
             SetupPermissions();
         }
 
-        /// <summary>
-        /// הגדרת הרשאות דינמית עבור תפריט 3 הנקודות לפי המשתמש המחובר
-        /// </summary>
         private async void SetupPermissions()
         {
-            if (currentUser == null || _currentNewsData == null)
+            if (currentUser == null || currentNewsData == null)
             {
-                BtnNewsMenu.Visibility = Visibility.Collapsed; // אורח לא רואה תפריט בכלל
+                BtnNewsMenu.Visibility = Visibility.Collapsed; 
                 return;
             }
 
-            List<Admin> admins = await _apiService.GetAllAdmins();
+            List<Admin> admins = await apiService.GetAllAdmins();
             bool isAdmin = admins.Contains(currentUser);
-            List<Author> authors = await _apiService.GetAllAuthors();
-            bool isOwner = authors.Contains(currentUser) && currentUser.Id == _currentNewsData.IdUser.Id;
+            List<Author> authors = await apiService.GetAllAuthors();
+            bool isOwner = authors.Contains(currentUser) && currentUser.Id == currentNewsData.IdUser.Id;
 
             if (isAdmin)
             {
                 BtnNewsMenu.Visibility = Visibility.Visible;
-                MenuEditNews.Visibility = Visibility.Collapsed; // מנהל לא יכול לערוך, רק למחוק
                 MenuDeleteNews.Visibility = Visibility.Visible;
             }
             else if (isOwner)
             {
                 BtnNewsMenu.Visibility = Visibility.Visible;
-                MenuEditNews.Visibility = Visibility.Visible;   // סופר של ההודעה יכול גם לערוך וגם למחוק
                 MenuDeleteNews.Visibility = Visibility.Visible;
             }
             else
             {
-                BtnNewsMenu.Visibility = Visibility.Collapsed; // סופר אחר או קורא רגיל לא רואים תפריט
+                BtnNewsMenu.Visibility = Visibility.Collapsed; 
             }
         }
 
@@ -92,7 +82,7 @@ namespace LitLink_FinalProject.UserControls
             NewsContextMenu.IsOpen = true;
         }
 
-        // לוגיקת כפתור Read More / Read Less
+        
         private void BtnReadMore_Click(object sender, RoutedEventArgs e)
         {
             if (TxtNewsContent.MaxHeight == 60)
@@ -107,28 +97,17 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        // פעולת מחיקה מה-Access דרך ה-3 נקודות
         private async void MenuDeleteNews_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show($"Are you sure you want to delete this news update?", "Delete News", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
-                await _apiService.DeleteNews(_currentNewsData.Id);
-                List<News> allNews = await _apiService.GetAllNews();
-                bool success = !allNews.Contains(_currentNewsData); // בדיקה שההודעה נמחקה בהצלחה
+                await apiService.DeleteNews(currentNewsData.Id);
+                List<News> allNews = await apiService.GetAllNews();
+                bool success = !allNews.Contains(currentNewsData); 
                 if (success)
                 {
-                    NewsChanged?.Invoke(); // קריאה לרענון העמוד שבו הקונטרול נמצא
+                    NewsChanged?.Invoke(); 
                 }
-            }
-        }
-
-        // פעולת עריכה דרך ה-3 נקודות (רק עבור הסופר)
-        private void MenuEditNews_Click(object sender, RoutedEventArgs e)
-        {
-            EditNewsWindow editWin = new EditNewsWindow(_currentNewsData);
-            if (editWin.ShowDialog() == true)
-            {
-                NewsChanged?.Invoke(); // רענון
             }
         }
     }

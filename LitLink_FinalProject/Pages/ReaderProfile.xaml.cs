@@ -18,13 +18,10 @@ using LitLink_FinalProject.UserControls;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for ReaderProfile.xaml
-    /// </summary>
     public partial class ReaderProfile : Page
     {
-        private Apiservice _apiService = new Apiservice();
-        private List<Book> _allBooks = new List<Book>();
+        private Apiservice apiService = new Apiservice();
+        private List<Book> allBooks = new List<Book>();
         private User currentUser;
 
         public ReaderProfile()
@@ -34,18 +31,13 @@ namespace LitLink_FinalProject.Pages
             currentUser = this.DataContext as User;
         }
 
-        // טעינת הנתונים בכל פעם שהעמוד מוצג מחדש למשתמש
         private void ReaderProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadUserData();
         }
 
-        /// <summary>
-        /// שליפת נתוני המשתמש הנוכחי מה-Session ועידכון כותרת שלום ותמונת הפרופיל
-        /// </summary>
         private async void LoadUserData()
         {
-            // אבטחה: אם אין משתמש מחובר בזיכרון, נחזיר אותו לעמוד ההתחברות
             if (currentUser == null)
             {
                 MessageBox.Show("Please log in to view your profile.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -55,23 +47,22 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                // השמת שם המשתמש הדינמי בכותרת
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
 
-                // טעינת תמונת הפרופיל האישית שלו (במידה וקיימת בבסיס הנתונים)
                 if (!string.IsNullOrEmpty(currentUser.Picture))
                 {
                     try
                     {
                         ImgReaderProfile.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(currentUser.Picture, UriKind.RelativeOrAbsolute));
                     }
-                    catch { /* במקרה והנתיב שבור, נשאר עם תמונת ברירת המחדל מה-XAML */ }
+                    catch
+                    {
+                        // לשים סתם תמונה }
+                    }
                 }
 
-                // שליפת כל הספרים מה-Access כדי לסנן עבור הרשימות האישיות
-                _allBooks = await _apiService.GetAllBooks();
+                allBooks = await apiService.GetAllBooks();
 
-                // ברירת מחדל: הצגת הרשימות האישיות של המשתמש (List)
                 BuildUserLists();
             }
             catch (Exception ex)
@@ -80,9 +71,6 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        /// <summary>
-        /// פעולה המייצרת ומציגה דינמית את רשימות הספרים האישיות של המשתמש מה-Access באמצעות רכיבי שורות
-        /// </summary>
         private async void BuildUserLists()
         {
             UserListsContainer.Children.Clear();
@@ -90,9 +78,8 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                // שליפת כל הרשימות שהמשתמש הנוכחי יצר מטבלת הרשימות ב-Access לפי ה-Id שלו
-                List<Book_List> bookLists = await _apiService.GetAllBookLists();
-                List<Book_List> userCustomLists = bookLists.Where(l => l.IdReader.Id == currentUser.Id).ToList();
+                List<Book_Series> bookLists = await apiService.GetAllBookSeries();
+                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser.Id == currentUser.Id).ToList();
 
                 if (userCustomLists == null || userCustomLists.Count == 0)
                 {
@@ -100,21 +87,17 @@ namespace LitLink_FinalProject.Pages
                     return;
                 }
 
-                // לולאה שבונה שורה אופקית (עם חצים) לכל רשימה בנפרד
                 foreach (var currentList in userCustomLists)
                 {
-                    // סינון הספרים ששייכים פיזית לרשימה הנוכחית
-                    List<List_Detail> allListDetails = await _apiService.GetAllListDetails();
-                    List<List_Detail> currentListDetails = allListDetails.Where(d => d.IdList.Id == currentList.Id).ToList();
-                    List<Book> relatedBooks = _allBooks.Where(b => currentListDetails.Any(d => d.IdBook.Id == b.Id)).ToList();
+                    List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
+                    List<Series_Detail> currentListDetails = allListDetails.Where(d => d.IdSeries.Id == currentList.Id).ToList();
+                    List<Book> relatedBooks = allBooks.Where(b => currentListDetails.Any(d => d.IdBook.Id == b.Id)).ToList();
 
                     if (relatedBooks.Count == 0) continue;
 
-                    // יצירת מופע של רכיב שורת הז'אנר/רשימה עם חצים
                     GenreUserControl listRow = new GenreUserControl();
-                    listRow.SetupGenreRow(currentList.ListName, relatedBooks);
+                    listRow.SetupGenreRow(currentList.NameSeries, relatedBooks);
 
-                    // רישום לאירוע מעבר לדף ספר בלחיצה על תמונה בתוך הרשימה
                     listRow.BookSelected += UserRow_BookSelected;
 
                     UserListsContainer.Children.Add(listRow);
@@ -132,47 +115,36 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                // רשימה שתכיל את הספרים שהמשתמש כבר רכש/מחזיק ברשימות שלו
                 List<Book> ownedBooks = new List<Book>();
 
-                // 🌟 תיקון 2: הוספת await לקבלת כל הרשימות מה-API
-                List<Book_List> bookLists = await _apiService.GetAllBookLists();
+                List<Book_Series> bookLists = await apiService.GetAllBookSeries();
 
-                // סינון הרשימות ששייכות למשתמש הנוכחי (משתמש ב-App.CurrentUser או currentUser שלך)
-                List<Book_List> userCustomLists = bookLists.Where(l => l.IdReader.Id == currentUser.Id).ToList();
+                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser.Id == currentUser.Id).ToList();
 
-                // שליפת כל פרטי הרשימות בצורה אסינכרונית
-                List<List_Detail> allListDetails = await _apiService.GetAllListDetails();
+                List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
 
-                // סינון פרטי הרשימות ששייכים אך ורק לרשימות של המשתמש הנוכחי
-                List<List_Detail> userListDetails = allListDetails.Where(d => userCustomLists.Any(l => l.Id == d.IdList.Id)).ToList();
+                List<Series_Detail> userListDetails = allListDetails.Where(d => userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
 
-                // מעבר על כל הפרטים והוספת הספרים לרשימת הבעלות
                 foreach (var detail in userListDetails)
                 {
-                    // 🌟 תיקון 3: בדיקה לפי ה-ID של הספר כדי להבטיח השוואה מדויקת ב-Access
                     if (!ownedBooks.Any(b => b.Id == detail.IdBook.Id))
                     {
                         ownedBooks.Add(detail.IdBook);
                     }
                 }
 
-                // בדיקה דינמית האם הספר שנבחר נמצא ברשימת הספרים של המשתמש
                 bool ownsBook = ownedBooks.Any(b => b.Id == selectedBook.Id);
 
 
-                // יצירת עמוד הספר (החלפתי ל-BookPage לפי הקוד שלך) וניווט אליו
                 BookPage detailsPage = new BookPage(selectedBook, ownsBook, false, false);
                 this.NavigationService?.Navigate(detailsPage);
             }
             catch (Exception ex)
             {
-                // הצגת שגיאה במידה ומשהו נכשל מול ה-API או ה-Database
                 MessageBox.Show("Error loading book availability: " + ex.Message, "LitLink Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // ==================== לוגיקת פעולות ה-Tabs הפנימיים בפרופיל ====================
 
         private void FilterList_Click(object sender, RoutedEventArgs e)
         {
@@ -184,7 +156,6 @@ namespace LitLink_FinalProject.Pages
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabReviews);
 
-            // כאן תוכלי לשלוף ולהציג את כל הביקורות שהמשתמש הנוכחי כתב
             ShowEmptyStateMessage("You haven't written any reviews yet.");
         }
 
@@ -194,13 +165,13 @@ namespace LitLink_FinalProject.Pages
             HighlightActiveTab(BtnTabMyBooks);
 
             List<Book> ownedBooks = new List<Book>();
-            List<Book_List> bookLists = await _apiService.GetAllBookLists();
-            List<Book_List> userCustomLists = bookLists.Where(l => l.IdReader.Id == currentUser.Id).ToList();
-            List<List_Detail> allListDetails = await _apiService.GetAllListDetails();
-            List<List_Detail> userListDetails = allListDetails.Where(d => userCustomLists.Any(l => l.Id == d.IdList.Id)).ToList();
+            List<Book_Series> bookLists = await apiService.GetAllBookSeries();
+            List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser.Id == currentUser.Id).ToList();
+            List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
+            List<Series_Detail> userListDetails = allListDetails.Where(d => userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
             foreach (var detail in userListDetails)
             {
-                if (!ownedBooks.Contains(detail.IdBook))
+                if (!ownedBooks.Any(b => b.Id == detail.IdBook.Id))
                 {
                     ownedBooks.Add(detail.IdBook);
                 }
@@ -224,22 +195,18 @@ namespace LitLink_FinalProject.Pages
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabFollowing);
 
-            // כאן תוכלי להציג את כל הסופרים שהמשתמש הנוכחי עוקב אחריהם לפי ה-Id שלו
             ShowEmptyStateMessage("You aren't following any authors yet.");
         }
 
-        // ==================== ניהול פאנל עריכה צידי (Popup) ====================
 
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e) => EditProfilePopup.Visibility = Visibility.Visible;
         private void CloseEditProfile_Click(object sender, RoutedEventArgs e) => EditProfilePopup.Visibility = Visibility.Collapsed;
 
-        // סגירת הפאנל בלחיצה מחוץ לתיבה (על השטח הכהה ברקע)
         private void OutsidePopup_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource == EditProfilePopup) EditProfilePopup.Visibility = Visibility.Collapsed;
         }
 
-        // ==================== פעולות ניווט והתנתקות מהמערכת ====================
 
         private void Home_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
         private void Cart_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/CartPage.xaml", UriKind.Relative));
@@ -248,14 +215,12 @@ namespace LitLink_FinalProject.Pages
         private void Preference_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Preferences layout option clicked!", "LitLink");
         private void Support_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Support option clicked! Connecting to help center...", "LitLink");
 
-        // התנתקות מלאה (Log Out) כפי שביקשת - מאפס את הסשן ומציג את עמוד הניתוק
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
-            currentUser = null; // איפוס המשתמש המחובר מהזיכרון הגלובלי
+            currentUser = null; 
             this.NavigationService?.Navigate(new Uri("Pages/LogOutPage.xaml", UriKind.Relative));
         }
 
-        // מחיקת חשבון קורא לצמיתות מטבלת ה-Access
         private async void DeleteAccount_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to permanently delete your LitLink account?\nThis action cannot be undone!",
@@ -263,10 +228,9 @@ namespace LitLink_FinalProject.Pages
             {
                 try
                 {
-                    // קריאה לפונקציית מחיקה ב-ApiService לפי ה-ID של המשתמש המחובר
-                    await _apiService.DeleteUser(currentUser.Id);
+                    await apiService.DeleteUser(currentUser.Id);
 
-                    currentUser = null; // ניקוי הזיכרון
+                    currentUser = null; 
                     MessageBox.Show("Your account has been deleted successfully.", "LitLink");
                     this.NavigationService?.Navigate(new Uri("Pages/LogOutPage.xaml", UriKind.Relative));
                 }
@@ -277,17 +241,14 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        // ==================== פונקציות עזר לעיצוב ה-UI ====================
 
         private void HighlightActiveTab(Button activeBtn)
         {
-            // איפוס צבעי כל הטאבים לאפור
             BtnTabList.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabReviews.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabMyBooks.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabFollowing.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
 
-            // הדגשת הטאב הלחוץ בצבע הכהה של האתר
             activeBtn.Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74));
         }
 
@@ -304,5 +265,4 @@ namespace LitLink_FinalProject.Pages
             UserListsContainer.Children.Add(txtEmpty);
         }
     }
-
 }

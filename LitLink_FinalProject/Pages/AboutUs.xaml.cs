@@ -15,9 +15,6 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for AboutUs.xaml
-    /// </summary>
     public partial class AboutUs : Page
     {
         public AboutUs()

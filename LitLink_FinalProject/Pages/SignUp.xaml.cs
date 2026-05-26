@@ -19,9 +19,6 @@ using System.Text.RegularExpressions;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for SignUp.xaml
-    /// </summary>
     public partial class SignUp : Page
     {
         private const string DefaultFirstName = "First Name";

@@ -19,23 +19,16 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for BookPage.xaml
-    /// </summary>
     public partial class BookPage : Page
     {
         public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor)
         {
             InitializeComponent();
-
-            // יצירת מופע דינמי של ה-UserControl שכתבת עם הנתונים שהתקבלו
             BookUserControl bookControl = new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor);
 
-            // הזרקת ה-UserControl לתוך ה-Grid ששמנו ב-XAML
             MainContainer.Children.Add(bookControl);
         }
 
-        // לוגיקת כפתור החזור לעמוד הקודם בהיסטוריית הניווט
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (this.NavigationService != null && this.NavigationService.CanGoBack)

@@ -16,9 +16,6 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for ResetPass.xaml
-    /// </summary>
     public partial class ResetPass : Page
     {
         private string _email;
@@ -26,28 +23,28 @@ namespace LitLink_FinalProject.Pages
         {
             InitializeComponent();
         }
-        public ResetPass(string email) : this() // משתמש בפעולה הבונה שלמעלה וגם בזאתי
+        public ResetPass(string email) : this() 
         {
             _email = email;
         }
 
-        private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e) // שמתי תיבת טקסט מעל הסיסמה כדי שזה יחזיק
-        {                                                                            // את הטקס שאני רוצה, ברגע שאני מקלידה משהו
-            PasswordPlaceholder.Visibility = PasswordInput.Password.Length > 0       // זה מחביא את התיבת טקסט ושם את הסיסמה
+        private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e) 
+        {                                                                            
+            PasswordPlaceholder.Visibility = PasswordInput.Password.Length > 0       
                 ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void TogglePasswordButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {                                                                           // כאשר אני לוחצת על העין זה מסתיר את הסיסמה 
-            VisiblePasswordInput.Text = PasswordInput.Password;                     // כנקודות ומראה את הטקסט עצמו (שורה 62) וכך
-            PasswordInput.Visibility = Visibility.Collapsed;                        // המשתמש יכול לראות את הסיסמה שלו
+        {                                                                          
+            VisiblePasswordInput.Text = PasswordInput.Password;                     
+            PasswordInput.Visibility = Visibility.Collapsed;                        
             VisiblePasswordInput.Visibility = Visibility.Visible;
             PasswordPlaceholder.Visibility = Visibility.Collapsed;
         }
 
         private void TogglePasswordButton_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {                                                                           // כאשר אני משחררת את העין זה מחזיר את הסיסמה
-            VisiblePasswordInput.Visibility = Visibility.Collapsed;                 //  למצב של נקודות ומסתיר את הטקסט עצמו
+        {                                                                          
+            VisiblePasswordInput.Visibility = Visibility.Collapsed;                 
             PasswordInput.Visibility = Visibility.Visible;
             if (string.IsNullOrEmpty(PasswordInput.Password)) PasswordPlaceholder.Visibility = Visibility.Visible;
         }

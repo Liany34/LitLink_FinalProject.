@@ -17,16 +17,12 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for AdminProfile.xaml
-    /// </summary>
     public partial class AdminProfile : Page
     {
         private Apiservice apiService = new Apiservice();
         private List<Author> allAuthors = new List<Author>();
         private User currentUser;
 
-        // רשימות מקומיות שמדמות את המאגרים ישירות בתוך העמוד
         private List<Reader> reportedUsers = new List<Reader>();
         private List<Book> reportedBooks = new List<Book>();
         private List<Reviews> reportedReviews = new List<Reviews>();
@@ -37,14 +33,11 @@ namespace LitLink_FinalProject.Pages
             InitializeComponent();
             this.Loaded += AdminProfilePage_Loaded;
             currentUser = this.DataContext as User;
-
-            // יצירת נתונים ראשוניים לדיווחים וקופונים (במקום לפנות ל-API שלא קיים)
             InitLocalMockData();
         }
 
         private async void InitLocalMockData()
         {
-            // נתונים זמניים של דיווחים לבגרות כדי שהעמוד יציג מידע אמיתי על המסך
             List<Reader> localReaders = await apiService.GetAllReaders();
             reportedUsers = localReaders.Where(r => r.IsFlaged).ToList();
             List<Book> localBooks = await apiService.GetAllBooks();
@@ -52,7 +45,6 @@ namespace LitLink_FinalProject.Pages
             List<Reviews> localReviews = await apiService.GetAllReviews();
             reportedReviews = localReviews.Where(r => r.IsFlaged).ToList();
 
-            // נתונים זמניים של קודי קופון
             localCoupons = await apiService.GetAllDiscountCodes();
         }
 
@@ -73,22 +65,18 @@ namespace LitLink_FinalProject.Pages
 
             TxtHelloAdmin.Text = $"Hello, {currentUser.Username}";
 
-            // ניווט דינמי לפי הטאב שנבחר
             if (PanelSales.Visibility == Visibility.Visible) LoadSalesData();
             else if (PanelReports.Visibility == Visibility.Visible) LoadReportsData();
             else if (PanelDiscounts.Visibility == Visibility.Visible) LoadCouponsData();
         }
 
-        // ==================== טאב 1: SALES DATA (הקוד שאת שלחת בשלמותו!) ====================
 
         private async void LoadSalesData()
         {
             try
             {
-                // 1. חישוב והצגת נתוני המכירות של האתר כולו
                 await CalculateAndDisplaySales(null);
 
-                // 2. טעינת רשימת כל הסופרים ל-ComboBox
                 allAuthors = await apiService.GetAllAuthors();
                 CmbAuthors.ItemsSource = allAuthors;
             }
@@ -108,7 +96,6 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                // שימוש ישיר בפעולת ה-GetAllCartDetails הקיימת אצלך ב-API
                 List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
 
                 foreach (Cart_Detail cd in allCartDetails)
@@ -119,7 +106,7 @@ namespace LitLink_FinalProject.Pages
 
                         if (cd.IsPurchased)
                         {
-                            if (cd.PurchaseDate.Month == DateTime.Now.Month && cd.PurchaseDate.Year == DateTime.Now.Year)
+                            if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
                             {
                                 bookThisMonth++;
                                 incomeThisMonth += cd.IdBook.Price ?? 0.0;
@@ -157,13 +144,9 @@ namespace LitLink_FinalProject.Pages
             await CalculateAndDisplaySales(selectedAuthor.Id);
         }
 
-        // ==================== טאב 2: REPORTS (מנוהל ישירות בעמוד בלבד) ====================
-
         private void LoadReportsData()
         {
             ReportsContainer.Children.Clear();
-
-            // עובד ישירות מול הרשימה המקומית שהגדרנו למעלה, ללא שינוי ה-API
             if (reportedBooks.Count == 0 && reportedReviews.Count == 0 && reportedUsers.Count == 0)
             {
                 ReportsContainer.Children.Add(new TextBlock { Text = "No active reports pending review. ✨", FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) });
@@ -184,25 +167,23 @@ namespace LitLink_FinalProject.Pages
                         Button btnDismiss = new Button { Content = "Dismiss Report", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Gray, Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
                         Button btnDeleteTarget = new Button { Content = $"Delete Reporte", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand, FontWeight = FontWeights.Bold };
 
-                        // א') המנהל לוחץ Disapprove (Dismiss) - הדיווח נמחק רק מהרשימה בעמוד
                         btnDismiss.Click += async (s, e) =>
                         {
                             reportedBooks.Remove(report);
                             MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData(); // רענון מהיר
-                            report.IsFlaged = false; // סימון שהדיווח טופל
-                            await apiService.UpdateBook(report); // עדכון הסטטוס ב-API (אם היה קיים)
+                            LoadReportsData(); 
+                            report.IsFlaged = false; 
+                            await apiService.UpdateBook(report); 
                         };
 
-                        // ב') המנהל לוחץ Approve (מחיקה מוחלטת) 
                         btnDeleteTarget.Click += async (s, e) =>
                         {
                             if (MessageBox.Show($"Are you sure you want to delete this reporte?", "LitLink System", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                             {
                                 reportedBooks.Remove(report);
                                 MessageBox.Show($"The reported book has been removed from the platform.", "LitLink");
-                                LoadReportsData(); // רענון
-                                await apiService.DeleteBook(report.Id); // מחיקה אמיתית מהמערכת (אם ה-API היה קיים)
+                                LoadReportsData(); 
+                                await apiService.DeleteBook(report.Id); 
                             }
                         };
 
@@ -224,25 +205,23 @@ namespace LitLink_FinalProject.Pages
                         Button btnDismiss = new Button { Content = "Dismiss Report", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Gray, Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
                         Button btnDeleteTarget = new Button { Content = $"Delete Reporte", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand, FontWeight = FontWeights.Bold };
 
-                        // א') המנהל לוחץ Disapprove (Dismiss) - הדיווח נמחק רק מהרשימה בעמוד
                         btnDismiss.Click += async (s, e) =>
                         {
                             reportedUsers.Remove(reportU);
                             MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData(); // רענון מהיר
-                            reportU.IsFlaged = false; // סימון שהדיווח טופל
-                            await apiService.UpdateReader(reportU); // עדכון הסטטוס ב-API (אם היה קיים)
+                            LoadReportsData(); 
+                            reportU.IsFlaged = false; 
+                            await apiService.UpdateReader(reportU); 
                         };
 
-                        // ב') המנהל לוחץ Approve (מחיקה מוחלטת) 
                         btnDeleteTarget.Click += async (s, e) =>
                         {
                             if (MessageBox.Show($"Are you sure you want to delete this reporte?", "LitLink System", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                             {
                                 reportedUsers.Remove(reportU);
                                 MessageBox.Show($"The reported user has been removed from the platform.", "LitLink");
-                                LoadReportsData(); // רענון
-                                await apiService.DeleteReader(reportU.Id); // מחיקה אמיתית מהמערכת (אם ה-API היה קיים)
+                                LoadReportsData(); 
+                                await apiService.DeleteReader(reportU.Id); 
                             }
                         };
 
@@ -264,25 +243,23 @@ namespace LitLink_FinalProject.Pages
                         Button btnDismiss = new Button { Content = "Dismiss Report", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Gray, Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
                         Button btnDeleteTarget = new Button { Content = $"Delete Reporte", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand, FontWeight = FontWeights.Bold };
 
-                        // א') המנהל לוחץ Disapprove (Dismiss) - הדיווח נמחק רק מהרשימה בעמוד
                         btnDismiss.Click += async (s, e) =>
                         {
                             reportedReviews.Remove(report);
                             MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData(); // רענון מהיר
-                            report.IsFlaged = false; // סימון שהדיווח טופל
-                            await apiService.UpdateReview(report); // עדכון הסטטוס ב-API (אם היה קיים)
+                            LoadReportsData(); 
+                            report.IsFlaged = false; 
+                            await apiService.UpdateReview(report); 
                         };
 
-                        // ב') המנהל לוחץ Approve (מחיקה מוחלטת) 
                         btnDeleteTarget.Click += async (s, e) =>
                         {
                             if (MessageBox.Show($"Are you sure you want to delete this reporte?", "LitLink System", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                             {
                                 reportedReviews.Remove(report);
                                 MessageBox.Show($"The reported review has been removed from the platform.", "LitLink");
-                                LoadReportsData(); // רענון
-                                await apiService.DeleteReview(report.Id); // מחיקה אמיתית מהמערכת (אם ה-API היה קיים)
+                                LoadReportsData(); 
+                                await apiService.DeleteReview(report.Id); 
                             }
                         };
 
@@ -294,12 +271,11 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        // ==================== טאב 3: DISCOUNT CODES (מנוהל ישירות בעמוד) ====================
 
         private void LoadCouponsData()
         {
             LvwCoupons.ItemsSource = null;
-            LvwCoupons.ItemsSource = localCoupons; // קישור לרשימה המקומית
+            LvwCoupons.ItemsSource = localCoupons; 
         }
 
         private async void BtnCreateCoupon_Click(object sender, RoutedEventArgs e)
@@ -311,43 +287,47 @@ namespace LitLink_FinalProject.Pages
                 return;
             }
 
-            // הוספה ישירה לרשימה בעמוד בלי לגעת ב-API
             int newId = localCoupons.Count > 0 ? localCoupons.Max(c => c.Id) + 1 : 1;
 
-            // 🌟 התיקון: בניית האובייקט המקומי בדיוק לפי מאפייני המודל החדשים שציינת
             DiscountCodes newCoupon = new DiscountCodes
             {
                 Id = newId,
-                CodeText = code,       // מחרוזת הטקסט של הקוד
-                Amount = amount,       // שווי מספרי (int)
-                IsActive = true,       // האם הוא פועל כרגע (bool)
-                ValidUntil = DateTime.Now.AddMonths(1) // תוקף אוטומטי לחודש מהיום (DateTime)
+                CodeText = code,       
+                Amount = amount,       
+                IsActive = true,       
+                ValidUntil = DateTime.Now.AddMonths(1) 
             };
 
             localCoupons.Add(newCoupon);
 
             MessageBox.Show($"Coupon Code '{code}' created and activated! ✨", "LitLink");
             TxtNewCouponCode.Text = ""; TxtNewCouponAmount.Text = "";
-            LoadCouponsData(); // רענון
+            LoadCouponsData(); 
 
-            // אופציונלי: עדכון ב-Access במידה והשירות קיים
             await apiService.InsertDiscountCode(newCoupon);
         }
 
-        private async Task BtnDeleteCoupon_Click(object sender, RoutedEventArgs e)
+        private async void BtnDeleteCoupon_Click(object sender, RoutedEventArgs e)
         {
             var coupon = (sender as FrameworkElement)?.DataContext as DiscountCodes;
             if (coupon == null) return;
 
-            if (MessageBox.Show($"Delete coupon code '{coupon.CodeText}'?", "LitLink", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (MessageBox.Show($"Delete coupon code '{coupon.CodeText}'?", "LitLink", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 localCoupons.Remove(coupon);
-                LoadCouponsData(); // רענון
-                await apiService.DeleteDiscountCode(coupon.Id); // מחיקה אמיתית מהמערכת (אם ה-API היה קיים)
+
+                try
+                {
+                    await apiService.DeleteDiscountCode(coupon.Id);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to delete from server: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                LoadCouponsData();
             }
         }
-
-        // ==================== ניהול החלפת טאבים סליידר ====================
 
         private void TabSales_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabSales); PanelSales.Visibility = Visibility.Visible; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Collapsed; LoadSalesData(); }
         private void TabReports_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabReports); PanelSales.Visibility = Visibility.Collapsed; PanelReports.Visibility = Visibility.Visible; PanelDiscounts.Visibility = Visibility.Collapsed; LoadReportsData(); }
@@ -361,15 +341,12 @@ namespace LitLink_FinalProject.Pages
             activeBtn.Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74));
         }
 
-        // ==================== תפריט המבורגר וניווטים ====================
-
         private void BtnMenu_Click(object sender, RoutedEventArgs e) => AdminMenuPopup.Visibility = Visibility.Visible;
         private void CloseMenu_Click(object sender, RoutedEventArgs e) => AdminMenuPopup.Visibility = Visibility.Collapsed;
         private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e) { if (e.OriginalSource == AdminMenuPopup) AdminMenuPopup.Visibility = Visibility.Collapsed; }
 
         private void AddNews_Click(object sender, RoutedEventArgs e) { new WindowsFile.AddNewsWindow().ShowDialog(); }
         private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
-        private void ReaderView_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/ReaderProfile.xaml", UriKind.Relative));
         private void LogOut_Click(object sender, RoutedEventArgs e) { currentUser = null; this.NavigationService?.Navigate(new Uri("Pages/SignOut.xaml", UriKind.Relative)); }
     }
 }

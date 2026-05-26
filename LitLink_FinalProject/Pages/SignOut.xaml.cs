@@ -16,9 +16,6 @@ using System.Windows.Threading;
 
 namespace LitLink_FinalProject.Pages
 {
-    /// <summary>
-    /// Interaction logic for SignOut.xaml
-    /// </summary>
     public partial class SignOut : Page
     {
         private DispatcherTimer timer;
@@ -31,7 +28,7 @@ namespace LitLink_FinalProject.Pages
         {
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(5);
-            timer.Tick += Timer_Tick; // ברגע שעוברות 5 שניות נשלח לפעולה שדואגת שהטיימר יפסיק
+            timer.Tick += Timer_Tick; 
             timer.Start();
         }
 
