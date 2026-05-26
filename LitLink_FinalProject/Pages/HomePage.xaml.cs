@@ -20,14 +20,14 @@ namespace LitLink_FinalProject.Pages
 {
     public partial class HomePage : Page
     {
-        private Apiservice _apiService = new Apiservice();
+        private Apiservice apiService = new Apiservice();
         private User currentUser;
 
         public HomePage()
         {
             InitializeComponent();
             CheckUserSession();
-            BuildDynamicCatalog(); 
+            BuildDynamicCatalog();
             currentUser = this.DataContext as User;
         }
 
@@ -35,8 +35,8 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                List<Genre> allGenres = await _apiService.GetAllGenres();
-                List<Book_Genre> allBookGenres = await _apiService.GetAllBookGenres();
+                List<Genre> allGenres = await apiService.GetAllGenres();
+                List<Book_Genre> allBookGenres = await apiService.GetAllBookGenres();
 
                 DynamicGenresContainer.Children.Clear();
 
@@ -55,8 +55,49 @@ namespace LitLink_FinalProject.Pages
                     DynamicGenresContainer.Children.Add(genreRow);
                 }
 
-                List<News> allNews = await _apiService.GetAllNews(); 
+                List<News> allNews = await apiService.GetAllNews();
                 NewsListBox.ItemsSource = allNews;
+
+                if (currentUser != null)
+                {
+                    GuestPanel.Visibility = Visibility.Collapsed;
+                    UserPanel.Visibility = Visibility.Visible;
+                    TxtUsername.Text = currentUser.Username;
+
+                    if (!string.IsNullOrEmpty(currentUser.Picture))
+                    {
+                        try
+                        {
+                            byte[] imgStr = Convert.FromBase64String(currentUser.Picture);
+                            this.ImgProfile.Source = ByteImageConverter.ByteToImage(imgStr);
+                        }
+                        catch
+                        {
+                            this.ImgProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                        }
+                    }
+                    else
+                    {
+                        this.ImgProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                    }
+
+                    MenuSeparator.Visibility = Visibility.Visible;
+                    CartItem.Visibility = Visibility.Visible;
+                    ProfileItem.Visibility = Visibility.Visible;
+                    LogOutItem.Visibility = Visibility.Visible;
+
+                    List<Author> allAuthors = await apiService.GetAllAuthors();
+                    if (allAuthors.Any(a => a.Id == currentUser.Id))
+                    {
+                        BecomeAuthorItem.Header = "Author Dashboard";
+                    }
+                    BecomeAuthorItem.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    GuestPanel.Visibility = Visibility.Visible;
+                    UserPanel.Visibility = Visibility.Collapsed;
+                }
             }
             catch (Exception ex)
             {
@@ -68,24 +109,29 @@ namespace LitLink_FinalProject.Pages
         {
             if (selectedBook == null) return;
 
-            List<Cart> allCarts = await _apiService.GetAllCarts();
-            List<Cart> cartUser = allCarts.Where(c => c.IdReader.Id == currentUser.Id).ToList();
-            List<Cart_Detail> bookDetailsList = await _apiService.GetAllCartDetails();
-            List<Cart_Detail> bookDetailsUser = bookDetailsList.Where(cd => cartUser.Any(c => c.Id == cd.IdCart.Id)).ToList();
             List<Book> ownedBooks = new List<Book>();
-            foreach (Cart_Detail detail in bookDetailsUser)
+
+            if (currentUser != null)
             {
-                if(detail.IsPurchased == true)
+                List<Cart> allCarts = await apiService.GetAllCarts();
+                List<Cart> cartUser = allCarts.Where(c => c.IdReader.Id == currentUser.Id).ToList();
+                List<Cart_Detail> bookDetailsList = await apiService.GetAllCartDetails();
+                List<Cart_Detail> bookDetailsUser = bookDetailsList.Where(cd => cartUser.Any(c => c.Id == cd.IdCart.Id)).ToList();
+                foreach (Cart_Detail detail in bookDetailsUser)
                 {
-                    ownedBooks.Add(detail.IdBook);
+                    if (detail.IsPurchased == true)
+                    {
+                        ownedBooks.Add(detail.IdBook);
+                    }
                 }
             }
-            List<Admin> allAdmins = await _apiService.GetAllAdmins();
-            List<Author> allAuthors = await _apiService.GetAllAuthors();
 
-            bool ownsBook = currentUser != null && ownedBooks != null && ownedBooks.Contains(selectedBook);
-            bool isAdmin = currentUser != null && allAdmins.Contains(currentUser);
-            bool isAuthor = currentUser != null && allAuthors.Contains(currentUser);
+            List<Admin> allAdmins = await apiService.GetAllAdmins();
+            List<Author> allAuthors = await apiService.GetAllAuthors();
+
+            bool ownsBook = currentUser != null && ownedBooks.Any(b => b.Id == selectedBook.Id);
+            bool isAdmin = currentUser != null && allAdmins.Any(a => a.Id == currentUser.Id);
+            bool isAuthor = currentUser != null && allAuthors.Any(a => a.Id == currentUser.Id);
 
             BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin, isAuthor);
             this.NavigationService?.Navigate(detailsPage);
@@ -111,7 +157,7 @@ namespace LitLink_FinalProject.Pages
             }
 
             SearchResultsPage resultsPage = new SearchResultsPage();
-            resultsPage.ExecuteSearch(query);
+            resultsPage.DataContext = query;
             this.NavigationService?.Navigate(resultsPage);
         }
 
@@ -124,8 +170,33 @@ namespace LitLink_FinalProject.Pages
         private void BtnLogin_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/Login.xaml", UriKind.Relative));
         private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
         private void Cart_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/CartPage.xaml", UriKind.Relative));
-        private void Profile_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/ReaderProfile.xaml", UriKind.Relative));
-        private void BecomeAuthor_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/BecomeAuthor.xaml", UriKind.Relative));
+
+        private async void Profile_Click(object sender, RoutedEventArgs e)
+        {
+            List<Admin> allAdmins = await apiService.GetAllAdmins();
+            if (allAdmins.Any(a => a.Id == currentUser.Id))
+            {
+                this.NavigationService?.Navigate(new Uri("Pages/AdminProfile.xaml", UriKind.Relative));
+            }
+            else
+            {
+                this.NavigationService?.Navigate(new Uri("Pages/ReaderProfile.xaml", UriKind.Relative));
+            }
+        }
+
+        private async void BecomeAuthor_Click(object sender, RoutedEventArgs e)
+        {
+            List<Author> allAuthors = await apiService.GetAllAuthors();
+            if (allAuthors.Any(a => a.Id == currentUser.Id))
+            {
+                this.NavigationService?.Navigate(new Uri("Pages/AuthorProfile.xaml", UriKind.Relative));
+            }
+            else
+            {
+                this.NavigationService?.Navigate(new Uri("Pages/BecomeAuthor.xaml", UriKind.Relative));
+            }
+        }
+
         private void LogOut_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/SignOut.xaml", UriKind.Relative));
 
         private void TxtSearch_GotFocus(object sender, RoutedEventArgs e) { if (TxtSearch.Text == "Search books or authors...") { TxtSearch.Text = ""; TxtSearch.Foreground = Brushes.Black; } }

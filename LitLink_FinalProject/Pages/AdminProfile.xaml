@@ -30,7 +30,7 @@
 
             <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                 <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="2">
-                    <Image x:Name="ImgAdminProfile" Source="/Covers/DefultUser.png" Stretch="UniformToFill"/>
+                    <Image x:Name="ImgAdminProfile" Stretch="UniformToFill"/>
                 </Border>
             </StackPanel>
 

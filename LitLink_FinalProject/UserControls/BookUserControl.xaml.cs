@@ -43,6 +43,19 @@ namespace LitLink_FinalProject.UserControls
             this.Loaded += (s, e) => {
                 if (DescriptionTextBlock.ActualHeight < 120)
                     ReadMoreBtn.Visibility = Visibility.Collapsed;
+
+                Book currentBook = this.DataContext as Book;
+                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+                {
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
+                        this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
             };
         }
 
@@ -61,7 +74,7 @@ namespace LitLink_FinalProject.UserControls
             else
             {
                 AddToListBtn.Visibility = Visibility.Visible;
-                if(ownsBook)
+                if (ownsBook)
                 {
                     BuyBtn.Visibility = Visibility.Collapsed;
                 }
@@ -195,6 +208,12 @@ namespace LitLink_FinalProject.UserControls
                 {
                     this.DataContext = null;
                     this.DataContext = currentBook;
+
+                    if (!string.IsNullOrEmpty(currentBook.Cover))
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
+                        this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
                 }
             }
             catch (Exception ex)

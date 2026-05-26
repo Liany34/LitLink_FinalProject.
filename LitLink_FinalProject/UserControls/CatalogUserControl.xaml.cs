@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Model;
 
 namespace LitLink_FinalProject.UserControls
 {
@@ -21,6 +22,21 @@ namespace LitLink_FinalProject.UserControls
         {
             InitializeComponent();
             this.DataContext = this;
+            this.Loaded += (s, e) =>
+            {
+                Book currentBook = this.DataContext as Book;
+                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+                {
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
+                        this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            };
         }
 
         public static readonly DependencyProperty BookNameProperty =

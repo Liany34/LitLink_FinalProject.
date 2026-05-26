@@ -50,5 +50,25 @@ namespace LitLink_FinalProject.UserControls
                 BookSelected?.Invoke(this, clickedBook);
             }
         }
+
+        private void BookImage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Image imgControl = sender as Image;
+            if (imgControl != null)
+            {
+                Book currentBook = imgControl.DataContext as Book;
+                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+                {
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
+                        imgControl.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+        }
     }
 }

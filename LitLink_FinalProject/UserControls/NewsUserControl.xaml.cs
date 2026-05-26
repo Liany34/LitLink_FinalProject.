@@ -1,20 +1,10 @@
-﻿using Service;
+﻿using Model;
+using Service;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Model;
-using Service;
 
 namespace LitLink_FinalProject.UserControls
 {
@@ -30,18 +20,35 @@ namespace LitLink_FinalProject.UserControls
         {
             InitializeComponent();
             this.Loaded += NewsUserControl_Loaded;
-            currentUser = this.DataContext as User;
         }
-
 
         private void NewsUserControl_Loaded(object sender, RoutedEventArgs e)
         {
             currentNewsData = this.DataContext as News;
             if (currentNewsData == null) return;
 
+            currentUser = this.DataContext as User;
+
             if (TxtNewsContent.ActualHeight < 60)
             {
                 BtnReadMore.Visibility = Visibility.Collapsed;
+            }
+
+            if (currentNewsData != null && !string.IsNullOrEmpty(currentNewsData.IdUser.Picture))
+            {
+                try
+                {
+                    byte[] imgStr = Convert.FromBase64String(currentNewsData.IdUser.Picture);
+                    this.AuthorProfileImage.Source = ByteImageConverter.ByteToImage(imgStr);
+                }
+                catch (Exception)
+                {
+                    this.AuthorProfileImage.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                }
+            }
+            else
+            {
+                this.AuthorProfileImage.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
             }
 
             SetupPermissions();
@@ -49,30 +56,35 @@ namespace LitLink_FinalProject.UserControls
 
         private async void SetupPermissions()
         {
-            if (currentUser == null || currentNewsData == null)
+            if (currentNewsData == null)
             {
-                BtnNewsMenu.Visibility = Visibility.Collapsed; 
+                BtnNewsMenu.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            List<Admin> admins = await apiService.GetAllAdmins();
-            bool isAdmin = admins.Contains(currentUser);
-            List<Author> authors = await apiService.GetAllAuthors();
-            bool isOwner = authors.Contains(currentUser) && currentUser.Id == currentNewsData.IdUser.Id;
+            try
+            {
+                List<Admin> admins = await apiService.GetAllAdmins();
+                bool isAdmin = currentUser != null && admins.Exists(a => a.Id == currentUser.Id);
 
-            if (isAdmin)
-            {
-                BtnNewsMenu.Visibility = Visibility.Visible;
-                MenuDeleteNews.Visibility = Visibility.Visible;
+                List<Author> authors = await apiService.GetAllAuthors();
+                bool isOwner = currentUser != null && currentNewsData.IdUser != null &&
+                               authors.Exists(a => a.Id == currentUser.Id) && currentUser.Id == currentNewsData.IdUser.Id;
+
+                if (isAdmin || isOwner)
+                {
+                    BtnNewsMenu.Visibility = Visibility.Visible;
+                    MenuDeleteNews.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    BtnNewsMenu.Visibility = Visibility.Collapsed;
+                }
             }
-            else if (isOwner)
+            catch (Exception ex)
             {
-                BtnNewsMenu.Visibility = Visibility.Visible;
-                MenuDeleteNews.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                BtnNewsMenu.Visibility = Visibility.Collapsed; 
+                System.Diagnostics.Debug.WriteLine("Error setting up permissions: " + ex.Message);
+                BtnNewsMenu.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -82,7 +94,6 @@ namespace LitLink_FinalProject.UserControls
             NewsContextMenu.IsOpen = true;
         }
 
-        
         private void BtnReadMore_Click(object sender, RoutedEventArgs e)
         {
             if (TxtNewsContent.MaxHeight == 60)
@@ -99,14 +110,17 @@ namespace LitLink_FinalProject.UserControls
 
         private async void MenuDeleteNews_Click(object sender, RoutedEventArgs e)
         {
+            if (currentNewsData == null) return;
+
             if (MessageBox.Show($"Are you sure you want to delete this news update?", "Delete News", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 await apiService.DeleteNews(currentNewsData.Id);
                 List<News> allNews = await apiService.GetAllNews();
-                bool success = !allNews.Contains(currentNewsData); 
-                if (success)
+
+                bool isDeleted = !allNews.Exists(n => n.Id == currentNewsData.Id);
+                if (isDeleted)
                 {
-                    NewsChanged?.Invoke(); 
+                    NewsChanged?.Invoke();
                 }
             }
         }

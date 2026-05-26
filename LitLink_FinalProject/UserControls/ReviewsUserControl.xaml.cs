@@ -20,7 +20,7 @@ namespace LitLink_FinalProject.UserControls
     public partial class ReviewsUserControl : UserControl
     {
         private Reviews review;
-        private Apiservice apiService = new Apiservice(); 
+        private Apiservice apiService = new Apiservice();
 
         public ReviewsUserControl(Reviews reviewData, int currentUserId, bool isAdmin)
         {
@@ -33,6 +33,23 @@ namespace LitLink_FinalProject.UserControls
             this.Loaded += (s, e) => {
                 if (CommentTextBlock.ActualHeight < 100)
                     ReadMoreBtn.Visibility = Visibility.Collapsed;
+
+                if (review != null && review.IdReader != null && !string.IsNullOrEmpty(review.IdReader.Picture))
+                {
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(review.IdReader.Picture);
+                        this.ReaderProfileImage.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch (Exception)
+                    {
+                        this.ReaderProfileImage.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                    }
+                }
+                else
+                {
+                    this.ReaderProfileImage.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                }
             };
         }
 
@@ -67,50 +84,6 @@ namespace LitLink_FinalProject.UserControls
                 ReadMoreBtn.Content = "Read More";
             }
         }
-        private void SaveComment_Click(object sender, RoutedEventArgs e)
-        {
-            string updatedText = EditCommentTextBox.Text.Trim();
-
-            if (string.IsNullOrEmpty(updatedText))
-            {
-                MessageBox.Show("Comment cannot be empty!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            Reviews updatedReview = new Reviews();
-            updatedReview.Id = review.Id;
-            updatedReview.IdReader = review.IdReader;
-            updatedReview.IdBook = review.IdBook;
-            updatedReview.Text = updatedText;
-            updatedReview.Stars = review.Stars;
-            updatedReview.IsFlaged = review.IsFlaged;
-
-            try
-            {
-                apiService.UpdateReview(updatedReview);
-
-                review.Text = updatedText;
-                CommentTextBlock.Text = updatedText;
-
-                SwitchToDisplayMode();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Failed to save changes: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void CancelEdit_Click(object sender, RoutedEventArgs e)
-        {
-            SwitchToDisplayMode();
-        }
-
-        private void SwitchToDisplayMode()
-        {
-            DisplayArea.Visibility = Visibility.Visible;
-            CommentMenuBtn.Visibility = Visibility.Visible; 
-        }
-
         private void DeleteComment_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to delete this comment?", "LitLink", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
@@ -130,7 +103,7 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        private void ReportComment_Click(object sender, RoutedEventArgs e) 
+        private void ReportComment_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to report this comment?", "Report", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
@@ -158,7 +131,7 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        private void RemoveReport_Click(object sender, RoutedEventArgs e) 
+        private void RemoveReport_Click(object sender, RoutedEventArgs e)
         {
             Reviews updatedReview = new Reviews();
             updatedReview.Id = review.Id;

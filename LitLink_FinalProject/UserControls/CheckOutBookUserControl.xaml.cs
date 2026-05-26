@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Model;
 
 namespace LitLink_FinalProject.UserControls
 {
@@ -21,6 +22,20 @@ namespace LitLink_FinalProject.UserControls
         {
             InitializeComponent();
             this.DataContext = this;
+            this.Loaded += (s, e) => {
+                Book currentBook = this.DataContext as Book;
+                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+                {
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
+                        this.ImgBook.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            };
         }
 
         public string BookTitle
@@ -75,11 +90,12 @@ namespace LitLink_FinalProject.UserControls
             {
                 try
                 {
-                    control.ImgBook.Source = new BitmapImage(new Uri(e.NewValue.ToString(), UriKind.RelativeOrAbsolute));
+                    byte[] imgStr = Convert.FromBase64String(e.NewValue.ToString());
+                    control.ImgBook.Source = ByteImageConverter.ByteToImage(imgStr);
                 }
                 catch
                 {
-                    control.ImgBook.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_book.png", UriKind.RelativeOrAbsolute));
+                    control.ImgBook.Source = new BitmapImage(new Uri("pack://application:,,,/BookCovers/default_book.png", UriKind.RelativeOrAbsolute));
                 }
             }
         }

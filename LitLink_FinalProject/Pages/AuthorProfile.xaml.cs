@@ -62,10 +62,23 @@ namespace LitLink_FinalProject.Pages
                     TxtFollowersCount.Text = $"{followersCount} Followers";
                 }
 
-                if (!string.IsNullOrEmpty(currentUser.Picture))
+                if (currentUser != null && !string.IsNullOrEmpty(currentUser.Picture))
                 {
-                    try { ImgAuthorProfile.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(currentUser.Picture, UriKind.RelativeOrAbsolute)); } catch { }
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentUser.Picture);
+                        this.ImgAuthorProfile.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch
+                    {
+                        this.ImgAuthorProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                    }
                 }
+                else
+                {
+                    this.ImgAuthorProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                }
+
                 List<Book> allBooks = await apiService.GetAllBooks();
                 authorBooks = allBooks.Where(b => b.IdAuthor.Id == currentAuthorData.Id).ToList();
 
@@ -177,12 +190,12 @@ namespace LitLink_FinalProject.Pages
                 followersCount = authorFollowings.Count;
 
                 List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
-                foreach(Cart_Detail cd in allCartDetails)
+                foreach (Cart_Detail cd in allCartDetails)
                 {
                     if (cd.IdBook.IdAuthor.Id == currentAuthorData.Id)
                     {
                         booksAddedToCarts++;
-                        if(cd.IsPurchased)
+                        if (cd.IsPurchased)
                         {
                             if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
                             {
@@ -194,6 +207,9 @@ namespace LitLink_FinalProject.Pages
                         }
                     }
                 }
+
+                TxtTotalSales.Text = bookTotal.ToString();
+                TxtTotalRevenue.Text = $"{incomeTotal:F2} ₪";
             }
             catch (Exception ex)
             {
@@ -215,7 +231,7 @@ namespace LitLink_FinalProject.Pages
             EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(currentAuthorData);
             if (editWin.ShowDialog() == true)
             {
-                LoadAuthorData(); 
+                LoadAuthorData();
             }
         }
 
@@ -240,7 +256,7 @@ namespace LitLink_FinalProject.Pages
         private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
-            currentUser = null; 
+            currentUser = null;
             this.NavigationService?.Navigate(new Uri("Pages/SignOut.xaml", UriKind.Relative));
         }
 

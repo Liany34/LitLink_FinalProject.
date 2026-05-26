@@ -32,7 +32,7 @@
                             <Border Background="White" BorderBrush="#FFF0F5" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,15,5" Width="140">
                                 <StackPanel>
                                     <Border CornerRadius="5" ClipToBounds="True" Height="130" Width="100" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                        <Image Source="{Binding cover}" Stretch="UniformToFill" Cursor="Hand" MouseDown="BookImage_MouseDown"/>
+                                        <Image Loaded="BookImage_Loaded" Stretch="UniformToFill" Cursor="Hand" MouseDown="BookImage_MouseDown"/>
                                     </Border>
 
                                     <Grid>

@@ -25,7 +25,7 @@
 
             <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                 <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="2">
-                    <Image x:Name="ImgReaderProfile" Source="/Covers/DefultUser.png" Stretch="UniformToFill"/>
+                    <Image x:Name="ImgReaderProfile" Stretch="UniformToFill"/>
                 </Border>
                 <Button x:Name="BtnEditProfile" Content="Edit Profile" Margin="0,8,0,0" Padding="10,4" 
                         Background="Transparent" BorderBrush="#D06A8D" BorderThickness="1" Foreground="#D06A8D" FontWeight="SemiBold" Cursor="Hand" Click="BtnEditProfile_Click">

@@ -6,11 +6,11 @@
              xmlns:local="clr-namespace:LitLink_FinalProject.UserControls"
              mc:Ignorable="d" 
              d:DesignHeight="180" d:DesignWidth="120" Cursor="Hand">
-    
+
     <Border Background="White" BorderBrush="#FFF0F5" BorderThickness="1" CornerRadius="10" Padding="5" Margin="0,0,10,0" Width="120">
         <StackPanel VerticalAlignment="Center">
             <Border CornerRadius="5" ClipToBounds="True" Height="110" Width="90" HorizontalAlignment="Center">
-                <Image Source="{Binding cover}" Stretch="UniformToFill"/>
+                <Image x:Name="BookCoverImage" Stretch="UniformToFill"/>
             </Border>
             <TextBlock Text="{Binding bookName}" 
                        FontSize="12" 

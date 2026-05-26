@@ -46,7 +46,7 @@
                         <TextBlock x:Name="TxtUsername" Text="Guest" FontSize="14" FontWeight="Bold" Foreground="#4A4A4A" TextAlignment="Right"/>
                     </StackPanel>
                     <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="1">
-                        <Image x:Name="ImgProfile" Stretch="UniformToFill" Source="/Covers/DefultUser.png"/>
+                        <Image x:Name="ImgProfile" Stretch="UniformToFill"/>
                     </Border>
                 </StackPanel>
             </Grid>

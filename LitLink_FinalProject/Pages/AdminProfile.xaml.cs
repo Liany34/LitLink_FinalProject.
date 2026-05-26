@@ -65,6 +65,23 @@ namespace LitLink_FinalProject.Pages
 
             TxtHelloAdmin.Text = $"Hello, {currentUser.Username}";
 
+            if (currentUser != null && !string.IsNullOrEmpty(currentUser.Picture))
+            {
+                try
+                {
+                    byte[] imgStr = Convert.FromBase64String(currentUser.Picture);
+                    this.ImgAdminProfile.Source = ByteImageConverter.ByteToImage(imgStr);
+                }
+                catch (Exception)
+                {
+                    this.ImgAdminProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                }
+            }
+            else
+            {
+                this.ImgAdminProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+            }
+
             if (PanelSales.Visibility == Visibility.Visible) LoadSalesData();
             else if (PanelReports.Visibility == Visibility.Visible) LoadReportsData();
             else if (PanelDiscounts.Visibility == Visibility.Visible) LoadCouponsData();
@@ -171,9 +188,9 @@ namespace LitLink_FinalProject.Pages
                         {
                             reportedBooks.Remove(report);
                             MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData(); 
-                            report.IsFlaged = false; 
-                            await apiService.UpdateBook(report); 
+                            LoadReportsData();
+                            report.IsFlaged = false;
+                            await apiService.UpdateBook(report);
                         };
 
                         btnDeleteTarget.Click += async (s, e) =>
@@ -182,8 +199,8 @@ namespace LitLink_FinalProject.Pages
                             {
                                 reportedBooks.Remove(report);
                                 MessageBox.Show($"The reported book has been removed from the platform.", "LitLink");
-                                LoadReportsData(); 
-                                await apiService.DeleteBook(report.Id); 
+                                LoadReportsData();
+                                await apiService.DeleteBook(report.Id);
                             }
                         };
 
@@ -209,9 +226,9 @@ namespace LitLink_FinalProject.Pages
                         {
                             reportedUsers.Remove(reportU);
                             MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData(); 
-                            reportU.IsFlaged = false; 
-                            await apiService.UpdateReader(reportU); 
+                            LoadReportsData();
+                            reportU.IsFlaged = false;
+                            await apiService.UpdateReader(reportU);
                         };
 
                         btnDeleteTarget.Click += async (s, e) =>
@@ -220,8 +237,8 @@ namespace LitLink_FinalProject.Pages
                             {
                                 reportedUsers.Remove(reportU);
                                 MessageBox.Show($"The reported user has been removed from the platform.", "LitLink");
-                                LoadReportsData(); 
-                                await apiService.DeleteReader(reportU.Id); 
+                                LoadReportsData();
+                                await apiService.DeleteReader(reportU.Id);
                             }
                         };
 
@@ -247,9 +264,9 @@ namespace LitLink_FinalProject.Pages
                         {
                             reportedReviews.Remove(report);
                             MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData(); 
-                            report.IsFlaged = false; 
-                            await apiService.UpdateReview(report); 
+                            LoadReportsData();
+                            report.IsFlaged = false;
+                            await apiService.UpdateReview(report);
                         };
 
                         btnDeleteTarget.Click += async (s, e) =>
@@ -258,8 +275,8 @@ namespace LitLink_FinalProject.Pages
                             {
                                 reportedReviews.Remove(report);
                                 MessageBox.Show($"The reported review has been removed from the platform.", "LitLink");
-                                LoadReportsData(); 
-                                await apiService.DeleteReview(report.Id); 
+                                LoadReportsData();
+                                await apiService.DeleteReview(report.Id);
                             }
                         };
 
@@ -275,7 +292,7 @@ namespace LitLink_FinalProject.Pages
         private void LoadCouponsData()
         {
             LvwCoupons.ItemsSource = null;
-            LvwCoupons.ItemsSource = localCoupons; 
+            LvwCoupons.ItemsSource = localCoupons;
         }
 
         private async void BtnCreateCoupon_Click(object sender, RoutedEventArgs e)
@@ -292,17 +309,17 @@ namespace LitLink_FinalProject.Pages
             DiscountCodes newCoupon = new DiscountCodes
             {
                 Id = newId,
-                CodeText = code,       
-                Amount = amount,       
-                IsActive = true,       
-                ValidUntil = DateTime.Now.AddMonths(1) 
+                CodeText = code,
+                Amount = amount,
+                IsActive = true,
+                ValidUntil = DateTime.Now.AddMonths(1)
             };
 
             localCoupons.Add(newCoupon);
 
             MessageBox.Show($"Coupon Code '{code}' created and activated! ✨", "LitLink");
             TxtNewCouponCode.Text = ""; TxtNewCouponAmount.Text = "";
-            LoadCouponsData(); 
+            LoadCouponsData();
 
             await apiService.InsertDiscountCode(newCoupon);
         }

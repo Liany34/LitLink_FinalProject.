@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterScreen" Background="#FFF5F7" ResizeMode="NoResize">
 
     <Grid Margin="25">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,10,0,-10">
             <StackPanel>
                 <TextBlock Text="Edit Author &amp; User Details 🌸" FontSize="20" FontWeight="Bold" Foreground="#4A4A4A" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 

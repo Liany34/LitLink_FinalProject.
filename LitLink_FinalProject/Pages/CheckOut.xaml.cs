@@ -55,7 +55,6 @@ namespace LitLink_FinalProject.Pages
             double total = subTotal - discountCodeAmount;
             if (total < 0) total = 0;
 
-            // עדכון השדות בסיכום ההזמנה
             TxtSubTotal.Text = $"{subTotal:F2} ₪";
             TxtDiscount.Text = $"{discountCodeAmount:F2} ₪";
             TxtTotal.Text = $"{total:F2} ₪";

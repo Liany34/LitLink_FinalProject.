@@ -1,27 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace LitLink_FinalProject
+public class ByteImageConverter
 {
-    public class ByteImageConverter
+    public static ImageSource ByteToImage(byte[] imageData)
     {
-        public static ImageSource ByteToImage(byte[] imageData)
-        {
-            BitmapImage bitImg = new BitmapImage();
-            MemoryStream ms = new MemoryStream(imageData);
-            bitImg.BeginInit();
-            bitImg.StreamSource = ms;
-            bitImg.EndInit();
+        if (imageData == null || imageData.Length == 0) return null;
 
-            ImageSource imgSrc = bitImg as ImageSource;
+        BitmapImage biImg = new BitmapImage();
+        MemoryStream ms = new MemoryStream(imageData);
+        biImg.BeginInit();
+        biImg.StreamSource = ms;
+        biImg.EndInit();
 
-            return imgSrc;
-        }
+        return biImg as ImageSource;
     }
 }

@@ -73,7 +73,7 @@
             <StackPanel>
                 <Border CornerRadius="15" ClipToBounds="True" Background="White" 
                         BorderBrush="#FFC0CB" BorderThickness="2" Height="420">
-                    <Image Source="{Binding cover}" Stretch="UniformToFill"/>
+                    <Image x:Name="BookCoverImage" Stretch="UniformToFill"/>
                 </Border>
 
                 <TextBlock Text="{Binding idAuthor.PenName}" 
@@ -100,6 +100,7 @@
                             Content="Add to List" 
                             Style="{StaticResource OutlineRoundedButton}" 
                             Height="45" 
+                            Margin="0,0,0,10" 
                             Click="AddToList_Click"/>
                 </StackPanel>
             </StackPanel>

@@ -52,7 +52,7 @@
                                         <Border Background="White" BorderBrush="#FFF0F5" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,15,5" Width="140">
                                             <StackPanel>
                                                 <Border CornerRadius="5" ClipToBounds="True" Height="130" Width="100" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                                    <Image Source="{Binding cover}" Stretch="UniformToFill" Cursor="Hand" MouseDown="BookImage_MouseDown"/>
+                                                    <Image Loaded="BookImage_Loaded" Stretch="UniformToFill" Cursor="Hand" MouseDown="BookImage_MouseDown"/>
                                                 </Border>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -95,7 +95,7 @@
                                         <Border Background="White" BorderBrush="#FFC0CB" BorderThickness="1.5" CornerRadius="15" Padding="15" Margin="0,0,15,5" Width="150" Height="160" Cursor="Hand" MouseDown="AuthorCard_MouseDown">
                                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <Border Width="60" Height="60" CornerRadius="30" ClipToBounds="True" BorderBrush="#D06A8D" BorderThickness="1" HorizontalAlignment="Center" Margin="0,0,0,10">
-                                                    <Image Source="/Covers/DefultUser.png" Stretch="UniformToFill"/>
+                                                    <Image Loaded="AuthorImage_Loaded" Stretch="UniformToFill"/>
                                                 </Border>
                                                 <TextBlock Text="{Binding PenName}" FontSize="14" FontWeight="Bold" Foreground="#4A4A4A" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
                                             </StackPanel>

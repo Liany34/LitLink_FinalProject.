@@ -49,16 +49,21 @@ namespace LitLink_FinalProject.Pages
             {
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
 
-                if (!string.IsNullOrEmpty(currentUser.Picture))
+                if (currentUser != null && !string.IsNullOrEmpty(currentUser.Picture))
                 {
                     try
                     {
-                        ImgReaderProfile.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(currentUser.Picture, UriKind.RelativeOrAbsolute));
+                        byte[] imgStr = Convert.FromBase64String(currentUser.Picture);
+                        this.ImgReaderProfile.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
                     catch
                     {
-                        // לשים סתם תמונה }
+                        this.ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
                     }
+                }
+                else
+                {
+                    this.ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
                 }
 
                 allBooks = await apiService.GetAllBooks();
@@ -183,7 +188,7 @@ namespace LitLink_FinalProject.Pages
                 return;
             }
 
-            
+
             GenreUserControl purchasedRow = new GenreUserControl();
             purchasedRow.SetupGenreRow("My Purchased Library", ownedBooks);
             purchasedRow.BookSelected += UserRow_BookSelected;
@@ -217,7 +222,7 @@ namespace LitLink_FinalProject.Pages
 
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
-            currentUser = null; 
+            currentUser = null;
             this.NavigationService?.Navigate(new Uri("Pages/LogOutPage.xaml", UriKind.Relative));
         }
 
@@ -230,7 +235,7 @@ namespace LitLink_FinalProject.Pages
                 {
                     await apiService.DeleteUser(currentUser.Id);
 
-                    currentUser = null; 
+                    currentUser = null;
                     MessageBox.Show("Your account has been deleted successfully.", "LitLink");
                     this.NavigationService?.Navigate(new Uri("Pages/LogOutPage.xaml", UriKind.Relative));
                 }

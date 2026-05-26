@@ -48,7 +48,7 @@
                     Click="CommentMenuBtn_Click">
                 <Button.ContextMenu>
                     <ContextMenu x:Name="CommentContextMenu">
-                      
+
                         <MenuItem Header="Delete My Comment" x:Name="DeleteOwnItem" Click="DeleteComment_Click" Foreground="Red"/>
 
                         <MenuItem Header="Report Comment" x:Name="ReportItem" Click="ReportComment_Click"/>
@@ -61,7 +61,7 @@
 
             <Border Grid.Column="0" Width="50" Height="50" CornerRadius="25" 
                     BorderBrush="#FFC0CB" BorderThickness="2" Background="Transparent" VerticalAlignment="Top" ClipToBounds="True">
-                <Image Source="{Binding idReader.ProfileImg}" Stretch="UniformToFill"/>
+                <Image x:Name="ReaderProfileImage" Stretch="UniformToFill"/>
             </Border>
 
             <StackPanel Grid.Column="1" Margin="12,0,35,0">

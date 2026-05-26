@@ -72,13 +72,34 @@ namespace LitLink_FinalProject.Pages
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
             Apiservice buyerService = new Apiservice();
-            var users = await buyerService.GetAllUsers();
+            var readers = await buyerService.GetAllReaders();
+            var authors = await buyerService.GetAllAuthors();
+            var admins = await buyerService.GetAllAdmins();
             bool wentIn = false;
-            foreach (var user in users)
+            foreach (var r in readers)
             {
-                if (user.Email == EmailInput.Text && user.Pass == PasswordInput.Password)
+                if (r.Email == EmailInput.Text && r.Pass == PasswordInput.Password)
                 {
                     this.NavigationService.Navigate(new HomePage());
+                    wentIn = true;
+                    return;
+                }
+            }
+            foreach (var a in authors)
+            {
+                if (a.Email == EmailInput.Text && a.Pass == PasswordInput.Password)
+                {
+                    this.NavigationService.Navigate(new AuthorProfile());
+                    wentIn = true;
+                    return;
+                }
+            }
+            foreach (var ad in admins)
+            {
+                if (ad.Email == EmailInput.Text && ad.Pass == PasswordInput.Password)
+                {
+                    this.NavigationService.Navigate(new AdminProfile());
+                    wentIn = true;
                     return;
                 }
             }

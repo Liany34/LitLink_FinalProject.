@@ -24,6 +24,16 @@ namespace LitLink_FinalProject.Pages
         public SearchResultsPage()
         {
             InitializeComponent();
+            this.Loaded += SearchResultsPage_Loaded;
+        }
+
+        private void SearchResultsPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            string query = this.DataContext as string;
+            if (!string.IsNullOrEmpty(query))
+            {
+                ExecuteSearch(query);
+            }
         }
 
         public async void ExecuteSearch(string searchQuery)
@@ -34,10 +44,10 @@ namespace LitLink_FinalProject.Pages
             try
             {
                 List<Book> allBooks = await _apiService.GetAllBooks();
-                List<Author> allAuthors = await _apiService.GetAllAuthors(); 
+                List<Author> allAuthors = await _apiService.GetAllAuthors();
 
                 List<Book> filteredBooks = allBooks.Where(b =>
-                    b.BookName.ToLower().Contains(cleanQuery) ||
+                    (b.BookName != null && b.BookName.ToLower().Contains(cleanQuery)) ||
                     (b.Information != null && b.Information.ToLower().Contains(cleanQuery))
                 ).ToList();
 
@@ -100,7 +110,53 @@ namespace LitLink_FinalProject.Pages
             if (clickedAuthor != null)
             {
                 AuthorProfile authorPage = new AuthorProfile();
+                authorPage.DataContext = clickedAuthor;
                 this.NavigationService?.Navigate(authorPage);
+            }
+        }
+
+        private void BookImage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Image imgControl = sender as Image;
+            if (imgControl != null)
+            {
+                Book currentBook = imgControl.DataContext as Book;
+                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+                {
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
+                        imgControl.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+        }
+
+        private void AuthorImage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Image imgControl = sender as Image;
+            if (imgControl != null)
+            {
+                Author currentAuthor = imgControl.DataContext as Author;
+                if (currentAuthor != null && !string.IsNullOrEmpty(currentAuthor.Picture))
+                {
+                    try
+                    {
+                        byte[] imgStr = Convert.FromBase64String(currentAuthor.Picture);
+                        imgControl.Source = ByteImageConverter.ByteToImage(imgStr);
+                    }
+                    catch (Exception)
+                    {
+                        imgControl.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                    }
+                }
+                else
+                {
+                    imgControl.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                }
             }
         }
 
