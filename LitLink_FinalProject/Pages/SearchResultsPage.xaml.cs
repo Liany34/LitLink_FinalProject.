@@ -3,36 +3,32 @@ using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
     public partial class SearchResultsPage : Page
     {
-        private Apiservice _apiService = new Apiservice();
+        private Apiservice apiService = new Apiservice();
+        private string searchQuery;
 
-        public SearchResultsPage()
+        public SearchResultsPage(string query)
         {
             InitializeComponent();
+            searchQuery = query;
+
             this.Loaded += SearchResultsPage_Loaded;
         }
 
         private void SearchResultsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            string query = this.DataContext as string;
-            if (!string.IsNullOrEmpty(query))
+            if (!string.IsNullOrEmpty(searchQuery))
             {
-                ExecuteSearch(query);
+                ExecuteSearch(searchQuery);
             }
         }
 
@@ -43,8 +39,8 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                List<Book> allBooks = await _apiService.GetAllBooks();
-                List<Author> allAuthors = await _apiService.GetAllAuthors();
+                List<Book> allBooks = await apiService.GetAllBooks();
+                List<Author> allAuthors = await apiService.GetAllAuthors();
 
                 List<Book> filteredBooks = allBooks.Where(b =>
                     (b.BookName != null && b.BookName.ToLower().Contains(cleanQuery)) ||
@@ -112,26 +108,6 @@ namespace LitLink_FinalProject.Pages
                 AuthorProfile authorPage = new AuthorProfile();
                 authorPage.DataContext = clickedAuthor;
                 this.NavigationService?.Navigate(authorPage);
-            }
-        }
-
-        private void BookImage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Image imgControl = sender as Image;
-            if (imgControl != null)
-            {
-                Book currentBook = imgControl.DataContext as Book;
-                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
-                {
-                    try
-                    {
-                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
-                        imgControl.Source = ByteImageConverter.ByteToImage(imgStr);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
             }
         }
 

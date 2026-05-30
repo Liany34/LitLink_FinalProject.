@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Model;
 
 namespace LitLink_FinalProject.UserControls
@@ -21,7 +12,8 @@ namespace LitLink_FinalProject.UserControls
         public CatalogUserControl()
         {
             InitializeComponent();
-            this.DataContext = this;
+
+
             this.Loaded += (s, e) =>
             {
                 Book currentBook = this.DataContext as Book;
@@ -34,6 +26,7 @@ namespace LitLink_FinalProject.UserControls
                     }
                     catch (Exception)
                     {
+                        this.BookCoverImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/DefaultCover.png", UriKind.RelativeOrAbsolute));
                     }
                 }
             };
@@ -47,6 +40,7 @@ namespace LitLink_FinalProject.UserControls
             get { return (string)GetValue(BookNameProperty); }
             set { SetValue(BookNameProperty, value); }
         }
+
         public static readonly DependencyProperty PriceProperty =
             DependencyProperty.Register("Price", typeof(decimal), typeof(CatalogUserControl), new PropertyMetadata(0.00m));
 

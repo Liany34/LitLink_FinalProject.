@@ -156,8 +156,7 @@ namespace LitLink_FinalProject.Pages
                 return;
             }
 
-            SearchResultsPage resultsPage = new SearchResultsPage();
-            resultsPage.DataContext = query;
+            SearchResultsPage resultsPage = new SearchResultsPage(query);
             this.NavigationService?.Navigate(resultsPage);
         }
 

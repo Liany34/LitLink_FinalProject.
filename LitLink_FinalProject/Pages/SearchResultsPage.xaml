@@ -49,21 +49,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="White" BorderBrush="#FFF0F5" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,15,5" Width="140">
-                                            <StackPanel>
-                                                <Border CornerRadius="5" ClipToBounds="True" Height="130" Width="100" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                                    <Image Loaded="BookImage_Loaded" Stretch="UniformToFill" Cursor="Hand" MouseDown="BookImage_MouseDown"/>
-                                                </Border>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding bookName}" FontSize="12" FontWeight="Bold" Foreground="#4A4A4A" TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Grid.Column="1" Text="{Binding price, StringFormat={}{0:F0} ₪}" FontSize="12" FontWeight="Bold" Foreground="#FF1493" Margin="5,0,0,0"/>
-                                                </Grid>
-                                            </StackPanel>
-                                        </Border>
+                                        <local:CatalogUserControl MouseDown="BookImage_MouseDown" Margin="0,0,15,5"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

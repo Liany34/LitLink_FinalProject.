@@ -3,17 +3,11 @@ using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using LitLink_FinalProject.UserControls;
 
 namespace LitLink_FinalProject.Pages
@@ -28,11 +22,12 @@ namespace LitLink_FinalProject.Pages
         {
             InitializeComponent();
             this.Loaded += ReaderProfilePage_Loaded;
-            currentUser = this.DataContext as User;
+
         }
 
         private void ReaderProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
+            currentUser = this.DataContext as User;
             LoadUserData();
         }
 
@@ -49,7 +44,7 @@ namespace LitLink_FinalProject.Pages
             {
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
 
-                if (currentUser != null && !string.IsNullOrEmpty(currentUser.Picture))
+                if (!string.IsNullOrEmpty(currentUser.Picture))
                 {
                     try
                     {
@@ -66,8 +61,10 @@ namespace LitLink_FinalProject.Pages
                     this.ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
                 }
 
+                // הבאת כל הספרים מהשרת
                 allBooks = await apiService.GetAllBooks();
 
+                // בניית הרשימות של המשתמש
                 BuildUserLists();
             }
             catch (Exception ex)
@@ -81,10 +78,12 @@ namespace LitLink_FinalProject.Pages
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabList);
 
+            if (currentUser == null) return;
+
             try
             {
                 List<Book_Series> bookLists = await apiService.GetAllBookSeries();
-                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser.Id == currentUser.Id).ToList();
+                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser != null && l.IdUser.Id == currentUser.Id).ToList();
 
                 if (userCustomLists == null || userCustomLists.Count == 0)
                 {
@@ -92,11 +91,17 @@ namespace LitLink_FinalProject.Pages
                     return;
                 }
 
+                // אם רשימת הספרים הכללית לא נטענה מסיבה כלשהי, נטען אותה עכשיו
+                if (allBooks == null || allBooks.Count == 0)
+                {
+                    allBooks = await apiService.GetAllBooks();
+                }
+
                 foreach (var currentList in userCustomLists)
                 {
                     List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
-                    List<Series_Detail> currentListDetails = allListDetails.Where(d => d.IdSeries.Id == currentList.Id).ToList();
-                    List<Book> relatedBooks = allBooks.Where(b => currentListDetails.Any(d => d.IdBook.Id == b.Id)).ToList();
+                    List<Series_Detail> currentListDetails = allListDetails.Where(d => d.IdSeries != null && d.IdSeries.Id == currentList.Id).ToList();
+                    List<Book> relatedBooks = allBooks.Where(b => currentListDetails.Any(d => d.IdBook != null && d.IdBook.Id == b.Id)).ToList();
 
                     if (relatedBooks.Count == 0) continue;
 
@@ -116,30 +121,25 @@ namespace LitLink_FinalProject.Pages
 
         private async void UserRow_BookSelected(object sender, Book selectedBook)
         {
-            if (selectedBook == null) return;
+            if (selectedBook == null || currentUser == null) return;
 
             try
             {
                 List<Book> ownedBooks = new List<Book>();
-
                 List<Book_Series> bookLists = await apiService.GetAllBookSeries();
-
-                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser.Id == currentUser.Id).ToList();
-
+                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser != null && l.IdUser.Id == currentUser.Id).ToList();
                 List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
-
-                List<Series_Detail> userListDetails = allListDetails.Where(d => userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
+                List<Series_Detail> userListDetails = allListDetails.Where(d => d.IdSeries != null && userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
 
                 foreach (var detail in userListDetails)
                 {
-                    if (!ownedBooks.Any(b => b.Id == detail.IdBook.Id))
+                    if (detail.IdBook != null && !ownedBooks.Any(b => b.Id == detail.IdBook.Id))
                     {
                         ownedBooks.Add(detail.IdBook);
                     }
                 }
 
                 bool ownsBook = ownedBooks.Any(b => b.Id == selectedBook.Id);
-
 
                 BookPage detailsPage = new BookPage(selectedBook, ownsBook, false, false);
                 this.NavigationService?.Navigate(detailsPage);
@@ -150,17 +150,15 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-
         private void FilterList_Click(object sender, RoutedEventArgs e)
         {
             BuildUserLists();
         }
 
-        private async void FilterReviews_Click(object sender, RoutedEventArgs e)
+        private void FilterReviews_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabReviews);
-
             ShowEmptyStateMessage("You haven't written any reviews yet.");
         }
 
@@ -169,40 +167,52 @@ namespace LitLink_FinalProject.Pages
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabMyBooks);
 
-            List<Book> ownedBooks = new List<Book>();
-            List<Book_Series> bookLists = await apiService.GetAllBookSeries();
-            List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser.Id == currentUser.Id).ToList();
-            List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
-            List<Series_Detail> userListDetails = allListDetails.Where(d => userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
-            foreach (var detail in userListDetails)
+            if (currentUser == null) return;
+
+            try
             {
-                if (!ownedBooks.Any(b => b.Id == detail.IdBook.Id))
+                List<Book> ownedBooks = new List<Book>();
+                List<Book_Series> bookLists = await apiService.GetAllBookSeries();
+                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser != null && l.IdUser.Id == currentUser.Id).ToList();
+                List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
+                List<Series_Detail> userListDetails = allListDetails.Where(d => d.IdSeries != null && userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
+
+                if (allBooks == null || allBooks.Count == 0)
                 {
-                    ownedBooks.Add(detail.IdBook);
+                    allBooks = await apiService.GetAllBooks();
                 }
-            }
 
-            if (ownedBooks == null || ownedBooks.Count == 0)
+                foreach (var detail in userListDetails)
+                {
+                    if (detail.IdBook != null && !ownedBooks.Any(b => b.Id == detail.IdBook.Id))
+                    {
+                        ownedBooks.Add(detail.IdBook);
+                    }
+                }
+
+                if (ownedBooks.Count == 0)
+                {
+                    ShowEmptyStateMessage("You haven't purchased any books yet.");
+                    return;
+                }
+
+                GenreUserControl purchasedRow = new GenreUserControl();
+                purchasedRow.SetupGenreRow("My Purchased Library", ownedBooks);
+                purchasedRow.BookSelected += UserRow_BookSelected;
+                UserListsContainer.Children.Add(purchasedRow);
+            }
+            catch (Exception ex)
             {
-                ShowEmptyStateMessage("You haven't purchased any books yet.");
-                return;
+                System.Diagnostics.Debug.WriteLine("Error filtering purchased books: " + ex.Message);
             }
-
-
-            GenreUserControl purchasedRow = new GenreUserControl();
-            purchasedRow.SetupGenreRow("My Purchased Library", ownedBooks);
-            purchasedRow.BookSelected += UserRow_BookSelected;
-            UserListsContainer.Children.Add(purchasedRow);
         }
 
         private void FilterFollowing_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabFollowing);
-
             ShowEmptyStateMessage("You aren't following any authors yet.");
         }
-
 
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e) => EditProfilePopup.Visibility = Visibility.Visible;
         private void CloseEditProfile_Click(object sender, RoutedEventArgs e) => EditProfilePopup.Visibility = Visibility.Collapsed;
@@ -211,7 +221,6 @@ namespace LitLink_FinalProject.Pages
         {
             if (e.OriginalSource == EditProfilePopup) EditProfilePopup.Visibility = Visibility.Collapsed;
         }
-
 
         private void Home_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
         private void Cart_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/CartPage.xaml", UriKind.Relative));
@@ -228,13 +237,14 @@ namespace LitLink_FinalProject.Pages
 
         private async void DeleteAccount_Click(object sender, RoutedEventArgs e)
         {
+            if (currentUser == null) return;
+
             if (MessageBox.Show("Are you sure you want to permanently delete your LitLink account?\nThis action cannot be undone!",
                 "Delete Account", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 try
                 {
                     await apiService.DeleteUser(currentUser.Id);
-
                     currentUser = null;
                     MessageBox.Show("Your account has been deleted successfully.", "LitLink");
                     this.NavigationService?.Navigate(new Uri("Pages/LogOutPage.xaml", UriKind.Relative));
@@ -245,7 +255,6 @@ namespace LitLink_FinalProject.Pages
                 }
             }
         }
-
 
         private void HighlightActiveTab(Button activeBtn)
         {

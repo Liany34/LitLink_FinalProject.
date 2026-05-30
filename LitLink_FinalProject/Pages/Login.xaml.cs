@@ -74,33 +74,33 @@ namespace LitLink_FinalProject.Pages
             Apiservice buyerService = new Apiservice();
             var readers = await buyerService.GetAllReaders();
             var authors = await buyerService.GetAllAuthors();
-            var admins = await buyerService.GetAllAdmins();
+            var users = await buyerService.GetAllUsers();
             bool wentIn = false;
-            foreach (var r in readers)
+            foreach (var u in users)
             {
-                if (r.Email == EmailInput.Text && r.Pass == PasswordInput.Password)
+                if (u.Email == EmailInput.Text && u.Pass == PasswordInput.Password)
                 {
-                    this.NavigationService.Navigate(new HomePage());
-                    wentIn = true;
-                    return;
-                }
-            }
-            foreach (var a in authors)
-            {
-                if (a.Email == EmailInput.Text && a.Pass == PasswordInput.Password)
-                {
-                    this.NavigationService.Navigate(new AuthorProfile());
-                    wentIn = true;
-                    return;
-                }
-            }
-            foreach (var ad in admins)
-            {
-                if (ad.Email == EmailInput.Text && ad.Pass == PasswordInput.Password)
-                {
-                    this.NavigationService.Navigate(new AdminProfile());
-                    wentIn = true;
-                    return;
+                    if(readers.Any(r => r.Id == u.Id))
+                    {
+                        this.NavigationService.Navigate(new HomePage());
+                        wentIn = true;
+                        return;
+                    }
+                    else
+                    {
+                        if (authors.Any(a => a.Id == u.Id))
+                        {
+                            this.NavigationService.Navigate(new AuthorProfile());
+                            wentIn = true;
+                            return;
+                        }
+                        else
+                        {
+                            this.NavigationService.Navigate(new AdminProfile());
+                            wentIn = true;
+                        }
+                    }
+                   
                 }
             }
             if (!wentIn)

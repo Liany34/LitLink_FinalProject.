@@ -76,14 +76,14 @@
                     <Image x:Name="BookCoverImage" Stretch="UniformToFill"/>
                 </Border>
 
-                <TextBlock Text="{Binding idAuthor.PenName}" 
+                <TextBlock Text="{Binding IdAuthor.PenName}" 
                            FontSize="20" FontWeight="SemiBold" 
                            Foreground="#D06A8D" 
                            Margin="0,25,0,10" 
                            TextAlignment="Left" 
                            TextWrapping="Wrap"/>
 
-                <TextBlock Text="{Binding price, StringFormat={}{0:C}}" 
+                <TextBlock Text="{Binding Price, StringFormat={}{0:C}}" 
                            FontSize="25" 
                            FontWeight="Bold" 
                            Foreground="#FF1493" 
@@ -109,7 +109,7 @@
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Border Padding="15,45,15,0">
                 <StackPanel>
-                    <TextBlock Text="{Binding bookName}" 
+                    <TextBlock Text="{Binding BookName}" 
                                FontSize="36" 
                                FontWeight="ExtraBold" 
                                Foreground="#4A4A4A" 
@@ -122,7 +122,7 @@
                                Foreground="#D06A8D" 
                                Margin="0,0,0,10"/>
                     <TextBlock x:Name="DescriptionTextBlock" 
-                               Text="{Binding description}" 
+                               Text="{Binding Information}" 
                                TextWrapping="Wrap" 
                                FontSize="16" 
                                LineHeight="24" 
