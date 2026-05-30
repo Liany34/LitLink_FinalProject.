@@ -5,56 +5,38 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
       Title="SignUp"
-      Background = "White">
-
+      Background="White">
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource = "/Covers/SignUp.png"/>
+            <ImageBrush ImageSource="/Covers/SignUp.png" Stretch="Fill"/>
         </Grid.Background>
+
         <Grid.RowDefinitions>
-            <RowDefinition Height="90"/>
-            <RowDefinition Height="280"/>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="1.8*"/>
+            <RowDefinition Height="6.5*"/>
+            <RowDefinition Height="1.7*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="600"/>
-            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="2.8*"/>
+            <ColumnDefinition Width="3.6*"/>
+            <ColumnDefinition Width="3.6*"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Row="1" Grid.Column="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="130"/>
-                <ColumnDefinition Width="230"/>
-                <ColumnDefinition Width="40"/>
-                <ColumnDefinition Width="170"/>
-                <ColumnDefinition Width="30"/>
-            </Grid.ColumnDefinitions>
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="20"/> 
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="20"/> 
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="9"/>
-                    <RowDefinition Height="10"/> 
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="9"/>
-                    <RowDefinition Height="10"/> 
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="20"/> 
-                    <RowDefinition Height="15"/>
-                    <RowDefinition Height="9"/>
-                    <RowDefinition Height="10"/> 
-                    <RowDefinition Height="25"/>
-                </Grid.RowDefinitions>
+
+        <Grid Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" VerticalAlignment="Center" Margin="5,15,0,0">
                 <TextBox x:Name="FirstNameInput"
-                         Grid.Row="0"
-                         HorizontalAlignment="Left"
-                         Width="230"
-                         Height="25"
+                         Height="30"
                          Text="First Name"
                          Foreground="#6c3134"
                          FontSize="14"
@@ -64,11 +46,11 @@
                          VerticalContentAlignment="Center"
                          GotFocus="FirstNameInput_GotFocus"
                          LostFocus="FirstNameInput_LostFocus"/>
+            </Grid>
+
+            <Grid Grid.Row="1" VerticalAlignment="Center" Margin="5,15,0,0">
                 <TextBox x:Name="LastNameInput"
-                         Grid.Row="2"
-                         HorizontalAlignment="Left"
-                         Width="230"
-                         Height="25"
+                         Height="30"
                          Text="Last Name"
                          Foreground="#6c3134"
                          FontSize="14"
@@ -78,59 +60,61 @@
                          VerticalContentAlignment="Center"
                          GotFocus="LastNameInput_GotFocus"
                          LostFocus="LastNameInput_LostFocus"/>
-                <TextBox x:Name="PhoneInput"
-                         Grid.Row="4"
-                         HorizontalAlignment="Left"
-                         Width="230"
-                         Height="25"
-                         Text="000-0000000"
-                         Foreground="#6c3134"
-                         FontSize="14"
-                         FontFamily="/Fonts/#Alex Brush"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         VerticalContentAlignment="Center"
-                         GotFocus="PhoneInput_GotFocus"
-                         LostFocus="PhoneInput_LostFocus"/>
-                <TextBlock x:Name="InvaildPhone"
-                           Text="Invalid phone Number" 
-                           Grid.Row="5"
-                           Foreground="#aa3954" 
-                           FontSize="9" 
-                           Visibility="Collapsed"
-                           HorizontalAlignment="Left"
-                           FontFamily="/Fonts/#Roboto Slab"
-                           VerticalAlignment="Top"/>
-                <TextBox x:Name = "EmailInput" 
-                         Grid.Row="7"
-                         HorizontalAlignment="Left"
-                         Width = "230" 
-                         Height = "25"
-                         Text = "litlink@gmail.com"
-                         Foreground  ="#6c3134" 
-                         FontSize = "19" 
-                         FontFamily="/Fonts/#Alex Brush"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         VerticalContentAlignment="Center"
-                         GotFocus="EmailInput_GotFocus" 
-                         LostFocus="EmailInput_LostFocus"/>
-                <TextBlock x:Name="InvalidEmail"
-                           Text="Invalid email format" 
-                           Grid.Row="8"
-                           Foreground="#aa3954" 
-                           FontSize="9" 
-                           Visibility="Collapsed"
-                           HorizontalAlignment="Left"
-                           FontFamily="/Fonts/#Roboto Slab"
-                           VerticalAlignment="Top"/>
+            </Grid>
+
+            <Grid Grid.Row="2" VerticalAlignment="Center" Margin="5,15,0,0">
+                <StackPanel>
+                    <TextBox x:Name="PhoneInput"
+                             Height="30"
+                             Text="000-0000000"
+                             Foreground="#6c3134"
+                             FontSize="14"
+                             FontFamily="/Fonts/#Alex Brush"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             VerticalContentAlignment="Center"
+                             GotFocus="PhoneInput_GotFocus"
+                             LostFocus="PhoneInput_LostFocus"/>
+                    <TextBlock x:Name="InvaildPhone"
+                               Text="Invalid phone Number" 
+                               Foreground="#aa3954" 
+                               FontSize="9" 
+                               Visibility="Collapsed"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="3" VerticalAlignment="Center" Margin="5,15,0,0">
+                <StackPanel>
+                    <TextBox x:Name="EmailInput" 
+                             Height="30"
+                             Text="litlink@gmail.com"
+                             Foreground="#6c3134" 
+                             FontSize="14" 
+                             FontFamily="/Fonts/#Alex Brush"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             VerticalContentAlignment="Center"
+                             GotFocus="EmailInput_GotFocus" 
+                             LostFocus="EmailInput_LostFocus"/>
+                    <TextBlock x:Name="InvalidEmail"
+                               Text="Invalid email format" 
+                               Foreground="#aa3954" 
+                               FontSize="9" 
+                               Visibility="Collapsed"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="4" VerticalAlignment="Center" Margin="5,15,0,0">
                 <PasswordBox x:Name="PasswordInput" 
                              Background="Transparent" 
                              BorderThickness="0"
                              Foreground="#6c3134" 
                              FontFamily="/Fonts/Alex Brush"
-                             FontSize="19"
-                             Grid.Row="10"
+                             FontSize="14"
                              VerticalContentAlignment="Center"
                              PasswordChanged="PasswordInput_PasswordChanged"/>
                 <TextBox x:Name="VisiblePasswordInput" 
@@ -139,77 +123,76 @@
                          BorderThickness="0"
                          Foreground="#6c3134" 
                          FontFamily="/Fonts/Roboto Slab"
-                         FontSize="19"
-                         Grid.Row="10"
+                         FontSize="14"
                          VerticalContentAlignment="Center"/>
                 <TextBlock x:Name="PasswordPlaceholder" 
                            Text="****" 
                            Foreground="#6c3134" 
-                           FontSize="19" 
-                           Grid.Row="10"
+                           FontSize="14" 
                            FontFamily="/Fonts/Alex Brush"
                            VerticalAlignment="Center" 
                            IsHitTestVisible="False"/>
                 <Button x:Name="TogglePasswordButton" 
-                        Grid.Row="10"
                         Content="👁" 
                         HorizontalAlignment="Right" 
                         Background="Transparent" 
                         BorderThickness="0" 
                         Cursor="Hand" 
                         Opacity="0.5"
+                        Margin="0,0,5,0"
                         PreviewMouseDown="TogglePasswordButton_PreviewMouseDown"
                         PreviewMouseUp="TogglePasswordButton_PreviewMouseUp"/>
-                <PasswordBox x:Name="ReenterInput" 
+            </Grid>
+
+            <Grid Grid.Row="5" VerticalAlignment="Center" Margin="5,15,0,0">
+                <Grid>
+                    <PasswordBox x:Name="ReenterInput" 
+                                 Background="Transparent" 
+                                 BorderThickness="0"
+                                 Foreground="#6c3134" 
+                                 FontFamily="/Fonts/Alex Brush"
+                                 FontSize="14"
+                                 VerticalContentAlignment="Center"
+                                 PasswordChanged="ReenterInput_PasswordChanged"/>
+                    <TextBox x:Name="VisibleReenterInput" 
+                             Visibility="Collapsed"
                              Background="Transparent" 
                              BorderThickness="0"
                              Foreground="#6c3134" 
-                             FontFamily="/Fonts/Alex Brush"
-                             FontSize="19"
-                             Grid.Row="12"
-                             VerticalContentAlignment="Center"
-                             PasswordChanged="ReenterInput_PasswordChanged"/>
-                <TextBox x:Name="VisibleReenterInput" 
-                         Visibility="Collapsed"
-                         Grid.Row="12"
-                         Background="Transparent" 
-                         BorderThickness="0"
-                         Foreground="#6c3134" 
-                         FontFamily="/Fonts/Roboto Slab"
-                         FontSize="19"
-                         VerticalContentAlignment="Center"/>
-                <TextBlock x:Name="ReenterPlaceholder" 
-                           Text="****" 
-                           Grid.Row="12"
-                           Foreground="#6c3134" 
-                           FontSize="19" 
-                           FontFamily="/Fonts/Alex Brush"
-                           VerticalAlignment="Center" 
-                           IsHitTestVisible="False"/>
-                <Button x:Name="ToggleReenterButton"
-                        Grid.Row="12"
-                        Content="👁" 
-                        HorizontalAlignment="Right" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Cursor="Hand" 
-                        Opacity="0.5"
-                        PreviewMouseDown="ToggleReenterButton_PreviewMouseDown"
-                        PreviewMouseUp="ToggleReenterButton_PreviewMouseUp"/>
+                             FontFamily="/Fonts/Roboto Slab"
+                             FontSize="14"
+                             VerticalContentAlignment="Center"/>
+                    <TextBlock x:Name="ReenterPlaceholder" 
+                               Text="****" 
+                               Foreground="#6c3134" 
+                               FontSize="14" 
+                               FontFamily="/Fonts/Alex Brush"
+                               VerticalAlignment="Center" 
+                               IsHitTestVisible="False"/>
+                    <Button x:Name="ToggleReenterButton"
+                            Content="👁" 
+                            HorizontalAlignment="Right" 
+                            Background="Transparent" 
+                            BorderThickness="0" 
+                            Cursor="Hand" 
+                            Opacity="0.5"
+                            Margin="0,0,5,0"
+                            PreviewMouseDown="ToggleReenterButton_PreviewMouseDown"
+                            PreviewMouseUp="ToggleReenterButton_PreviewMouseUp"/>
+                </Grid>
                 <TextBlock x:Name="DiffPass"
-                           Grid.Row="14"
                            Text="Passwords do not match"
                            FontFamily="/Fonts/#Roboto Slab"
-                           FontSize="11"
+                           FontSize="10"
                            Foreground="#aa3954"
                            Visibility="Collapsed"
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Top"/>
+                           VerticalAlignment="Bottom"
+                           Margin="0,0,0,-12"/>
+            </Grid>
+
+            <Grid Grid.Row="6" VerticalAlignment="Center" Margin="5,15,0,0">
                 <TextBox x:Name="UsernameInput"
-                         Grid.Row="15"
-                         HorizontalAlignment="Left"
-                         Width="230"
-                         Height="25"
+                         Height="30"
                          Text="Username"
                          Foreground="#6c3134"
                          FontSize="14"
@@ -220,47 +203,44 @@
                          GotFocus="UsernameInput_GotFocus"
                          LostFocus="UsernameInput_LostFocus"/>
             </Grid>
-            <Grid Grid.Column="3">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40"/>
-                    <RowDefinition Height="30"/>
-                    <RowDefinition Height="15"/>
-                </Grid.RowDefinitions>
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,79,0,0">
+            <StackPanel>
                 <DatePicker x:Name="BirthDatePicker"
-                            Grid.Row="1"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
                             Width="170"
                             Height="25"
                             Foreground="#6c3134"
-                            FontSize="14"
+                            FontSize="12"
                             FontFamily="/Fonts/#Alex Brush"
                             Background="Transparent"
                             BorderThickness="0"/>
                 <TextBlock x:Name="InvalidBirthDate"
                            Text="You must choose your birthdate" 
-                           Grid.Row="2"
                            Foreground="#aa3954" 
-                           FontSize="11" 
+                           FontSize="10" 
                            Visibility="Collapsed"
-                           HorizontalAlignment="Left"
                            FontFamily="/Fonts/#Roboto Slab"
-                           VerticalAlignment="Top"/>
-            </Grid>
+                           Margin="0,4,0,0"/>
+            </StackPanel>
         </Grid>
-        <Button x:Name="SignUpButton"
-                Content = "Sign Up"
-                Grid.Row="2"
-                Grid.Column="1"
-                Width="120" 
-                Height="40" 
-                HorizontalAlignment="Center"
-                Background="#aa3954"
-                Foreground="White"
-                FontFamily="/Fonts/#Alex Brush"
-                FontSize="20"
-                BorderThickness="0"
-                Cursor="Hand"
-                Click="SignUpButton_Click"/>
+
+        <Grid Grid.Row="2" Grid.Column="1">
+            <Button x:Name="SignUpButton"
+                    Content = "Sign Up"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Width="120" 
+                    Height="40" 
+                    HorizontalAlignment="Center"
+                    Background="#aa3954"
+                    Foreground="White"
+                    FontFamily="/Fonts/#Alex Brush"
+                    FontSize="20"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="SignUpButton_Click">
+            </Button>
+        </Grid>
     </Grid>
 </Page>

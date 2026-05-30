@@ -62,21 +62,22 @@ namespace LitLink_FinalProject.Pages
                     TxtFollowersCount.Text = $"{followersCount} Followers";
                 }
 
-                if (currentUser != null && !string.IsNullOrEmpty(currentUser.Picture))
+                string st = await apiService.GetPRPByUserIDByte64(currentAuthorData.Id);
+                if (currentAuthorData != null && !string.IsNullOrEmpty(currentAuthorData.Picture))
                 {
                     try
                     {
-                        byte[] imgStr = Convert.FromBase64String(currentUser.Picture);
+                        byte[] imgStr = Convert.FromBase64String(st);
                         this.ImgAuthorProfile.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
                     catch
                     {
-                        this.ImgAuthorProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                        this.ImgAuthorProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
                     }
                 }
                 else
                 {
-                    this.ImgAuthorProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                    this.ImgAuthorProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
                 }
 
                 List<Book> allBooks = await apiService.GetAllBooks();

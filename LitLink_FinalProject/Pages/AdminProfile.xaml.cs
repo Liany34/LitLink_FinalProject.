@@ -65,21 +65,23 @@ namespace LitLink_FinalProject.Pages
 
             TxtHelloAdmin.Text = $"Hello, {currentUser.Username}";
 
+
+            string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
             if (currentUser != null && !string.IsNullOrEmpty(currentUser.Picture))
             {
                 try
                 {
-                    byte[] imgStr = Convert.FromBase64String(currentUser.Picture);
+                    byte[] imgStr = Convert.FromBase64String(st);
                     this.ImgAdminProfile.Source = ByteImageConverter.ByteToImage(imgStr);
                 }
                 catch (Exception)
                 {
-                    this.ImgAdminProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                    this.ImgAdminProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
                 }
             }
             else
             {
-                this.ImgAdminProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                this.ImgAdminProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
             }
 
             if (PanelSales.Visibility == Visibility.Visible) LoadSalesData();

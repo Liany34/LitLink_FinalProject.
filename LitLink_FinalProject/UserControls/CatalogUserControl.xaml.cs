@@ -4,29 +4,32 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Model;
+using Service;
 
 namespace LitLink_FinalProject.UserControls
 {
     public partial class CatalogUserControl : UserControl
     {
+        private Apiservice apiService = new Apiservice();
         public CatalogUserControl()
         {
             InitializeComponent();
 
 
-            this.Loaded += (s, e) =>
+            this.Loaded += async (s, e) =>
             {
                 Book currentBook = this.DataContext as Book;
+                string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
                 if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
                 {
                     try
                     {
-                        byte[] imgStr = Convert.FromBase64String(currentBook.Cover);
+                        byte[] imgStr = Convert.FromBase64String(st);
                         this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
                     catch (Exception)
                     {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/DefaultCover.png", UriKind.RelativeOrAbsolute));
+                        this.BookCoverImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\Covers\\DefaultCover.png", UriKind.RelativeOrAbsolute));
                     }
                 }
             };

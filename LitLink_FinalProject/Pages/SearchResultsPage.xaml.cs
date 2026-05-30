@@ -21,6 +21,7 @@ namespace LitLink_FinalProject.Pages
             InitializeComponent();
             searchQuery = query;
 
+            // נרשם לאירוע הטעינה בצורה מסודרת
             this.Loaded += SearchResultsPage_Loaded;
         }
 
@@ -28,20 +29,42 @@ namespace LitLink_FinalProject.Pages
         {
             if (!string.IsNullOrEmpty(searchQuery))
             {
-                ExecuteSearch(searchQuery);
+                // מריץ את החיפוש בשרשור רקע כדי שה-UI לא יקפא לעולם
+                Task.Run(async () =>
+                {
+                    await ExecuteSearch(searchQuery);
+                });
             }
         }
 
-        public async void ExecuteSearch(string searchQuery)
+        public async Task ExecuteSearch(string searchQuery)
         {
-            TxtSearchTitle.Text = $"Search Results for: '{searchQuery}'";
+            // עדכון הכותרת (צריך להתבצע ב-UI Thread)
+            Dispatcher.Invoke(() =>
+            {
+                TxtSearchTitle.Text = $"Search Results for: '{searchQuery}'";
+            });
+
             string cleanQuery = searchQuery.ToLower().Trim();
 
             try
             {
-                List<Book> allBooks = await apiService.GetAllBooks();
-                List<Author> allAuthors = await apiService.GetAllAuthors();
+                    System.Diagnostics.Debug.WriteLine("[LITLINK] מנסה למשוך ספרים מה-API...");
+                    List<Book> allBooks = await apiService.GetAllBooks();
+                    System.Diagnostics.Debug.WriteLine("[LITLINK] הספרים נמשכו בהצלחה!");
 
+                    System.Diagnostics.Debug.WriteLine("[LITLINK] מנסה למשוך סופרים מה-API...");
+                    List<Author> allAuthors = await apiService.GetAllAuthors();
+                    System.Diagnostics.Debug.WriteLine("[LITLINK] הסופרים נמשכו בהצלחה!");
+
+                    if (allBooks == null) allBooks = new List<Book>();
+                    if (allAuthors == null) allAuthors = new List<Author>();
+
+
+                if (allBooks == null) allBooks = new List<Book>();
+                if (allAuthors == null) allAuthors = new List<Author>();
+
+                // סינון הנתונים ברקע
                 List<Book> filteredBooks = allBooks.Where(b =>
                     (b.BookName != null && b.BookName.ToLower().Contains(cleanQuery)) ||
                     (b.Information != null && b.Information.ToLower().Contains(cleanQuery))
@@ -51,38 +74,45 @@ namespace LitLink_FinalProject.Pages
                     a.PenName != null && a.PenName.ToLower().Contains(cleanQuery)
                 ).ToList();
 
-                if (filteredBooks.Count > 0)
+                // החזרת התוצאות ל-UI ועדכון הפקדים הגרפיים (באמצעות Dispatcher)
+                Dispatcher.Invoke(() =>
                 {
-                    BooksResultSection.Visibility = Visibility.Visible;
-                    BooksItemsControl.ItemsSource = filteredBooks;
-                }
-                else
-                {
-                    BooksResultSection.Visibility = Visibility.Collapsed;
-                }
+                    if (filteredBooks.Count > 0)
+                    {
+                        BooksResultSection.Visibility = Visibility.Visible;
+                        BooksItemsControl.ItemsSource = filteredBooks;
+                    }
+                    else
+                    {
+                        BooksResultSection.Visibility = Visibility.Collapsed;
+                    }
 
-                if (filteredAuthors.Count > 0)
-                {
-                    AuthorsResultSection.Visibility = Visibility.Visible;
-                    AuthorsItemsControl.ItemsSource = filteredAuthors;
-                }
-                else
-                {
-                    AuthorsResultSection.Visibility = Visibility.Collapsed;
-                }
+                    if (filteredAuthors.Count > 0)
+                    {
+                        AuthorsResultSection.Visibility = Visibility.Visible;
+                        AuthorsItemsControl.ItemsSource = filteredAuthors;
+                    }
+                    else
+                    {
+                        AuthorsResultSection.Visibility = Visibility.Collapsed;
+                    }
 
-                if (filteredBooks.Count == 0 && filteredAuthors.Count == 0)
-                {
-                    TxtNoResults.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    TxtNoResults.Visibility = Visibility.Collapsed;
-                }
+                    if (filteredBooks.Count == 0 && filteredAuthors.Count == 0)
+                    {
+                        TxtNoResults.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        TxtNoResults.Visibility = Visibility.Collapsed;
+                    }
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error performing search: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show("Error performing search: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                });
             }
         }
 

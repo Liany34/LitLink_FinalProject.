@@ -33,6 +33,7 @@ namespace LitLink_FinalProject.UserControls
                     }
                     catch (Exception)
                     {
+                        this.ImgBook.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\Covers\\DefaultCover.png", UriKind.RelativeOrAbsolute));
                     }
                 }
             };
@@ -95,7 +96,7 @@ namespace LitLink_FinalProject.UserControls
                 }
                 catch
                 {
-                    control.ImgBook.Source = new BitmapImage(new Uri("pack://application:,,,/BookCovers/default_book.png", UriKind.RelativeOrAbsolute));
+                    control.ImgBook.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\Covers\\DefaultCover.png", UriKind.RelativeOrAbsolute));
                 }
             }
         }

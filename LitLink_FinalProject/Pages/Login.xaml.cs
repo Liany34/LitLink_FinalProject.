@@ -82,7 +82,17 @@ namespace LitLink_FinalProject.Pages
                 {
                     if(readers.Any(r => r.Id == u.Id))
                     {
-                        this.NavigationService.Navigate(new HomePage());
+                        // בהנחה ש-loggedUser הוא האובייקט מסוג User שחזר מה-API אחרי התחברות מוצלחת:
+                        User loggedUser = readers.First(r => r.Id == u.Id); // או פשוט u אם הוא כבר מכיל את כל המידע הדרוש
+
+                        // 1. יצירת מופע חדש של עמוד הבית
+                        HomePage homePage = new HomePage();
+
+                        // 2. השמת המשתמש בתוך ה-DataContext של עמוד הבית החדש
+                        homePage.DataContext = loggedUser;
+
+                        // 3. ניווט למופע הקיים (ולא ל-Uri)
+                        this.NavigationService?.Navigate(homePage);
                         wentIn = true;
                         return;
                     }

@@ -44,21 +44,22 @@ namespace LitLink_FinalProject.Pages
             {
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
 
+                string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
                 if (!string.IsNullOrEmpty(currentUser.Picture))
                 {
                     try
                     {
-                        byte[] imgStr = Convert.FromBase64String(currentUser.Picture);
+                        byte[] imgStr = Convert.FromBase64String(st);
                         this.ImgReaderProfile.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
                     catch
                     {
-                        this.ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                        this.ImgReaderProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
                     }
                 }
                 else
                 {
-                    this.ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/PRP/DefultUser.png", UriKind.RelativeOrAbsolute));
+                    this.ImgReaderProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
                 }
 
                 // הבאת כל הספרים מהשרת
