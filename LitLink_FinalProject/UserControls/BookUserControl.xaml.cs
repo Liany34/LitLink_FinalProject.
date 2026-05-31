@@ -23,22 +23,21 @@ namespace LitLink_FinalProject.UserControls
     {
         private bool isAdmin;
         private bool isAuthor;
+        private bool isGuest; // ← נוסף
         private Apiservice apiService = new Apiservice();
 
-        public BookUserControl()
-        {
-            InitializeComponent();
-        }
-
-        public BookUserControl(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor)
+        public BookUserControl(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser = null)
         {
             InitializeComponent();
             this.DataContext = bookData;
             this.isAdmin = isAdmin;
             this.isAuthor = isAuthor;
+            this.isGuest = (currentUser == null); // ← נוסף
 
             SetActionButtons(userOwnsBook);
             SetupPermissions();
+
+            // ... שאר הקוד הקיים ב-Loaded נשאר ללא שינוי
 
             this.Loaded += async (s, e) => {
                 if (DescriptionTextBlock.ActualHeight < 120)
@@ -127,6 +126,14 @@ namespace LitLink_FinalProject.UserControls
 
         private void SetActionButtons(bool ownsBook)
         {
+            if (isGuest)
+            {
+                // אורח — רואה מידע בלבד, ללא כפתורי פעולה
+                BuyBtn.Visibility = Visibility.Collapsed;
+                AddToListBtn.Visibility = Visibility.Collapsed;
+                return;
+            }
+
             if (isAdmin)
             {
                 BuyBtn.Visibility = Visibility.Collapsed;
@@ -140,19 +147,26 @@ namespace LitLink_FinalProject.UserControls
             else
             {
                 AddToListBtn.Visibility = Visibility.Visible;
-                if (ownsBook)
-                {
-                    BuyBtn.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    BuyBtn.Visibility = Visibility.Visible;
-                }
+                BuyBtn.Visibility = ownsBook ? Visibility.Collapsed : Visibility.Visible;
             }
         }
 
         private void SetupPermissions()
         {
+            if (isGuest)
+            {
+                // אורח — אין כפתור עריכה, דיווח, או תפריט כלל
+                EditCoverItem.Visibility = Visibility.Collapsed;
+                EditNameItem.Visibility = Visibility.Collapsed;
+                EditDescItem.Visibility = Visibility.Collapsed;
+                EditPriceItem.Visibility = Visibility.Collapsed;
+                EditDateItem.Visibility = Visibility.Collapsed;
+                DeleteItem.Visibility = Visibility.Collapsed;
+                AdminSeparator.Visibility = Visibility.Collapsed;
+                ReportItem.Visibility = Visibility.Collapsed;
+                return;
+            }
+
             Visibility editVis = (isAdmin || isAuthor) ? Visibility.Visible : Visibility.Collapsed;
             Visibility reportVis = (isAdmin || isAuthor) ? Visibility.Collapsed : Visibility.Visible;
 

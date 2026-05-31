@@ -33,6 +33,10 @@ namespace LitLink_FinalProject.Pages
 
             this.DataContextChanged += HomePage_DataContextChanged;
         }
+        public HomePage(Reader loggedInUser) : this()
+        {
+            this.currentUser = loggedInUser;
+        }
 
         private void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -186,14 +190,9 @@ namespace LitLink_FinalProject.Pages
                 List<Cart> allCarts = await apiService.GetAllCarts();
                 List<Cart> cartUser = allCarts.Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id).ToList();
                 List<Cart_Detail> bookDetailsList = await apiService.GetAllCartDetails();
-                List<Cart_Detail> bookDetailsUser = bookDetailsList.Where(cd => cd.IdCart != null && cartUser.Any(c => c.Id == cd.IdCart.Id)).ToList();
-
-                foreach (Cart_Detail detail in bookDetailsUser)
+                foreach (Cart_Detail detail in bookDetailsList.Where(cd => cd.IdCart != null && cartUser.Any(c => c.Id == cd.IdCart.Id)))
                 {
-                    if (detail.IsPurchased == true)
-                    {
-                        ownedBooks.Add(detail.IdBook);
-                    }
+                    if (detail.IsPurchased == true) ownedBooks.Add(detail.IdBook);
                 }
             }
 
@@ -204,7 +203,8 @@ namespace LitLink_FinalProject.Pages
             bool isAdmin = currentUser != null && allAdmins.Any(a => a.Id == currentUser.Id);
             bool isAuthor = currentUser != null && allAuthors.Any(a => a.Id == currentUser.Id);
 
-            BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin, isAuthor);
+            // ← currentUser מועבר עכשיו
+            BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin, isAuthor, currentUser);
             this.NavigationService?.Navigate(detailsPage);
         }
 
@@ -220,14 +220,13 @@ namespace LitLink_FinalProject.Pages
         private void BtnSearch_Click(object sender, RoutedEventArgs e)
         {
             string query = TxtSearch.Text.Trim();
-
             if (string.IsNullOrEmpty(query) || query == "Search books or authors...")
             {
                 MessageBox.Show("Please enter a book name or author name to search.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            SearchResultsPage resultsPage = new SearchResultsPage(query, currentUser);
+            SearchResultsPage resultsPage = new SearchResultsPage(query, currentUser); // ← currentUser נוסף
             this.NavigationService?.Navigate(resultsPage);
         }
 
@@ -240,59 +239,41 @@ namespace LitLink_FinalProject.Pages
 
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            var login = new Login();
-            Window.GetWindow(this).Content = login;
+            MainWindow.AppFrame.Navigate(new Login());
         }
 
         private void AboutUs_Click(object sender, RoutedEventArgs e)
         {
-            var aboutUs = new AboutUs(currentUser);
-            Window.GetWindow(this).Content = aboutUs;
+            MainWindow.AppFrame.Navigate(new AboutUs(currentUser));
         }
 
         private void Cart_Click(object sender, RoutedEventArgs e)
         {
             if (currentUser == null) return;
-            var cart = new CartPage(currentUser.Id);
-            Window.GetWindow(this).Content = cart;
+            MainWindow.AppFrame.Navigate(new CartPage(currentUser));
         }
 
         private async void Profile_Click(object sender, RoutedEventArgs e)
         {
             if (currentUser == null) return;
-
             List<Reader> allReaders = await apiService.GetAllReaders();
             if (allReaders.Any(a => a.Id == currentUser.Id))
-            {
-                // העברת ה-currentUser בתוך הסוגריים!
-                var readerProfile = new ReaderProfile(currentUser);
-                Window.GetWindow(this).Content = readerProfile;
-            }
+                MainWindow.AppFrame.Navigate(new ReaderProfile(currentUser));
             else
-            {
                 MessageBox.Show("You are not authorized to go there.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
         }
 
         private async void BecomeAuthor_Click(object sender, RoutedEventArgs e)
         {
             if (currentUser == null) return;
-
             try
             {
                 List<Author> allAuthors = await apiService.GetAllAuthors();
                 Author existingAuthor = allAuthors.FirstOrDefault(a => a.Id == currentUser.Id);
-
                 if (existingAuthor != null)
-                {
-                    var authorProfile = new AuthorProfile(existingAuthor);
-                    Window.GetWindow(this).Content = authorProfile;
-                }
+                    MainWindow.AppFrame.Navigate(new AuthorProfile(existingAuthor));
                 else
-                {
-                    var becomeAuthor = new BecomeAuthorPage();
-                    Window.GetWindow(this).Content = becomeAuthor;
-                }
+                    MainWindow.AppFrame.Navigate(new BecomeAuthorPage());
             }
             catch (Exception ex)
             {
@@ -303,8 +284,7 @@ namespace LitLink_FinalProject.Pages
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
             currentUser = null;
-            var signOut = new SignOut();
-            Window.GetWindow(this).Content = signOut;
+            MainWindow.AppFrame.Navigate(new SignOut());
         }
 
         private void TxtSearch_GotFocus(object sender, RoutedEventArgs e) { if (TxtSearch.Text == "Search books or authors...") { TxtSearch.Text = ""; TxtSearch.Foreground = Brushes.Black; } }

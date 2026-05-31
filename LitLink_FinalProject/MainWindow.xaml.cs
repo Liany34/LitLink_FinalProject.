@@ -12,14 +12,14 @@ using System.Windows.Shapes;
 
 namespace LitLink_FinalProject
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        public static Frame AppFrame { get; private set; }
+
         public MainWindow()
         {
             InitializeComponent();
+            AppFrame = MainFrame;
             MainFrame.Navigate(new LogoPage());
         }
     }

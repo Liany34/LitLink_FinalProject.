@@ -21,20 +21,21 @@ namespace LitLink_FinalProject.Pages
 {
     public partial class BookPage : Page
     {
-        public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor)
+        private Reader currentUser;
+
+        public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser = null)
         {
             InitializeComponent();
-            BookUserControl bookControl = new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor);
+            this.currentUser = currentUser;
 
+            BookUserControl bookControl = new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor, currentUser);
             MainContainer.Children.Add(bookControl);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (this.NavigationService != null && this.NavigationService.CanGoBack)
-            {
                 this.NavigationService.GoBack();
-            }
         }
     }
 }

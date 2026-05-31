@@ -374,9 +374,35 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private async void TabSales_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabSales); PanelSales.Visibility = Visibility.Visible; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Collapsed; await CalculateAndDisplaySales(null); }
-        private void TabReports_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabReports); PanelSales.Visibility = Visibility.Collapsed; PanelReports.Visibility = Visibility.Visible; PanelDiscounts.Visibility = Visibility.Collapsed; LoadReportsData(); }
-        private void TabDiscounts_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabDiscounts); PanelSales.Visibility = Visibility.Collapsed; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Visible; LoadCouponsData(); }
+        private async void TabSales_Click(object sender, RoutedEventArgs e)
+        {
+            HighlightTab(BtnTabSales);
+            PanelSales.Visibility = Visibility.Visible;
+            PanelReports.Visibility = Visibility.Collapsed;
+            PanelDiscounts.Visibility = Visibility.Collapsed;
+            PanelNews.Visibility = Visibility.Collapsed;  // ← נוסף
+            await CalculateAndDisplaySales(null);
+        }
+
+        private void TabReports_Click(object sender, RoutedEventArgs e)
+        {
+            HighlightTab(BtnTabReports);
+            PanelSales.Visibility = Visibility.Collapsed;
+            PanelReports.Visibility = Visibility.Visible;
+            PanelDiscounts.Visibility = Visibility.Collapsed;
+            PanelNews.Visibility = Visibility.Collapsed;  // ← נוסף
+            LoadReportsData();
+        }
+
+        private void TabDiscounts_Click(object sender, RoutedEventArgs e)
+        {
+            HighlightTab(BtnTabDiscounts);
+            PanelSales.Visibility = Visibility.Collapsed;
+            PanelReports.Visibility = Visibility.Collapsed;
+            PanelDiscounts.Visibility = Visibility.Visible;
+            PanelNews.Visibility = Visibility.Collapsed;  // ← נוסף
+            LoadCouponsData();
+        }
 
         private void HighlightTab(Button activeBtn)
         {
@@ -399,6 +425,10 @@ namespace LitLink_FinalProject.Pages
             newsWindow.ShowDialog();
         }
 
-        private void LogOut_Click(object sender, RoutedEventArgs e) { currentAdmin = null; Window.GetWindow(this).Content = new SignOut(); }
+        private void LogOut_Click(object sender, RoutedEventArgs e)
+        {
+            currentAdmin = null;
+            MainWindow.AppFrame.Navigate(new SignOut());
+        }
     }
 }

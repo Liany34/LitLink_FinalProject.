@@ -26,12 +26,13 @@ namespace LitLink_FinalProject.Pages
         private List<Book> chosenBooks = new List<Book>();
         private int currentUserId;
 
-        public CartPage(int loggedInUserId)
+        private Reader currentReader; // ← החלף את currentUserId
+
+        public CartPage(Reader loggedInReader) // ← שנה את החתימה
         {
             InitializeComponent();
-
-            this.currentUserId = loggedInUserId;
-
+            this.currentReader = loggedInReader;
+            this.currentUserId = loggedInReader.Id; // השאר אם יש שימוש ב-currentUserId במקום אחר
             LoadCartItemsAsync();
         }
 
@@ -183,8 +184,7 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                var allReaders = apiService.GetAllReaders();
-                Reader logedinUser = allReaders.Result.FirstOrDefault(r => r.Id == currentUserId);
+                chosenBooks.Clear(); // נקה כדי למנוע כפילויות
 
                 foreach (CartUserControl bookControl in loadedControls)
                 {
@@ -193,18 +193,19 @@ namespace LitLink_FinalProject.Pages
                     {
                         Book selectedBook = bookControl.DataContext as Book;
                         if (selectedBook != null)
-                        {
                             chosenBooks.Add(selectedBook);
-                        }
                     }
                 }
 
+                if (chosenBooks.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one book to checkout.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
                 Pages.CheckOut checkoutPage = new Pages.CheckOut();
-
-                checkoutPage.SetupCheckout(chosenBooks, logedinUser.Email, logedinUser.PhoneNumber, 0);
-
-                Window.GetWindow(this).Content = checkoutPage;
+                checkoutPage.SetupCheckout(chosenBooks, currentReader.Email, currentReader.PhoneNumber, 0);
+                MainWindow.AppFrame.Navigate(checkoutPage);
             }
             catch (Exception ex)
             {
@@ -213,14 +214,7 @@ namespace LitLink_FinalProject.Pages
         }
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.NavigationService != null && this.NavigationService.CanGoBack)
-            {
-                this.NavigationService.GoBack();
-            }
-            HomePage homePage = new HomePage();
-            Reader current = apiService.GetAllReaders().Result.FirstOrDefault(r => r.Id == currentUserId);
-            homePage.DataContext = current;
-            Window.GetWindow(this).Content = homePage;
+            MainWindow.AppFrame.Navigate(new HomePage(currentReader));
         }
     }
 }

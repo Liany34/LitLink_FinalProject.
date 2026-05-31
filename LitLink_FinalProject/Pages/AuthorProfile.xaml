@@ -95,8 +95,9 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <UniformGrid Grid.Row="0" Columns="3" Margin="0,0,0,15">
+            <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,15">
                 <Button x:Name="BtnTabMyBooks" Content="My Books" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Click="TabMyBooks_Click"/>
+                <Button x:Name="BtnTabMyLists" Content="My Lists" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabMyLists_Click"/>
                 <Button x:Name="BtnTabMyNews" Content="My News" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabMyNews_Click"/>
                 <Button x:Name="BtnTabSalesData" Content="Sales Data" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabSalesData_Click"/>
             </UniformGrid>
@@ -106,6 +107,8 @@
                     <StackPanel x:Name="AuthorBooksContainer" Visibility="Visible"/>
 
                     <StackPanel x:Name="AuthorNewsContainer" Visibility="Collapsed"/>
+
+                    <StackPanel x:Name="AuthorListsContainer" Visibility="Collapsed"/>
 
                     <StackPanel x:Name="AuthorSalesContainer" Visibility="Collapsed">
                         <Border Background="White" CornerRadius="12" Padding="20" Effect="{StaticResource MenuShadow}" Margin="0,10,10,10">

@@ -100,8 +100,7 @@ namespace LitLink_FinalProject.Pages
                         var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
                         if (loggedAuthor != null)
                         {
-                            // תוקן: מעביר את הסופר בקונסטרקטור
-                            var authorProfile = new AuthorProfile(loggedAuthor);
+                            var authorProfile = new AuthorProfile(loggedAuthor); 
                             Window.GetWindow(this).Content = authorProfile;
                             wentIn = true;
                             return;

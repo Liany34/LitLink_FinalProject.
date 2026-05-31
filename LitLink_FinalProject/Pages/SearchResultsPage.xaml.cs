@@ -15,57 +15,37 @@ namespace LitLink_FinalProject.Pages
     {
         private Apiservice apiService = new Apiservice();
         private string searchQuery;
-
-        private Reader currentUser;
+        private Reader currentUser; // ← נוסף
 
         public SearchResultsPage(string query, Reader currentUser = null)
         {
             InitializeComponent();
             searchQuery = query;
-            this.currentUser = currentUser;
+            this.currentUser = currentUser; // ← נוסף
             this.Loaded += SearchResultsPage_Loaded;
         }
 
-        private void SearchResultsPage_Loaded(object sender, RoutedEventArgs e)
+        private async void SearchResultsPage_Loaded(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(searchQuery))
-            {
-                // מריץ את החיפוש בשרשור רקע כדי שה-UI לא יקפא לעולם
-                Task.Run(async () =>
-                {
-                    await ExecuteSearch(searchQuery);
-                });
-            }
+                await ExecuteSearch(searchQuery); // ← ישירות async, לא Task.Run
         }
 
         public async Task ExecuteSearch(string searchQuery)
         {
-            // עדכון הכותרת (צריך להתבצע ב-UI Thread)
-            Dispatcher.Invoke(() =>
-            {
-                TxtSearchTitle.Text = $"Search Results for: '{searchQuery}'";
-            });
-
+            TxtSearchTitle.Text = $"Search Results for: '{searchQuery}'";
             string cleanQuery = searchQuery.ToLower().Trim();
 
             try
             {
-                    System.Diagnostics.Debug.WriteLine("[LITLINK] מנסה למשוך ספרים מה-API...");
-                    List<Book> allBooks = await apiService.GetAllBooks();
-                    System.Diagnostics.Debug.WriteLine("[LITLINK] הספרים נמשכו בהצלחה!");
+                // טעינה מקבילה
+                var booksTask = apiService.GetAllBooks();
+                var authorsTask = apiService.GetAllAuthors();
+                await Task.WhenAll(booksTask, authorsTask);
 
-                    System.Diagnostics.Debug.WriteLine("[LITLINK] מנסה למשוך סופרים מה-API...");
-                    List<Author> allAuthors = await apiService.GetAllAuthors();
-                    System.Diagnostics.Debug.WriteLine("[LITLINK] הסופרים נמשכו בהצלחה!");
+                List<Book> allBooks = booksTask.Result ?? new List<Book>();
+                List<Author> allAuthors = authorsTask.Result ?? new List<Author>();
 
-                    if (allBooks == null) allBooks = new List<Book>();
-                    if (allAuthors == null) allAuthors = new List<Author>();
-
-
-                if (allBooks == null) allBooks = new List<Book>();
-                if (allAuthors == null) allAuthors = new List<Author>();
-
-                // סינון הנתונים ברקע
                 List<Book> filteredBooks = allBooks.Where(b =>
                     (b.BookName != null && b.BookName.ToLower().Contains(cleanQuery)) ||
                     (b.Information != null && b.Information.ToLower().Contains(cleanQuery))
@@ -75,70 +55,29 @@ namespace LitLink_FinalProject.Pages
                     a.PenName != null && a.PenName.ToLower().Contains(cleanQuery)
                 ).ToList();
 
-                // החזרת התוצאות ל-UI ועדכון הפקדים הגרפיים (באמצעות Dispatcher)
-                Dispatcher.Invoke(() =>
-                {
-                    if (filteredBooks.Count > 0)
-                    {
-                        BooksResultSection.Visibility = Visibility.Visible;
-                        BooksItemsControl.ItemsSource = filteredBooks;
-                    }
-                    else
-                    {
-                        BooksResultSection.Visibility = Visibility.Collapsed;
-                    }
+                BooksResultSection.Visibility = filteredBooks.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                AuthorsResultSection.Visibility = filteredAuthors.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                TxtNoResults.Visibility = (filteredBooks.Count == 0 && filteredAuthors.Count == 0)
+                                           ? Visibility.Visible : Visibility.Collapsed;
 
-                    if (filteredAuthors.Count > 0)
-                    {
-                        AuthorsResultSection.Visibility = Visibility.Visible;
-                        AuthorsItemsControl.ItemsSource = filteredAuthors;
-                    }
-                    else
-                    {
-                        AuthorsResultSection.Visibility = Visibility.Collapsed;
-                    }
-
-                    if (filteredBooks.Count == 0 && filteredAuthors.Count == 0)
-                    {
-                        TxtNoResults.Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        TxtNoResults.Visibility = Visibility.Collapsed;
-                    }
-                });
+                if (filteredBooks.Count > 0) BooksItemsControl.ItemsSource = filteredBooks;
+                if (filteredAuthors.Count > 0) AuthorsItemsControl.ItemsSource = filteredAuthors;
             }
             catch (Exception ex)
             {
-                Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show("Error performing search: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                });
+                MessageBox.Show("Error performing search: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private async void BookImage_MouseDown(object sender, MouseButtonEventArgs e)
+        private void BookImage_MouseDown(object sender, MouseButtonEventArgs e)
         {
             FrameworkElement element = sender as FrameworkElement;
             Book clickedBook = element?.DataContext as Book;
 
             if (clickedBook != null)
             {
-                bool ownsBook = false;
-                if (currentUser != null)
-                {
-                    try
-                    {
-                        List<Cart> allCarts = await apiService.GetAllCarts();
-                        List<Cart> userCarts = allCarts.Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id).ToList();
-                        List<Cart_Detail> details = await apiService.GetAllCartDetails();
-                        ownsBook = details.Any(cd => cd.IsPurchased && cd.IdCart != null &&
-                                                     userCarts.Any(c => c.Id == cd.IdCart.Id) &&
-                                                     cd.IdBook != null && cd.IdBook.Id == clickedBook.Id);
-                    }
-                    catch { }
-                }
-                BookPage detailsPage = new BookPage(clickedBook, ownsBook, false, false);
+                // אורח: isGuest=true → currentUser=null
+                BookPage detailsPage = new BookPage(clickedBook, false, false, false, currentUser);
                 this.NavigationService?.Navigate(detailsPage);
             }
         }
@@ -150,11 +89,12 @@ namespace LitLink_FinalProject.Pages
 
             if (clickedAuthor != null)
             {
-                // אם המשתמש הנוכחי הוא קורא (לא הסופר עצמו) — פתח בתצוגת קורא
-                AuthorProfile authorPage = new AuthorProfile(clickedAuthor, currentUser);
+                bool isGuest = (currentUser == null);
+                AuthorProfile authorPage = new AuthorProfile(clickedAuthor, currentUser, isGuest);
                 this.NavigationService?.Navigate(authorPage);
             }
         }
+
 
         private void AuthorImage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -191,6 +131,8 @@ namespace LitLink_FinalProject.Pages
         {
             if (this.NavigationService != null && this.NavigationService.CanGoBack)
                 this.NavigationService.GoBack();
+            else
+                MainWindow.AppFrame.Navigate(new HomePage(currentUser));
         }
     }
 }

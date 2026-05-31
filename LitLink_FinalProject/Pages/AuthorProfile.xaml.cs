@@ -27,11 +27,14 @@ namespace LitLink_FinalProject.Pages
 
         private Reader viewingReader; // קורא שצופה בדף הסופר (null = הסופר עצמו)
 
-        public AuthorProfile(Author author, Reader viewingReader = null)
+        private bool isGuest; // ← נוסף
+
+        public AuthorProfile(Author author, Reader viewingReader = null, bool isGuest = false)
         {
             InitializeComponent();
             this.currentAuthor = author;
             this.viewingReader = viewingReader;
+            this.isGuest = isGuest; // ← נוסף
             this.Loaded += AuthorProfilePage_Loaded;
         }
         private void AuthorProfilePage_Loaded(object sender, RoutedEventArgs e)
@@ -59,21 +62,29 @@ namespace LitLink_FinalProject.Pages
                     .ToList();
                 TxtFollowersCount.Text = $"{authorFollowings.Count} Followers";
 
-                // --- תצוגת כפתורים לפי סוג המשתמש ---
-                if (viewingReader != null)
+                if (isGuest)
                 {
-                    // מצב קורא: הסתר עריכה ופרסום, הצג כפתור Follow/Unfollow
+                    // אורח — מראה רק מידע, ללא Follow ופרסום
+                    BtnEditProfile.Visibility = Visibility.Collapsed;
+                    BtnMenu.Visibility = Visibility.Collapsed;
+                    BtnTabSalesData.Visibility = Visibility.Collapsed;
+                    BtnFollow.Visibility = Visibility.Collapsed;
+                    BtnUnfollow.Visibility = Visibility.Collapsed;
+                }
+                else if (viewingReader != null)
+                {
+                    // קורא מחובר
                     BtnEditProfile.Visibility = Visibility.Collapsed;
                     BtnMenu.Visibility = Visibility.Collapsed;
                     BtnTabSalesData.Visibility = Visibility.Collapsed;
 
-                    bool isFollowing = authorFollowings.Any(f => f.IdAuthor != null && f.IdAuthor.Id == viewingReader.Id);
+                    bool isFollowing = authorFollowings.Any(f => f.IdReader != null && f.IdReader.Id == viewingReader.Id);
                     BtnFollow.Visibility = isFollowing ? Visibility.Collapsed : Visibility.Visible;
                     BtnUnfollow.Visibility = isFollowing ? Visibility.Visible : Visibility.Collapsed;
                 }
                 else
                 {
-                    // מצב הסופר עצמו
+                    // הסופר עצמו
                     BtnEditProfile.Visibility = Visibility.Visible;
                     BtnMenu.Visibility = Visibility.Visible;
                     BtnTabSalesData.Visibility = Visibility.Visible;
@@ -124,6 +135,7 @@ namespace LitLink_FinalProject.Pages
         {
             HighlightTab(BtnTabMyBooks);
             AuthorBooksContainer.Visibility = Visibility.Visible;
+            AuthorListsContainer.Visibility = Visibility.Collapsed; // ← נוסף
             AuthorNewsContainer.Visibility = Visibility.Collapsed;
             AuthorSalesContainer.Visibility = Visibility.Collapsed;
             LoadMyBooksTab();
@@ -133,6 +145,7 @@ namespace LitLink_FinalProject.Pages
         {
             HighlightTab(BtnTabMyNews);
             AuthorBooksContainer.Visibility = Visibility.Collapsed;
+            AuthorListsContainer.Visibility = Visibility.Collapsed; // ← נוסף
             AuthorNewsContainer.Visibility = Visibility.Visible;
             AuthorSalesContainer.Visibility = Visibility.Collapsed;
             LoadMyNewsTab();
@@ -142,6 +155,7 @@ namespace LitLink_FinalProject.Pages
         {
             HighlightTab(BtnTabSalesData);
             AuthorBooksContainer.Visibility = Visibility.Collapsed;
+            AuthorListsContainer.Visibility = Visibility.Collapsed; // ← נוסף
             AuthorNewsContainer.Visibility = Visibility.Collapsed;
             AuthorSalesContainer.Visibility = Visibility.Visible;
             LoadSalesDataTab();
@@ -246,6 +260,56 @@ namespace LitLink_FinalProject.Pages
                 System.Diagnostics.Debug.WriteLine("Error calculating sales data: " + ex.Message);
             }
         }
+        private async void LoadMyListsTab()
+        {
+            AuthorListsContainer.Children.Clear();
+
+            try
+            {
+                List<Book_Series> allSeries = await apiService.GetAllBookSeries();
+                List<Book_Series> authorSeries = allSeries
+                    .Where(s => s.IdUser != null && s.IdUser.Id == currentAuthor.Id)
+                    .ToList();
+
+                if (authorSeries.Count == 0)
+                {
+                    AuthorListsContainer.Children.Add(CreateEmptyMessageTextBlock("No book lists created yet."));
+                    return;
+                }
+
+                List<Series_Detail> allDetails = await apiService.GetAllSeriesDetails();
+
+                foreach (Book_Series series in authorSeries)
+                {
+                    // קח את הספרים של הסדרה הזו, ממוינים לפי מספר סדר
+                    List<Book> seriesBooks = allDetails
+                        .Where(d => d.IdSeries != null && d.IdSeries.Id == series.Id && d.IdBook != null)
+                        .OrderBy(d => d.Number)
+                        .Select(d => d.IdBook)
+                        .ToList();
+
+                    if (seriesBooks.Count == 0) continue;
+
+                    GenreUserControl seriesRow = new GenreUserControl();
+                    seriesRow.SetupGenreRow(series.NameSeries, seriesBooks);
+                    seriesRow.BookSelected += AuthorRow_BookSelected;
+                    AuthorListsContainer.Children.Add(seriesRow);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading author lists: " + ex.Message);
+            }
+        }
+        private void TabMyLists_Click(object sender, RoutedEventArgs e)
+        {
+            HighlightTab(BtnTabMyLists);
+            AuthorBooksContainer.Visibility = Visibility.Collapsed;
+            AuthorListsContainer.Visibility = Visibility.Visible;
+            AuthorNewsContainer.Visibility = Visibility.Collapsed;
+            AuthorSalesContainer.Visibility = Visibility.Collapsed;
+            LoadMyListsTab();
+        }
 
         private void BtnMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Visible;
         private void CloseMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Collapsed;
@@ -277,7 +341,7 @@ namespace LitLink_FinalProject.Pages
         private void AddNews_Click(object sender, RoutedEventArgs e)
         {
             WindowsFile.AddNewsWindow addNewsWin = new WindowsFile.AddNewsWindow();
-
+            addNewsWin.DataContext = currentAuthor; // ← העברת הסופר כ-DataContext
             if (addNewsWin.ShowDialog() == true)
             {
                 LoadMyNewsTab();
@@ -286,8 +350,7 @@ namespace LitLink_FinalProject.Pages
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
             currentAuthor = null;
-            var signOut = new SignOut();
-            Window.GetWindow(this).Content = signOut;
+            MainWindow.AppFrame.Navigate(new SignOut());
         }
         private async void BtnFollow_Click(object sender, RoutedEventArgs e)
         {
@@ -320,8 +383,8 @@ namespace LitLink_FinalProject.Pages
             {
                 List<Following> allFollowings = await apiService.GetAllFollowings();
                 Following toDelete = allFollowings.FirstOrDefault(
-                    f => f.IdReader != null && f.IdReader.Id == viewingReader.Id &&
-                         f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
+                           f => f.IdReader != null && f.IdReader.Id == viewingReader.Id &&
+                           f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
                 if (toDelete != null)
                     await apiService.DeleteFollowing(toDelete.Id);
 
@@ -341,6 +404,7 @@ namespace LitLink_FinalProject.Pages
         private void HighlightTab(Button activeBtn)
         {
             BtnTabMyBooks.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
+            BtnTabMyLists.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabMyNews.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabSalesData.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             activeBtn.Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74));

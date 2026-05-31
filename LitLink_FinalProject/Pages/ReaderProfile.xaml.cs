@@ -16,390 +16,273 @@ namespace LitLink_FinalProject.Pages
     public partial class ReaderProfile : Page
     {
         private Apiservice apiService = new Apiservice();
-        private List<Book> allBooks = new List<Book>();
         private Reader currentUser;
+
+        // נתונים נטענים פעם אחת בלבד
+        private List<Book> allBooks = new List<Book>();
+        private List<Book_Series> allSeries = new List<Book_Series>();
+        private List<Series_Detail> allSeriesDetails = new List<Series_Detail>();
+        private List<Cart_Detail> allCartDetails = new List<Cart_Detail>();
+        private List<Cart> allCarts = new List<Cart>();
+        private List<Reviews> allReviews = new List<Reviews>();
+        private List<Following> allFollowings = new List<Following>();
+        private bool dataLoaded = false;
 
         public ReaderProfile(Reader reader)
         {
             InitializeComponent();
-            this.currentUser = reader; // שמירת המשתמש שהועבר
+            this.currentUser = reader;
             this.Loaded += ReaderProfilePage_Loaded;
         }
 
         private void ReaderProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
-            // מחק או שים בהערה את השורה הישנה:
-            // currentUser = this.DataContext as Reader; 
-
-            LoadUserData();
+            LoadAllData();
         }
 
-        private async void LoadUserData()
+        // טוען את כל הנתונים פעם אחת מהשרת
+        private async void LoadAllData()
         {
-            if (currentUser == null)
-            {
-                MessageBox.Show("Please log in to view your profile.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
-                this.NavigationService?.Navigate(new Uri("Pages/LoginPage.xaml", UriKind.Relative));
-                return;
-            }
+            if (currentUser == null) return;
 
             try
             {
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
 
-                string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
-                if (!string.IsNullOrEmpty(st))
+                // תמונת פרופיל
+                try
                 {
-                    try
+                    string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
+                    if (!string.IsNullOrEmpty(st))
                     {
-                        byte[] imgStr = Convert.FromBase64String(st);
-                        this.ImgReaderProfile.Source = ByteImageConverter.ByteToImage(imgStr);
+                        byte[] imgBytes = Convert.FromBase64String(st);
+                        ImgReaderProfile.Source = ByteImageConverter.ByteToImage(imgBytes);
                     }
-                    catch
-                    {
-                        this.ImgReaderProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
-                    }
+                    else SetDefaultImage();
                 }
-                else
-                {
-                    this.ImgReaderProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
-                }
+                catch { SetDefaultImage(); }
 
-                allBooks = await apiService.GetAllBooks();
+                // טעינת כל הנתונים בו-זמנית
+                var booksTask = apiService.GetAllBooks();
+                var seriesTask = apiService.GetAllBookSeries();
+                var detailsTask = apiService.GetAllSeriesDetails();
+                var cartsTask = apiService.GetAllCarts();
+                var cartDetailsTask = apiService.GetAllCartDetails();
+                var reviewsTask = apiService.GetAllReviews();
+                var followingsTask = apiService.GetAllFollowings();
 
-                BuildUserLists();
+                await System.Threading.Tasks.Task.WhenAll(
+                    booksTask, seriesTask, detailsTask,
+                    cartsTask, cartDetailsTask, reviewsTask, followingsTask);
+
+                allBooks = booksTask.Result ?? new List<Book>();
+                allSeries = seriesTask.Result ?? new List<Book_Series>();
+                allSeriesDetails = detailsTask.Result ?? new List<Series_Detail>();
+                allCarts = cartsTask.Result ?? new List<Cart>();
+                allCartDetails = cartDetailsTask.Result ?? new List<Cart_Detail>();
+                allReviews = reviewsTask.Result ?? new List<Reviews>();
+                allFollowings = followingsTask.Result ?? new List<Following>();
+
+                dataLoaded = true;
+                BuildUserLists(); // הצג את הטאב הראשון
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Error loading profile details: " + ex.Message);
+                MessageBox.Show("Error loading profile: " + ex.Message, "LitLink", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private async void BuildUserLists()
+        private void SetDefaultImage()
+        {
+            try { ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute)); }
+            catch { ImgReaderProfile.Source = null; }
+        }
+
+        // --- טאב 1: רשימות ---
+        private void FilterList_Click(object sender, RoutedEventArgs e) => BuildUserLists();
+
+        private void BuildUserLists()
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabList);
+            if (!dataLoaded || currentUser == null) return;
 
-            if (currentUser == null)
+            List<Book_Series> userSeries = allSeries
+                .Where(s => s.IdUser != null && s.IdUser.Id == currentUser.Id)
+                .ToList();
+
+            if (userSeries.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine("BuildUserLists: currentUser is null!");
+                ShowEmptyStateMessage("You haven't created any reading lists yet.");
                 return;
             }
 
-            try
+            foreach (var series in userSeries)
             {
-                // 1. שליפת כל הסדרות/רשימות מה-API
-                List<Book_Series> bookLists = await apiService.GetAllBookSeries();
-                if (bookLists == null) bookLists = new List<Book_Series>();
-
-                // 2. סינון הרשימות ששייכות למשתמש הנוכחי (הגנה מפני null והשוואת מזהים בצורה בטוחה)
-                List<Book_Series> userCustomLists = bookLists
-                    .Where(l => l.IdUser != null &&
-                                l.IdUser.Id.ToString().Trim().Equals(currentUser.Id.ToString().Trim(), StringComparison.OrdinalIgnoreCase))
+                List<Book> seriesBooks = allSeriesDetails
+                    .Where(d => d.IdSeries != null && d.IdSeries.Id == series.Id && d.IdBook != null)
+                    .OrderBy(d => d.Number)
+                    .Select(d => d.IdBook)
                     .ToList();
 
-                System.Diagnostics.Debug.WriteLine($"Found {userCustomLists.Count} lists for user {currentUser.Username}");
-
-                if (userCustomLists.Count == 0)
-                {
-                    ShowEmptyStateMessage("You haven't created any reading lists yet.");
-                    return;
-                }
-
-                // 3. שליפת כל הספרים וכל פרטי הרשימות פעם אחת בלבד (מחוץ ללולאה!)
-                if (allBooks == null || allBooks.Count == 0)
-                {
-                    allBooks = await apiService.GetAllBooks();
-                    if (allBooks == null) allBooks = new List<Book>();
-                }
-
-                List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
-                if (allListDetails == null) allListDetails = new List<Series_Detail>();
-
-                // 4. רזולוציה והצגה של כל רשימה והספרים שבה
-                foreach (var currentList in userCustomLists)
-                {
-                    // סינון הפרטים השייכים לרשימה הנוכחית
-                    List<Series_Detail> currentListDetails = allListDetails
-                        .Where(d => d.IdSeries != null && d.IdSeries.Id == currentList.Id)
-                        .ToList();
-
-                    // שליפת הספרים המתאימים מתוך רשימת כל הספרים
-                    List<Book> relatedBooks = allBooks
-                        .Where(b => currentListDetails.Any(d => d.IdBook != null && d.IdBook.Id == b.Id))
-                        .ToList();
-
-                    System.Diagnostics.Debug.WriteLine($"List '{currentList.NameSeries}' has {relatedBooks.Count} related books.");
-
-                    // תצוגת הרשימה (גם אם היא ריקה כרגע, כדי שתדעי שהרשימה קיימת)
-                    GenreUserControl listRow = new GenreUserControl();
-                    listRow.SetupGenreRow(currentList.NameSeries, relatedBooks);
-                    listRow.BookSelected += UserRow_BookSelected;
-
-                    UserListsContainer.Children.Add(listRow);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error rendering user lists: " + ex.Message);
-                MessageBox.Show("Error loading lists: " + ex.Message, "LitLink Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                GenreUserControl row = new GenreUserControl();
+                row.SetupGenreRow(series.NameSeries, seriesBooks);
+                row.BookSelected += UserRow_BookSelected;
+                UserListsContainer.Children.Add(row);
             }
         }
 
-        private async void UserRow_BookSelected(object sender, Book selectedBook)
-        {
-            if (selectedBook == null || currentUser == null) return;
-
-            try
-            {
-                List<Book> ownedBooks = new List<Book>();
-                List<Book_Series> bookLists = await apiService.GetAllBookSeries();
-                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser != null && l.IdUser.Id == currentUser.Id).ToList();
-                List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
-                List<Series_Detail> userListDetails = allListDetails.Where(d => d.IdSeries != null && userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
-
-                foreach (var detail in userListDetails)
-                {
-                    if (detail.IdBook != null && !ownedBooks.Any(b => b.Id == detail.IdBook.Id))
-                    {
-                        ownedBooks.Add(detail.IdBook);
-                    }
-                }
-
-                bool ownsBook = ownedBooks.Any(b => b.Id == selectedBook.Id);
-
-                BookPage detailsPage = new BookPage(selectedBook, ownsBook, false, false);
-                this.NavigationService?.Navigate(detailsPage);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading book availability: " + ex.Message, "LitLink Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void FilterList_Click(object sender, RoutedEventArgs e)
-        {
-            BuildUserLists();
-        }
-
-        // --- החלף את FilterReviews_Click ---
-        private async void FilterReviews_Click(object sender, RoutedEventArgs e)
+        // --- טאב 2: ביקורות ---
+        private void FilterReviews_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabReviews);
+            if (!dataLoaded || currentUser == null) return;
 
-            if (currentUser == null) return;
+            List<Reviews> userReviews = allReviews
+                .Where(r => r != null && r.IdReader != null && r.IdReader.Id == currentUser.Id)
+                .ToList();
 
-            try
+            if (userReviews.Count == 0)
             {
-                List<Reviews> allReviews = await apiService.GetAllReviews();
-                List<Reviews> userReviews = allReviews
-                    .Where(r => r != null && r.IdReader != null && r.IdReader.Id == currentUser.Id)
-                    .ToList();
-
-                if (userReviews.Count == 0)
-                {
-                    ShowEmptyStateMessage("You haven't written any reviews yet.");
-                    return;
-                }
-
-                foreach (var review in userReviews)
-                {
-                    Border card = new Border
-                    {
-                        Background = Brushes.White,
-                        CornerRadius = new CornerRadius(10),
-                        Padding = new Thickness(15),
-                        Margin = new Thickness(0, 0, 10, 10)
-                    };
-                    StackPanel sp = new StackPanel();
-                    sp.Children.Add(new TextBlock
-                    {
-                        Text = review.IdBook?.BookName ?? "Unknown Book",
-                        FontSize = 14,
-                        FontWeight = FontWeights.Bold,
-                        Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141))
-                    });
-                    sp.Children.Add(new TextBlock
-                    {
-                        Text = $"★ {review.Stars}/5",
-                        FontSize = 13,
-                        Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)),
-                        Margin = new Thickness(0, 4, 0, 4)
-                    });
-                    sp.Children.Add(new TextBlock
-                    {
-                        Text = review.Text,
-                        FontSize = 13,
-                        Foreground = Brushes.Gray,
-                        TextWrapping = TextWrapping.Wrap
-                    });
-                    card.Child = sp;
-                    UserListsContainer.Children.Add(card);
-                }
+                ShowEmptyStateMessage("You haven't written any reviews yet.");
+                return;
             }
-            catch (Exception ex)
+
+            foreach (var review in userReviews)
             {
-                System.Diagnostics.Debug.WriteLine("Error loading reviews: " + ex.Message);
+                Border card = new Border
+                {
+                    Background = Brushes.White,
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(15),
+                    Margin = new Thickness(0, 0, 10, 10)
+                };
+                StackPanel sp = new StackPanel();
+                sp.Children.Add(new TextBlock
+                {
+                    Text = review.IdBook?.BookName ?? "Unknown Book",
+                    FontSize = 14,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141))
+                });
+                sp.Children.Add(new TextBlock
+                {
+                    Text = $"★ {review.Stars}/5",
+                    FontSize = 13,
+                    Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)),
+                    Margin = new Thickness(0, 4, 0, 4)
+                });
+                sp.Children.Add(new TextBlock
+                {
+                    Text = review.Text,
+                    FontSize = 13,
+                    Foreground = Brushes.Gray,
+                    TextWrapping = TextWrapping.Wrap
+                });
+                card.Child = sp;
+                UserListsContainer.Children.Add(card);
             }
         }
 
-        // --- החלף את FilterMyBooks_Click ---
-        private async void FilterMyBooks_Click(object sender, RoutedEventArgs e)
+        // --- טאב 3: ספרים שנקנו ---
+        private void FilterMyBooks_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabMyBooks);
+            if (!dataLoaded || currentUser == null) return;
 
-            if (currentUser == null) return;
+            List<Cart> userCarts = allCarts
+                .Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id)
+                .ToList();
 
-            try
+            List<Book> ownedBooks = allCartDetails
+                .Where(cd => cd.IsPurchased &&
+                             cd.IdCart != null &&
+                             userCarts.Any(c => c.Id == cd.IdCart.Id) &&
+                             cd.IdBook != null)
+                .Select(cd => cd.IdBook)
+                .GroupBy(b => b.Id)
+                .Select(g => g.First())
+                .ToList();
+
+            if (ownedBooks.Count == 0)
             {
-                List<Cart> allCarts = await apiService.GetAllCarts();
-                List<Cart> userCarts = allCarts
-                    .Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id)
-                    .ToList();
-
-                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
-                List<Book> ownedBooks = allCartDetails
-                    .Where(cd => cd.IsPurchased &&
-                                 cd.IdCart != null &&
-                                 userCarts.Any(c => c.Id == cd.IdCart.Id) &&
-                                 cd.IdBook != null)
-                    .Select(cd => cd.IdBook)
-                    .GroupBy(b => b.Id)
-                    .Select(g => g.First())
-                    .ToList();
-
-                if (ownedBooks.Count == 0)
-                {
-                    ShowEmptyStateMessage("You haven't purchased any books yet.");
-                    return;
-                }
-
-                GenreUserControl purchasedRow = new GenreUserControl();
-                purchasedRow.SetupGenreRow("My Purchased Library", ownedBooks);
-                purchasedRow.BookSelected += UserRow_BookSelected;
-                UserListsContainer.Children.Add(purchasedRow);
+                ShowEmptyStateMessage("You haven't purchased any books yet.");
+                return;
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error filtering purchased books: " + ex.Message);
-            }
+
+            GenreUserControl row = new GenreUserControl();
+            row.SetupGenreRow("My Purchased Library", ownedBooks);
+            row.BookSelected += UserRow_BookSelected;
+            UserListsContainer.Children.Add(row);
         }
 
-        // --- החלף את FilterFollowing_Click ---
-        private async void FilterFollowing_Click(object sender, RoutedEventArgs e)
+        // --- טאב 4: עוקבים ---
+        private void FilterFollowing_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabFollowing);
+            if (!dataLoaded || currentUser == null) return;
 
-            if (currentUser == null) return;
+            List<Following> userFollowings = allFollowings
+                .Where(f => f != null && f.IdReader != null && f.IdReader.Id == currentUser.Id)
+                .ToList();
 
-            try
+            if (userFollowings.Count == 0)
             {
-                List<Following> allFollowings = await apiService.GetAllFollowings();
-                List<Following> userFollowings = allFollowings
-                    .Where(f => f != null && f.IdReader != null && f.IdReader.Id == currentUser.Id)
-                    .ToList();
-
-                if (userFollowings.Count == 0)
-                {
-                    ShowEmptyStateMessage("You aren't following any authors yet.");
-                    return;
-                }
-
-                foreach (var follow in userFollowings)
-                {
-                    Author a = follow.IdAuthor;
-                    if (a == null) continue;
-
-                    Border card = new Border
-                    {
-                        Background = Brushes.White,
-                        CornerRadius = new CornerRadius(10),
-                        Padding = new Thickness(15),
-                        Margin = new Thickness(0, 0, 10, 10),
-                        Cursor = Cursors.Hand
-                    };
-                    StackPanel sp = new StackPanel();
-                    sp.Children.Add(new TextBlock
-                    {
-                        Text = a.PenName ?? "Unknown Author",
-                        FontSize = 15,
-                        FontWeight = FontWeights.Bold,
-                        Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141))
-                    });
-                    card.Child = sp;
-                    UserListsContainer.Children.Add(card);
-                }
+                ShowEmptyStateMessage("You aren't following any authors yet.");
+                return;
             }
-            catch (Exception ex)
+
+            foreach (var follow in userFollowings)
             {
-                System.Diagnostics.Debug.WriteLine("Error loading following list: " + ex.Message);
+                Author a = follow.IdAuthor;
+                if (a == null) continue;
+
+                Border card = new Border
+                {
+                    Background = Brushes.White,
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(15),
+                    Margin = new Thickness(0, 0, 10, 10),
+                    Cursor = Cursors.Hand
+                };
+                StackPanel sp = new StackPanel();
+                sp.Children.Add(new TextBlock
+                {
+                    Text = a.PenName ?? "Unknown Author",
+                    FontSize = 15,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141))
+                });
+                // לחיצה על הכרטיס — מעבר לעמוד הסופר
+                card.MouseDown += (s, ev) =>
+                {
+                    AuthorProfile authorPage = new AuthorProfile(a, currentUser, false);
+                    Window.GetWindow(this).Content = authorPage;
+                };
+                card.Child = sp;
+                UserListsContainer.Children.Add(card);
             }
+        }
+
+        private void UserRow_BookSelected(object sender, Book selectedBook)
+        {
+            if (selectedBook == null || currentUser == null) return;
+            List<Cart> userCarts = allCarts.Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id).ToList();
+            bool ownsBook = allCartDetails.Any(cd => cd.IsPurchased && cd.IdCart != null &&
+                                                     userCarts.Any(c => c.Id == cd.IdCart.Id) &&
+                                                     cd.IdBook != null && cd.IdBook.Id == selectedBook.Id);
+            BookPage detailsPage = new BookPage(selectedBook, ownsBook, false, false, currentUser);
+            this.NavigationService?.Navigate(detailsPage);
         }
 
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e) => EditProfilePopup.Visibility = Visibility.Visible;
         private void CloseEditProfile_Click(object sender, RoutedEventArgs e) => EditProfilePopup.Visibility = Visibility.Collapsed;
-
         private void OutsidePopup_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource == EditProfilePopup) EditProfilePopup.Visibility = Visibility.Collapsed;
-        }
-
-        private void Home_Click(object sender, RoutedEventArgs e)
-        {
-            HomePage homePage = new HomePage();
-            homePage.DataContext = currentUser;
-            Window.GetWindow(this).Content = homePage;
-        }
-        private void Cart_Click(object sender, RoutedEventArgs e)
-        {
-            var cartPage = new CartPage(currentUser.Id);
-            Window.GetWindow(this).Content = cartPage;
-        }
-        private void EditDetails_Click(object sender, RoutedEventArgs e)
-        {
-            EditReaderProfileWindow newWindow = new EditReaderProfileWindow();
-
-            newWindow.Show();
-
-        }
-        private void ResetPassword_Click(object sender, RoutedEventArgs e)
-        {
-            var resetPass = new ResetPass();
-            Window.GetWindow(this).Content = resetPass;
-        }
-        private void Preference_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Preferences layout option clicked!", "LitLink");
-        private void Support_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Support option clicked! Connecting to help center...", "LitLink");
-
-        private void LogOut_Click(object sender, RoutedEventArgs e)
-        {
-            currentUser = null;
-            var signOut = new SignOut();
-            Window.GetWindow(this).Content = signOut;
-        }
-
-        private async void DeleteAccount_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentUser == null) return;
-
-            if (MessageBox.Show("Are you sure you want to permanently delete your LitLink account?\nThis action cannot be undone!",
-                "Delete Account", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    await apiService.DeleteUser(currentUser.Id);
-                    currentUser = null;
-                    MessageBox.Show("Your account has been deleted successfully.", "LitLink");
-                    var signOut = new SignOut();
-                    Window.GetWindow(this).Content = signOut;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to delete account: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
         }
 
         private void HighlightActiveTab(Button activeBtn)
@@ -408,21 +291,54 @@ namespace LitLink_FinalProject.Pages
             BtnTabReviews.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabMyBooks.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabFollowing.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
-
             activeBtn.Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74));
         }
 
         private void ShowEmptyStateMessage(string message)
         {
-            TextBlock txtEmpty = new TextBlock
+            UserListsContainer.Children.Add(new TextBlock
             {
                 Text = message,
                 FontSize = 14,
                 Foreground = Brushes.Gray,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 40, 0, 0)
-            };
-            UserListsContainer.Children.Add(txtEmpty);
+            });
+        }
+        private void Home_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.AppFrame.Navigate(new HomePage(currentUser));
+        }
+
+        private void Cart_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.AppFrame.Navigate(new CartPage(currentUser));
+        }
+
+        private void LogOut_Click(object sender, RoutedEventArgs e)
+        {
+            currentUser = null;
+            MainWindow.AppFrame.Navigate(new SignOut());
+        }
+
+        private async void DeleteAccount_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentUser == null) return;
+            if (MessageBox.Show("Are you sure you want to permanently delete your LitLink account?\nThis action cannot be undone!",
+                "Delete Account", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    await apiService.DeleteUser(currentUser.Id);
+                    currentUser = null;
+                    MessageBox.Show("Your account has been deleted successfully.", "LitLink");
+                    MainWindow.AppFrame.Navigate(new SignOut());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to delete account: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 }
