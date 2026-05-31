@@ -80,14 +80,6 @@
                     <Button Content="Manage Profile ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,5" Click="EditDetails_Click" Cursor="Hand"/>
                     <Button Content="Password ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,15" Click="ResetPassword_Click" Cursor="Hand"/>
 
-                    <TextBlock Text="Preference" FontSize="14" FontWeight="Bold" Foreground="#D06A8D" Margin="0,5,0,5"/>
-                    <Button Content="Theme ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,5" Cursor="Hand" Click="Preference_Click"/>
-                    <Button Content="Text Size ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,15" Cursor="Hand" Click="Preference_Click"/>
-
-                    <TextBlock Text="Support" FontSize="14" FontWeight="Bold" Foreground="#D06A8D" Margin="0,5,0,5"/>
-                    <Button Content="Help Center ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,5" Cursor="Hand" Click="Support_Click"/>
-                    <Button Content="Contact Us ➔" Background="White" HorizontalContentAlignment="Left" Padding="10" Margin="0,0,0,25" Cursor="Hand" Click="Support_Click"/>
-
                     <Button Content="Delete Account" Background="Transparent" BorderThickness="0" Foreground="Red" FontWeight="Bold" Click="DeleteAccount_Click" Cursor="Hand"/>
                 </StackPanel>
             </Border>

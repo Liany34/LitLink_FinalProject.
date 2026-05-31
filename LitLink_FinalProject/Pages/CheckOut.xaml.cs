@@ -26,7 +26,7 @@ namespace LitLink_FinalProject.Pages
 
         private List<Book> selectedBooks;
         private double discountCodeAmount = 0;
-        private int curretReader;
+        private Reader curretReader;
 
         public CheckOut()
         {
@@ -40,17 +40,17 @@ namespace LitLink_FinalProject.Pages
             BooksItemsControl.ItemsSource = selectedBooks;
             TxtConfirmEmail.Text = currentUserEmail;
             TxtConfirmPhone.Text = currentUserPhone;
-            this.curretReader = int.Parse(GetID(currentUserEmail).Result.ToString());
+            this.curretReader = GetID(currentUserEmail).Result;
 
             CalculatePrices();
         }
 
-        private async Task<int> GetID(string email)
+        private async Task<Reader> GetID(string email)
         {
             Apiservice apiservice = new Apiservice();
             List<Reader> allReader = await apiservice.GetAllReaders();
             Reader current = allReader.Find(r => r.Email == email);
-            return current.Id;
+            return current;
         }
 
         private void CalculatePrices()

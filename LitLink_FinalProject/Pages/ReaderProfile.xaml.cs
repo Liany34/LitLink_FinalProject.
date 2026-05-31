@@ -340,5 +340,13 @@ namespace LitLink_FinalProject.Pages
                 }
             }
         }
+        private void EditDetails_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.AppFrame.Navigate(new EditReaderProfileWindow());
+        }
+        private void ResetPassword_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.AppFrame.Navigate(new ResetPass());
+        }
     }
 }
