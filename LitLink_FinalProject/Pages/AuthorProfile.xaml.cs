@@ -24,17 +24,15 @@ namespace LitLink_FinalProject.Pages
         private Apiservice apiService = new Apiservice();
         private List<Book> authorBooks = new List<Book>();
         private Author currentAuthor;
-
-        private Reader viewingReader; // קורא שצופה בדף הסופר (null = הסופר עצמו)
-
-        private bool isGuest; // ← נוסף
+        private Reader viewingReader; 
+        private bool isGuest; 
 
         public AuthorProfile(Author author, Reader viewingReader = null, bool isGuest = false)
         {
             InitializeComponent();
             this.currentAuthor = author;
             this.viewingReader = viewingReader;
-            this.isGuest = isGuest; // ← נוסף
+            this.isGuest = isGuest; 
             this.Loaded += AuthorProfilePage_Loaded;
         }
         private void AuthorProfilePage_Loaded(object sender, RoutedEventArgs e)
@@ -64,33 +62,29 @@ namespace LitLink_FinalProject.Pages
 
                 if (isGuest)
                 {
-                    // אורח — מראה רק מידע, ללא Follow ופרסום
                     BtnEditProfile.Visibility = Visibility.Collapsed;
                     BtnMenu.Visibility = Visibility.Collapsed;
                     BtnTabSalesData.Visibility = Visibility.Collapsed;
                     BtnFollow.Visibility = Visibility.Collapsed;
                     BtnUnfollow.Visibility = Visibility.Collapsed;
+                    BtnTabMyLists.Visibility = Visibility.Visible;
+                    BtnBack.Visibility = Visibility.Visible;
                 }
                 else if (viewingReader != null)
                 {
-                    // קורא מחובר
                     BtnEditProfile.Visibility = Visibility.Collapsed;
                     BtnMenu.Visibility = Visibility.Collapsed;
                     BtnTabSalesData.Visibility = Visibility.Collapsed;
+                    BtnTabMyLists.Visibility = Visibility.Visible;
+                    BtnBack.Visibility = Visibility.Visible;
 
                     bool isFollowing = authorFollowings.Any(f => f.IdReader != null && f.IdReader.Id == viewingReader.Id);
                     BtnFollow.Visibility = isFollowing ? Visibility.Collapsed : Visibility.Visible;
                     BtnUnfollow.Visibility = isFollowing ? Visibility.Visible : Visibility.Collapsed;
                 }
-                else
-                {
-                    // הסופר עצמו
-                    BtnEditProfile.Visibility = Visibility.Visible;
-                    BtnMenu.Visibility = Visibility.Visible;
-                    BtnTabSalesData.Visibility = Visibility.Visible;
-                    BtnFollow.Visibility = Visibility.Collapsed;
-                    BtnUnfollow.Visibility = Visibility.Collapsed;
-                }
+
+
+
 
                 string st = await apiService.GetPRPByUserIDByte64(currentAuthor.Id);
                 if (!string.IsNullOrEmpty(st))
@@ -260,9 +254,20 @@ namespace LitLink_FinalProject.Pages
                 System.Diagnostics.Debug.WriteLine("Error calculating sales data: " + ex.Message);
             }
         }
+
         private async void LoadMyListsTab()
         {
             AuthorListsContainer.Children.Clear();
+
+            TextBlock mainTitle = new TextBlock
+            {
+                Text = $"Book Series by {currentAuthor.PenName}",
+                FontSize = 22,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)),
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            AuthorListsContainer.Children.Add(mainTitle);
 
             try
             {
@@ -273,7 +278,8 @@ namespace LitLink_FinalProject.Pages
 
                 if (authorSeries.Count == 0)
                 {
-                    AuthorListsContainer.Children.Add(CreateEmptyMessageTextBlock("No book lists created yet."));
+                    AuthorListsContainer.Children.Add(
+                        CreateEmptyMessageTextBlock("No book lists created yet."));
                     return;
                 }
 
@@ -281,7 +287,6 @@ namespace LitLink_FinalProject.Pages
 
                 foreach (Book_Series series in authorSeries)
                 {
-                    // קח את הספרים של הסדרה הזו, ממוינים לפי מספר סדר
                     List<Book> seriesBooks = allDetails
                         .Where(d => d.IdSeries != null && d.IdSeries.Id == series.Id && d.IdBook != null)
                         .OrderBy(d => d.Number)
@@ -301,6 +306,7 @@ namespace LitLink_FinalProject.Pages
                 System.Diagnostics.Debug.WriteLine("Error loading author lists: " + ex.Message);
             }
         }
+
         private void TabMyLists_Click(object sender, RoutedEventArgs e)
         {
             HighlightTab(BtnTabMyLists);
@@ -341,7 +347,7 @@ namespace LitLink_FinalProject.Pages
         private void AddNews_Click(object sender, RoutedEventArgs e)
         {
             WindowsFile.AddNewsWindow addNewsWin = new WindowsFile.AddNewsWindow();
-            addNewsWin.DataContext = currentAuthor; // ← העברת הסופר כ-DataContext
+            addNewsWin.DataContext = currentAuthor; 
             if (addNewsWin.ShowDialog() == true)
             {
                 LoadMyNewsTab();
@@ -414,5 +420,15 @@ namespace LitLink_FinalProject.Pages
         {
             return new TextBlock { Text = msg, FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) };
         }
+
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.NavigationService != null && this.NavigationService.CanGoBack)
+                this.NavigationService.GoBack();
+            else
+                MainWindow.AppFrame.Navigate(new HomePage(viewingReader));
+        }
+
     }
 }

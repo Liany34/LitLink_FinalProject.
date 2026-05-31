@@ -119,14 +119,9 @@ namespace LitLink_FinalProject.Pages
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (this.NavigationService != null && this.NavigationService.CanGoBack)
-            {
                 this.NavigationService.GoBack();
-            }
             else
-            {
-                var cart = new CartPage(curretReader);
-                Window.GetWindow(this).Content = cart;
-            }
+                MainWindow.AppFrame.Navigate(new CartPage(curretReader)); 
         }
     }
 }

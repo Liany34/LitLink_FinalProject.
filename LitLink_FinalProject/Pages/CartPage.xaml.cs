@@ -25,14 +25,13 @@ namespace LitLink_FinalProject.Pages
         private List<CartUserControl> loadedControls = new List<CartUserControl>();
         private List<Book> chosenBooks = new List<Book>();
         private int currentUserId;
+        private Reader currentReader; 
 
-        private Reader currentReader; // ← החלף את currentUserId
-
-        public CartPage(Reader loggedInReader) // ← שנה את החתימה
+        public CartPage(Reader loggedInReader) 
         {
             InitializeComponent();
             this.currentReader = loggedInReader;
-            this.currentUserId = loggedInReader.Id; // השאר אם יש שימוש ב-currentUserId במקום אחר
+            this.currentUserId = loggedInReader.Id; 
             LoadCartItemsAsync();
         }
 
@@ -184,7 +183,7 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                chosenBooks.Clear(); // נקה כדי למנוע כפילויות
+                chosenBooks.Clear(); 
 
                 foreach (CartUserControl bookControl in loadedControls)
                 {
@@ -214,7 +213,10 @@ namespace LitLink_FinalProject.Pages
         }
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow.AppFrame.Navigate(new HomePage(currentReader));
+            if (this.NavigationService != null && this.NavigationService.CanGoBack)
+                this.NavigationService.GoBack();
+            else
+                MainWindow.AppFrame.Navigate(new HomePage(currentReader));
         }
     }
 }

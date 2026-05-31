@@ -23,17 +23,19 @@ namespace LitLink_FinalProject.Pages
         private Apiservice apiService = new Apiservice();
         private Reader currentReader;
 
+
         public BecomeAuthorPage()
         {
             InitializeComponent();
             this.Loaded += BecomeAuthorPage_Loaded;
-            currentReader = this.DataContext as Reader; 
         }
 
         private void BecomeAuthorPage_Loaded(object sender, RoutedEventArgs e)
         {
+            currentReader = this.DataContext as Reader; 
             CheckUserPermissionsAndLoadGenres();
         }
+
 
         private async void CheckUserPermissionsAndLoadGenres()
         {
@@ -139,10 +141,7 @@ namespace LitLink_FinalProject.Pages
             }
             else
             {
-                var loggedReader = currentReader;
-                HomePage homePage = new HomePage();
-                homePage.DataContext = loggedReader; 
-                Window.GetWindow(this).Content = homePage;
+                MainWindow.AppFrame.Navigate(new HomePage(currentReader));
             }
         }
     }

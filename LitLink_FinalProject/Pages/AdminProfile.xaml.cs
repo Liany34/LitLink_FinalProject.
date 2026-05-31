@@ -23,11 +23,18 @@ namespace LitLink_FinalProject.Pages
         private List<Reviews> reportedReviews = new List<Reviews>();
         private List<DiscountCodes> localCoupons = new List<DiscountCodes>();
 
+
         public AdminProfile()
         {
             InitializeComponent();
             this.Loaded += AdminProfilePage_Loaded;
         }
+
+        public AdminProfile(Admin admin) : this()
+        {
+            this.DataContext = admin;
+        }
+
 
         private async void AdminProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -35,26 +42,28 @@ namespace LitLink_FinalProject.Pages
 
             if (currentAdmin == null)
             {
-                MessageBox.Show("Unauthorized access. No admin context provided.", "LitLink Security", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Task.Delay(50);
+                currentAdmin = this.DataContext as Admin;
+            }
+
+            if (currentAdmin == null)
+            {
+                MessageBox.Show("Unauthorized access. No admin context provided.", "LitLink Security",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // הצגת השם
             TxtHelloAdmin.Text = $"Hello, {currentAdmin.Username}";
             DpValidUntil.SelectedDate = DateTime.Now.AddMonths(1);
-
-            // טעינת תמונת המנהל
             LoadAdminImage();
-
-            // טעינת הנתונים מהשרת ועדכון ה-UI בסיום
             await LoadAllDataFromServer();
         }
+
 
         private async Task LoadAllDataFromServer()
         {
             try
             {
-                // שליפת הנתונים מהשרת
                 allAuthors = await apiService.GetAllAuthors() ?? new List<Author>();
                 localCoupons = await apiService.GetAllDiscountCodes() ?? new List<DiscountCodes>();
 
@@ -66,25 +75,20 @@ namespace LitLink_FinalProject.Pages
                 reportedBooks = localBooks.Where(b => b.IsFlaged).ToList();
                 reportedReviews = localReviews.Where(r => r.IsFlaged).ToList();
 
-                // 👑 עדכון ה-UI בטרד הראשי
                 Dispatcher.Invoke(() =>
                 {
-                    // עדכון הקומבו בוקס בצורה בטוחה שתאפשר בחירה
                     CmbAuthors.ItemsSource = null;
                     CmbAuthors.ItemsSource = allAuthors;
 
-                    // הגדרה בטוחה: אם יש סופרים ברשימה, לא נועלים את הרכיב
                     if (allAuthors.Count > 0)
                     {
                         CmbAuthors.IsEnabled = true;
-                        CmbAuthors.IsHitTestVisible = true; // משחרר חסימות לחיצה אם היו
+                        CmbAuthors.IsHitTestVisible = true; 
                     }
 
-                    // מילוי רשימת הקופונים
                     LvwCoupons.ItemsSource = null;
                     LvwCoupons.ItemsSource = localCoupons;
 
-                    // טעינת הנתונים הכלליים של הטאב הראשון
                     CalculateAndDisplaySales(null);
                 });
             }
@@ -96,17 +100,14 @@ namespace LitLink_FinalProject.Pages
 
         private async void CmbAuthors_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // הגנה: מוודא שהבחירה באמת השתנתה ולא התאפסה
             if (CmbAuthors.SelectedItem == null) return;
 
             Author selectedAuthor = CmbAuthors.SelectedItem as Author;
             if (selectedAuthor == null) return;
 
-            // הצגת כרטיס תוצאות הסופר ועדכון הכותרת
             TxtSelectedAuthorTitle.Text = $"Sales Overview for: {selectedAuthor.PenName}";
             AuthorSalesResultCard.Visibility = Visibility.Visible;
 
-            // הפעלת החישוב עבור הסופר הנבחר
             await CalculateAndDisplaySales(selectedAuthor.Id);
         }
 
@@ -114,7 +115,6 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                // נסיון שליפת מחרוזת ה-Base64 של התמונה מה-API
                 string st = await apiService.GetPRPByUserIDByte64(currentAdmin.Id);
 
                 if (!string.IsNullOrEmpty(st))
@@ -124,7 +124,6 @@ namespace LitLink_FinalProject.Pages
                 }
                 else if (!string.IsNullOrEmpty(currentAdmin.Picture))
                 {
-                    // אם ה-Base64 ריק אבל יש נתיב או כתובת URL ב-currentAdmin.Picture
                     this.ImgAdminProfile.Source = new BitmapImage(new Uri(currentAdmin.Picture, UriKind.RelativeOrAbsolute));
                 }
                 else
@@ -300,7 +299,7 @@ namespace LitLink_FinalProject.Pages
                 Id = newId,
                 CodeText = code,
                 Amount = amount,
-                IsActive = true, // 🟢 מוגדר כפעיל אוטומטית ביצירה
+                IsActive = true, 
                 ValidUntil = DpValidUntil.SelectedDate.Value
             };
 
@@ -380,7 +379,7 @@ namespace LitLink_FinalProject.Pages
             PanelSales.Visibility = Visibility.Visible;
             PanelReports.Visibility = Visibility.Collapsed;
             PanelDiscounts.Visibility = Visibility.Collapsed;
-            PanelNews.Visibility = Visibility.Collapsed;  // ← נוסף
+            PanelNews.Visibility = Visibility.Collapsed;  
             await CalculateAndDisplaySales(null);
         }
 
@@ -390,7 +389,7 @@ namespace LitLink_FinalProject.Pages
             PanelSales.Visibility = Visibility.Collapsed;
             PanelReports.Visibility = Visibility.Visible;
             PanelDiscounts.Visibility = Visibility.Collapsed;
-            PanelNews.Visibility = Visibility.Collapsed;  // ← נוסף
+            PanelNews.Visibility = Visibility.Collapsed; 
             LoadReportsData();
         }
 
@@ -400,7 +399,7 @@ namespace LitLink_FinalProject.Pages
             PanelSales.Visibility = Visibility.Collapsed;
             PanelReports.Visibility = Visibility.Collapsed;
             PanelDiscounts.Visibility = Visibility.Visible;
-            PanelNews.Visibility = Visibility.Collapsed;  // ← נוסף
+            PanelNews.Visibility = Visibility.Collapsed;  
             LoadCouponsData();
         }
 

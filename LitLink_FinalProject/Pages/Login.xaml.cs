@@ -75,11 +75,10 @@ namespace LitLink_FinalProject.Pages
             {
                 Apiservice buyerService = new Apiservice();
 
-                // טעינת כל סוגי המשתמשים מהשרת
                 var users = await buyerService.GetAllUsers();
                 var readers = await buyerService.GetAllReaders();
                 var authors = await buyerService.GetAllAuthors();
-                var admins = await buyerService.GetAllAdmins(); // ✨ הוספנו טעינת אדמינים
+                var admins = await buyerService.GetAllAdmins(); 
 
                 bool wentIn = false;
 
@@ -90,9 +89,8 @@ namespace LitLink_FinalProject.Pages
                         var loggedReader = readers.FirstOrDefault(r => r.Id == u.Id);
                         if (loggedReader != null)
                         {
-                            HomePage homePage = new HomePage();
-                            homePage.DataContext = loggedReader;
-                            Window.GetWindow(this).Content = homePage;
+                            HomePage homePage = new HomePage(loggedReader);
+                            MainWindow.AppFrame.Navigate(homePage);
                             wentIn = true;
                             return;
                         }
@@ -100,8 +98,7 @@ namespace LitLink_FinalProject.Pages
                         var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
                         if (loggedAuthor != null)
                         {
-                            var authorProfile = new AuthorProfile(loggedAuthor); 
-                            Window.GetWindow(this).Content = authorProfile;
+                            MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
                             wentIn = true;
                             return;
                         }
@@ -109,9 +106,7 @@ namespace LitLink_FinalProject.Pages
                         var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
                         if (loggedAdmin != null)
                         {
-                            var adminProfile = new AdminProfile();
-                            adminProfile.DataContext = loggedAdmin; 
-                            Window.GetWindow(this).Content = adminProfile;
+                            MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
                             wentIn = true;
                             return;
                         }
@@ -131,8 +126,7 @@ namespace LitLink_FinalProject.Pages
 
         private void Navigate_SignUp(object sender, RoutedEventArgs e)
         {
-            var signUp = new SignUp();
-            Window.GetWindow(this).Content = signUp;
+            MainWindow.AppFrame.Navigate(new SignUp());
         }
 
         private void Navigate_ResetPass(object sender, RoutedEventArgs e)
@@ -145,8 +139,7 @@ namespace LitLink_FinalProject.Pages
             }
             else
             {
-                var resetPass = new ResetPass(EmailInput.Text);
-                Window.GetWindow(this).Content = resetPass;
+                MainWindow.AppFrame.Navigate(new ResetPass(EmailInput.Text));
             }
         }
     }

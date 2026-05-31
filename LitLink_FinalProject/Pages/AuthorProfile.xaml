@@ -17,10 +17,20 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="0,0,0,15">
+        <Button x:Name="BtnBack" Grid.Row="0" HorizontalAlignment="Left"
+                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                Visibility="Collapsed" Click="BackButton_Click" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="← " FontSize="14" Foreground="#D06A8D" VerticalAlignment="Center"/>
+                <TextBlock Text="Back" FontSize="14" FontWeight="SemiBold" Foreground="#D06A8D" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+
+        <Grid Grid.Row="1" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -47,33 +57,18 @@
                     <TextBlock Text="🦋 " FontSize="14" VerticalAlignment="Center"/>
                     <TextBlock x:Name="TxtFollowersCount" Text="0 Followers" FontSize="14" FontWeight="SemiBold" Foreground="#666666" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal" Margin="2,8,0,0">
-                        <Button x:Name="BtnFollow" 
-                                Content="FOLLOW" 
-                                Visibility="Collapsed"
-                                Padding="15,5" 
-                                Background="#D06A8D" 
-                                Foreground="White" 
-                                FontWeight="Bold"
-                                BorderThickness="0" 
-                                Cursor="Hand" 
-                                Click="BtnFollow_Click">
+                        <Button x:Name="BtnFollow" Content="FOLLOW" Visibility="Collapsed"
+                                Padding="15,5" Background="#D06A8D" Foreground="White" FontWeight="Bold"
+                                BorderThickness="0" Cursor="Hand" Click="BtnFollow_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="12"/>
                                 </Style>
                             </Button.Resources>
                         </Button>
-                        <Button x:Name="BtnUnfollow"
-                                Content="UNFOLLOW" 
-                                Visibility="Collapsed"
-                                Padding="15,5" 
-                                Background="Transparent"
-                                Foreground="#D06A8D" 
-                                FontWeight="Bold"
-                                BorderBrush="#D06A8D" 
-                                BorderThickness="1" 
-                                Cursor="Hand" 
-                                Click="BtnUnfollow_Click">
+                        <Button x:Name="BtnUnfollow" Content="UNFOLLOW" Visibility="Collapsed"
+                                Padding="15,5" Background="Transparent" Foreground="#D06A8D" FontWeight="Bold"
+                                BorderBrush="#D06A8D" BorderThickness="1" Cursor="Hand" Click="BtnUnfollow_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="12"/>
@@ -87,9 +82,9 @@
             <Button x:Name="BtnMenu" Grid.Column="2" Content="☰" FontSize="26" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Cursor="Hand" VerticalAlignment="Top" Margin="0,10,10,0" Click="BtnMenu_Click"/>
         </Grid>
 
-        <Rectangle Grid.Row="1" Height="1" Fill="#BCB3A4" Margin="0,5,0,15"/>
+        <Rectangle Grid.Row="2" Height="1" Fill="#BCB3A4" Margin="0,5,0,15"/>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -105,9 +100,7 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <Grid>
                     <StackPanel x:Name="AuthorBooksContainer" Visibility="Visible"/>
-
                     <StackPanel x:Name="AuthorNewsContainer" Visibility="Collapsed"/>
-
                     <StackPanel x:Name="AuthorListsContainer" Visibility="Collapsed"/>
 
                     <StackPanel x:Name="AuthorSalesContainer" Visibility="Collapsed">
@@ -131,14 +124,13 @@
             </ScrollViewer>
         </Grid>
 
-        <Grid x:Name="AuthorMenuPopup" Grid.RowSpan="3" Background="#80000000" Visibility="Collapsed" MouseDown="OutsideMenu_MouseDown">
+        <Grid x:Name="AuthorMenuPopup" Grid.RowSpan="4" Background="#80000000" Visibility="Collapsed" MouseDown="OutsideMenu_MouseDown">
             <Border HorizontalAlignment="Right" Background="#FFF5F7" Width="260" Padding="20" Effect="{StaticResource MenuShadow}">
                 <StackPanel>
                     <Grid Margin="0,0,0,25">
                         <TextBlock Text="Author Menu" FontSize="18" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
                         <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" FontSize="16" Foreground="Gray" Cursor="Hand" Click="CloseMenu_Click"/>
                     </Grid>
-
                     <Button Content="➕ Add New Book" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddBook_Click"/>
                     <Button Content="📰 Add News Update" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddNews_Click"/>
                     <Button Content="🚪 Log Out" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand" Click="LogOut_Click"/>

@@ -30,7 +30,7 @@
                 </Border>
 
                 <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold" Foreground="#4A4A4A" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Titel}" FontSize="16" FontWeight="Bold" Foreground="#4A4A4A" TextWrapping="Wrap"/>
                     <TextBlock Text="{Binding IdUser.Username, StringFormat='@{0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#D06A8D"/>
                     <TextBlock Text="{Binding PublishDate, StringFormat={}{0:dd/MM/yyyy}}" FontSize="10" Foreground="Gray" Margin="0,2,0,0"/>
                 </StackPanel>

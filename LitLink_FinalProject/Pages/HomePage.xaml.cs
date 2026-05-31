@@ -30,8 +30,6 @@ namespace LitLink_FinalProject.Pages
             CheckUserSession();
 
             this.Loaded += HomePage_Loaded;
-
-            this.DataContextChanged += HomePage_DataContextChanged;
         }
         public HomePage(Reader loggedInUser) : this()
         {
@@ -42,26 +40,6 @@ namespace LitLink_FinalProject.Pages
         {
             if (!isCatalogBuilt)
             {
-                BuildDynamicCatalog();
-            }
-        }
-
-        private void HomePage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (this.DataContext is Reader user)
-            {
-                currentUser = user;
-            }
-            else
-            {
-                currentUser = null;
-            }
-            UpdateUserUI();
-
-            // בנה מחדש את הקטלוג אם כבר נטען (כדי שהחיפוש ויתר פעולות יעבדו עם המשתמש החדש)
-            if (isCatalogBuilt)
-            {
-                isCatalogBuilt = false;
                 BuildDynamicCatalog();
             }
         }
@@ -203,7 +181,6 @@ namespace LitLink_FinalProject.Pages
             bool isAdmin = currentUser != null && allAdmins.Any(a => a.Id == currentUser.Id);
             bool isAuthor = currentUser != null && allAuthors.Any(a => a.Id == currentUser.Id);
 
-            // ← currentUser מועבר עכשיו
             BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin, isAuthor, currentUser);
             this.NavigationService?.Navigate(detailsPage);
         }
@@ -226,8 +203,7 @@ namespace LitLink_FinalProject.Pages
                 return;
             }
 
-            SearchResultsPage resultsPage = new SearchResultsPage(query, currentUser); // ← currentUser נוסף
-            this.NavigationService?.Navigate(resultsPage);
+            MainWindow.AppFrame.Navigate(new SearchResultsPage(query, currentUser));
         }
 
         private void NewsListBox_Refresh()
@@ -273,7 +249,11 @@ namespace LitLink_FinalProject.Pages
                 if (existingAuthor != null)
                     MainWindow.AppFrame.Navigate(new AuthorProfile(existingAuthor));
                 else
-                    MainWindow.AppFrame.Navigate(new BecomeAuthorPage());
+                {
+                    var becomeAuthorPage = new BecomeAuthorPage();
+                    becomeAuthorPage.DataContext = currentUser; 
+                    MainWindow.AppFrame.Navigate(becomeAuthorPage);
+                }
             }
             catch (Exception ex)
             {
