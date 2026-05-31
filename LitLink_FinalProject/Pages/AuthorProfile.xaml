@@ -103,7 +103,6 @@
 
                     <Button Content="➕ Add New Book" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddBook_Click"/>
                     <Button Content="📰 Add News Update" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddNews_Click"/>
-                    <Button Content="ℹ️ About Us" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,25" Cursor="Hand" Click="AboutUs_Click"/>
                     <Button Content="🚪 Log Out" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand" Click="LogOut_Click"/>
                 </StackPanel>
             </Border>

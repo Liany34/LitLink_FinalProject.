@@ -3,17 +3,12 @@ using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
@@ -21,7 +16,7 @@ namespace LitLink_FinalProject.Pages
     {
         private Apiservice apiService = new Apiservice();
         private List<Author> allAuthors = new List<Author>();
-        private User currentUser;
+        private Admin currentAdmin;
 
         private List<Reader> reportedUsers = new List<Reader>();
         private List<Book> reportedBooks = new List<Book>();
@@ -32,135 +27,182 @@ namespace LitLink_FinalProject.Pages
         {
             InitializeComponent();
             this.Loaded += AdminProfilePage_Loaded;
-            currentUser = this.DataContext as User;
-            InitLocalMockData();
         }
 
-        private async void InitLocalMockData()
+        private async void AdminProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
-            List<Reader> localReaders = await apiService.GetAllReaders();
-            reportedUsers = localReaders.Where(r => r.IsFlaged).ToList();
-            List<Book> localBooks = await apiService.GetAllBooks();
-            reportedBooks = localBooks.Where(r => r.IsFlaged).ToList();
-            List<Reviews> localReviews = await apiService.GetAllReviews();
-            reportedReviews = localReviews.Where(r => r.IsFlaged).ToList();
+            currentAdmin = this.DataContext as Admin;
 
-            localCoupons = await apiService.GetAllDiscountCodes();
-        }
-
-        private void AdminProfilePage_Loaded(object sender, RoutedEventArgs e)
-        {
-            LoadAdminDashboard();
-        }
-
-        private async void LoadAdminDashboard()
-        {
-            List<Author> allAuthors = await apiService.GetAllAuthors();
-            if (currentUser == null || !allAuthors.Contains(currentUser))
+            if (currentAdmin == null)
             {
-                MessageBox.Show("Unauthorized access.", "LitLink Security", MessageBoxButton.OK, MessageBoxImage.Warning);
-                this.NavigationService?.Navigate(new Uri("Pages/AdminProfile.xaml", UriKind.Relative));
+                MessageBox.Show("Unauthorized access. No admin context provided.", "LitLink Security", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            TxtHelloAdmin.Text = $"Hello, {currentUser.Username}";
+            // הצגת השם
+            TxtHelloAdmin.Text = $"Hello, {currentAdmin.Username}";
+            DpValidUntil.SelectedDate = DateTime.Now.AddMonths(1);
 
+            // טעינת תמונת המנהל
+            LoadAdminImage();
 
-            string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
-            if (currentUser != null && !string.IsNullOrEmpty(currentUser.Picture))
-            {
-                try
-                {
-                    byte[] imgStr = Convert.FromBase64String(st);
-                    this.ImgAdminProfile.Source = ByteImageConverter.ByteToImage(imgStr);
-                }
-                catch (Exception)
-                {
-                    this.ImgAdminProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
-                }
-            }
-            else
-            {
-                this.ImgAdminProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
-            }
-
-            if (PanelSales.Visibility == Visibility.Visible) LoadSalesData();
-            else if (PanelReports.Visibility == Visibility.Visible) LoadReportsData();
-            else if (PanelDiscounts.Visibility == Visibility.Visible) LoadCouponsData();
+            // טעינת הנתונים מהשרת ועדכון ה-UI בסיום
+            await LoadAllDataFromServer();
         }
 
-
-        private async void LoadSalesData()
+        private async Task LoadAllDataFromServer()
         {
             try
             {
-                await CalculateAndDisplaySales(null);
+                // שליפת הנתונים מהשרת
+                allAuthors = await apiService.GetAllAuthors() ?? new List<Author>();
+                localCoupons = await apiService.GetAllDiscountCodes() ?? new List<DiscountCodes>();
 
-                allAuthors = await apiService.GetAllAuthors();
-                CmbAuthors.ItemsSource = allAuthors;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error initialising sales tab: " + ex.Message);
-            }
-        }
+                List<Reader> localReaders = await apiService.GetAllReaders() ?? new List<Reader>();
+                List<Book> localBooks = await apiService.GetAllBooks() ?? new List<Book>();
+                List<Reviews> localReviews = await apiService.GetAllReviews() ?? new List<Reviews>();
 
-        private async System.Threading.Tasks.Task CalculateAndDisplaySales(int? targetAuthorId)
-        {
-            int bookThisMonth = 0;
-            int bookTotal = 0;
-            double incomeThisMonth = 0;
-            double incomeTotal = 0;
-            int booksAddedToCarts = 0;
+                reportedUsers = localReaders.Where(r => r.IsFlaged).ToList();
+                reportedBooks = localBooks.Where(b => b.IsFlaged).ToList();
+                reportedReviews = localReviews.Where(r => r.IsFlaged).ToList();
 
-            try
-            {
-                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
-
-                foreach (Cart_Detail cd in allCartDetails)
+                // 👑 עדכון ה-UI בטרד הראשי
+                Dispatcher.Invoke(() =>
                 {
-                    if (targetAuthorId == null || (cd.IdBook != null && cd.IdBook.IdAuthor != null && cd.IdBook.IdAuthor.Id == targetAuthorId))
+                    // עדכון הקומבו בוקס בצורה בטוחה שתאפשר בחירה
+                    CmbAuthors.ItemsSource = null;
+                    CmbAuthors.ItemsSource = allAuthors;
+
+                    // הגדרה בטוחה: אם יש סופרים ברשימה, לא נועלים את הרכיב
+                    if (allAuthors.Count > 0)
                     {
-                        booksAddedToCarts++;
-
-                        if (cd.IsPurchased)
-                        {
-                            if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
-                            {
-                                bookThisMonth++;
-                                incomeThisMonth += cd.IdBook.Price ?? 0.0;
-                            }
-                            bookTotal++;
-                            incomeTotal += cd.IdBook.Price ?? 0.0;
-                        }
+                        CmbAuthors.IsEnabled = true;
+                        CmbAuthors.IsHitTestVisible = true; // משחרר חסימות לחיצה אם היו
                     }
-                }
 
-                if (targetAuthorId == null)
-                {
-                    TxtGlobalSales.Text = bookTotal.ToString();
-                    TxtGlobalRevenue.Text = $"{incomeTotal:F2} ₪";
-                }
-                else
-                {
-                    AuthorSalesResultCard.Visibility = Visibility.Visible;
-                    TxtAuthorSoldCopies.Text = $"Copies Sold This Month: {bookThisMonth} (Total: {bookTotal})";
-                    TxtAuthorRevenue.Text = $"Revenue: {incomeTotal:F2} ₪ (This Month: {incomeThisMonth:F2} ₪)";
-                }
+                    // מילוי רשימת הקופונים
+                    LvwCoupons.ItemsSource = null;
+                    LvwCoupons.ItemsSource = localCoupons;
+
+                    // טעינת הנתונים הכלליים של הטאב הראשון
+                    CalculateAndDisplaySales(null);
+                });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Error calculating sales data: " + ex.Message);
+                MessageBox.Show($"שגיאה בקבלת נתונים מהשרת: {ex.Message}", "Error System");
             }
         }
 
         private async void CmbAuthors_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // הגנה: מוודא שהבחירה באמת השתנתה ולא התאפסה
+            if (CmbAuthors.SelectedItem == null) return;
+
             Author selectedAuthor = CmbAuthors.SelectedItem as Author;
             if (selectedAuthor == null) return;
 
+            // הצגת כרטיס תוצאות הסופר ועדכון הכותרת
             TxtSelectedAuthorTitle.Text = $"Sales Overview for: {selectedAuthor.PenName}";
+            AuthorSalesResultCard.Visibility = Visibility.Visible;
+
+            // הפעלת החישוב עבור הסופר הנבחר
             await CalculateAndDisplaySales(selectedAuthor.Id);
+        }
+
+        private async void LoadAdminImage()
+        {
+            try
+            {
+                // נסיון שליפת מחרוזת ה-Base64 של התמונה מה-API
+                string st = await apiService.GetPRPByUserIDByte64(currentAdmin.Id);
+
+                if (!string.IsNullOrEmpty(st))
+                {
+                    byte[] imgStr = Convert.FromBase64String(st);
+                    this.ImgAdminProfile.Source = ByteImageConverter.ByteToImage(imgStr);
+                }
+                else if (!string.IsNullOrEmpty(currentAdmin.Picture))
+                {
+                    // אם ה-Base64 ריק אבל יש נתיב או כתובת URL ב-currentAdmin.Picture
+                    this.ImgAdminProfile.Source = new BitmapImage(new Uri(currentAdmin.Picture, UriKind.RelativeOrAbsolute));
+                }
+                else
+                {
+                    SetDefaultImage();
+                }
+            }
+            catch
+            {
+                SetDefaultImage();
+            }
+        }
+
+        private void SetDefaultImage()
+        {
+            try
+            {
+                this.ImgAdminProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+            }
+            catch
+            {
+                this.ImgAdminProfile.Source = null;
+            }
+        }
+
+        private async Task CalculateAndDisplaySales(int? targetAuthorId)
+        {
+            int bookThisMonth = 0;
+            int bookTotal = 0;
+            double incomeThisMonth = 0;
+            double incomeTotal = 0;
+
+            try
+            {
+                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
+                if (allCartDetails != null)
+                {
+                    foreach (Cart_Detail cd in allCartDetails)
+                    {
+                        if (cd.IdBook == null) continue;
+
+                        bool matchesAuthor = targetAuthorId == null ||
+                                             (cd.IdBook.IdAuthor != null && cd.IdBook.IdAuthor.Id == targetAuthorId);
+
+                        if (matchesAuthor && cd.IsPurchased)
+                        {
+                            double price = cd.IdBook.Price ?? 0.0;
+                            bookTotal++;
+                            incomeTotal += price;
+
+                            if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
+                            {
+                                bookThisMonth++;
+                                incomeThisMonth += price;
+                            }
+                        }
+                    }
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (targetAuthorId == null)
+                    {
+                        TxtGlobalSales.Text = bookTotal.ToString();
+                        TxtGlobalRevenue.Text = $"{incomeTotal:F2} ₪";
+                    }
+                    else
+                    {
+                        AuthorSalesResultCard.Visibility = Visibility.Visible;
+                        TxtAuthorSoldCopies.Text = $"Copies Sold This Month: {bookThisMonth} (Total: {bookTotal})";
+                        TxtAuthorRevenue.Text = $"Revenue: {incomeTotal:F2} ₪ (This Month: {incomeThisMonth:F2} ₪)";
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error calculating sales data: " + ex.Message);
+            }
         }
 
         private void LoadReportsData()
@@ -171,125 +213,70 @@ namespace LitLink_FinalProject.Pages
                 ReportsContainer.Children.Add(new TextBlock { Text = "No active reports pending review. ✨", FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) });
                 return;
             }
-            else
+
+            foreach (Book report in reportedBooks.ToList())
             {
-                if (reportedBooks.Count > 0)
+                Border reportCard = CreateReportCard($"[BOOK] Title: {report.BookName} | ID: {report.Id}", async () =>
                 {
-                    foreach (Book report in reportedBooks)
-                    {
-                        Border reportCard = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(15), Margin = new Thickness(0, 0, 0, 10), Effect = (System.Windows.Media.Effects.Effect)FindResource("AdminShadow") };
-                        StackPanel sp = new StackPanel();
-
-                        sp.Children.Add(new TextBlock { Text = $"Reported Item ID: {report.Id}", FontSize = 11, Foreground = Brushes.Gray });
-
-                        StackPanel btnSp = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
-                        Button btnDismiss = new Button { Content = "Dismiss Report", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Gray, Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
-                        Button btnDeleteTarget = new Button { Content = $"Delete Reporte", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand, FontWeight = FontWeights.Bold };
-
-                        btnDismiss.Click += async (s, e) =>
-                        {
-                            reportedBooks.Remove(report);
-                            MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData();
-                            report.IsFlaged = false;
-                            await apiService.UpdateBook(report);
-                        };
-
-                        btnDeleteTarget.Click += async (s, e) =>
-                        {
-                            if (MessageBox.Show($"Are you sure you want to delete this reporte?", "LitLink System", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                            {
-                                reportedBooks.Remove(report);
-                                MessageBox.Show($"The reported book has been removed from the platform.", "LitLink");
-                                LoadReportsData();
-                                await apiService.DeleteBook(report.Id);
-                            }
-                        };
-
-                        btnSp.Children.Add(btnDismiss); btnSp.Children.Add(btnDeleteTarget);
-                        sp.Children.Add(btnSp); reportCard.Child = sp;
-                        ReportsContainer.Children.Add(reportCard);
-                    }
-                }
-                if (reportedUsers.Count > 0)
+                    reportedBooks.Remove(report);
+                    report.IsFlaged = false;
+                    await apiService.UpdateBook(report);
+                }, async () =>
                 {
-                    foreach (Reader reportU in reportedUsers)
-                    {
-                        Border reportCard = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(15), Margin = new Thickness(0, 0, 0, 10), Effect = (System.Windows.Media.Effects.Effect)FindResource("AdminShadow") };
-                        StackPanel sp = new StackPanel();
+                    reportedBooks.Remove(report);
+                    await apiService.DeleteBook(report.Id);
+                });
+                ReportsContainer.Children.Add(reportCard);
+            }
 
-                        sp.Children.Add(new TextBlock { Text = $"Reported Item ID: {reportU.Id}", FontSize = 11, Foreground = Brushes.Gray });
-
-                        StackPanel btnSp = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
-                        Button btnDismiss = new Button { Content = "Dismiss Report", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Gray, Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
-                        Button btnDeleteTarget = new Button { Content = $"Delete Reporte", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand, FontWeight = FontWeights.Bold };
-
-                        btnDismiss.Click += async (s, e) =>
-                        {
-                            reportedUsers.Remove(reportU);
-                            MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData();
-                            reportU.IsFlaged = false;
-                            await apiService.UpdateReader(reportU);
-                        };
-
-                        btnDeleteTarget.Click += async (s, e) =>
-                        {
-                            if (MessageBox.Show($"Are you sure you want to delete this reporte?", "LitLink System", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                            {
-                                reportedUsers.Remove(reportU);
-                                MessageBox.Show($"The reported user has been removed from the platform.", "LitLink");
-                                LoadReportsData();
-                                await apiService.DeleteReader(reportU.Id);
-                            }
-                        };
-
-                        btnSp.Children.Add(btnDismiss); btnSp.Children.Add(btnDeleteTarget);
-                        sp.Children.Add(btnSp); reportCard.Child = sp;
-                        ReportsContainer.Children.Add(reportCard);
-                    }
-                }
-                if (reportedReviews.Count > 0)
+            foreach (Reader reportU in reportedUsers.ToList())
+            {
+                Border reportCard = CreateReportCard($"[USER] Username: {reportU.Username} | ID: {reportU.Id}", async () =>
                 {
-                    foreach (Reviews report in reportedReviews)
-                    {
-                        Border reportCard = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(15), Margin = new Thickness(0, 0, 0, 10), Effect = (System.Windows.Media.Effects.Effect)FindResource("AdminShadow") };
-                        StackPanel sp = new StackPanel();
+                    reportedUsers.Remove(reportU);
+                    reportU.IsFlaged = false;
+                    await apiService.UpdateReader(reportU);
+                }, async () =>
+                {
+                    reportedUsers.Remove(reportU);
+                    await apiService.DeleteReader(reportU.Id);
+                });
+                ReportsContainer.Children.Add(reportCard);
+            }
 
-                        sp.Children.Add(new TextBlock { Text = $"Reported Item ID: {report.Id}", FontSize = 11, Foreground = Brushes.Gray });
-
-                        StackPanel btnSp = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
-                        Button btnDismiss = new Button { Content = "Dismiss Report", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Gray, Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
-                        Button btnDeleteTarget = new Button { Content = $"Delete Reporte", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand, FontWeight = FontWeights.Bold };
-
-                        btnDismiss.Click += async (s, e) =>
-                        {
-                            reportedReviews.Remove(report);
-                            MessageBox.Show("Report dismissed successfully.", "LitLink Control");
-                            LoadReportsData();
-                            report.IsFlaged = false;
-                            await apiService.UpdateReview(report);
-                        };
-
-                        btnDeleteTarget.Click += async (s, e) =>
-                        {
-                            if (MessageBox.Show($"Are you sure you want to delete this reporte?", "LitLink System", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                            {
-                                reportedReviews.Remove(report);
-                                MessageBox.Show($"The reported review has been removed from the platform.", "LitLink");
-                                LoadReportsData();
-                                await apiService.DeleteReview(report.Id);
-                            }
-                        };
-
-                        btnSp.Children.Add(btnDismiss); btnSp.Children.Add(btnDeleteTarget);
-                        sp.Children.Add(btnSp); reportCard.Child = sp;
-                        ReportsContainer.Children.Add(reportCard);
-                    }
-                }
+            foreach (Reviews reportR in reportedReviews.ToList())
+            {
+                Border reportCard = CreateReportCard($"[REVIEW] \"{reportR.Text}\" | ID: {reportR.Id}", async () =>
+                {
+                    reportedReviews.Remove(reportR);
+                    reportR.IsFlaged = false;
+                    await apiService.UpdateReview(reportR);
+                }, async () =>
+                {
+                    reportedReviews.Remove(reportR);
+                    await apiService.DeleteReview(reportR.Id);
+                });
+                ReportsContainer.Children.Add(reportCard);
             }
         }
 
+        private Border CreateReportCard(string infoText, Func<Task> onDismiss, Func<Task> onDelete)
+        {
+            Border reportCard = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(15), Margin = new Thickness(0, 0, 0, 10), Effect = (System.Windows.Media.Effects.Effect)FindResource("AdminShadow") };
+            StackPanel sp = new StackPanel();
+            sp.Children.Add(new TextBlock { Text = infoText, FontSize = 13, Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)), TextWrapping = TextWrapping.Wrap });
+
+            StackPanel btnSp = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
+            Button btnDismiss = new Button { Content = "Dismiss Report", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Gray, Cursor = Cursors.Hand, Margin = new Thickness(0, 0, 15, 0) };
+            Button btnDeleteTarget = new Button { Content = "Delete Item", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Brushes.Red, Cursor = Cursors.Hand, FontWeight = FontWeights.Bold };
+
+            btnDismiss.Click += async (s, e) => { await onDismiss(); LoadReportsData(); };
+            btnDeleteTarget.Click += async (s, e) => { if (MessageBox.Show("Delete permanently?", "LitLink System", MessageBoxButton.YesNo) == MessageBoxResult.Yes) { await onDelete(); LoadReportsData(); } };
+
+            btnSp.Children.Add(btnDismiss); btnSp.Children.Add(btnDeleteTarget);
+            sp.Children.Add(btnSp); reportCard.Child = sp;
+            return reportCard;
+        }
 
         private void LoadCouponsData()
         {
@@ -300,9 +287,9 @@ namespace LitLink_FinalProject.Pages
         private async void BtnCreateCoupon_Click(object sender, RoutedEventArgs e)
         {
             string code = TxtNewCouponCode.Text.Trim().ToUpper();
-            if (string.IsNullOrEmpty(code) || !int.TryParse(TxtNewCouponAmount.Text, out int amount))
+            if (string.IsNullOrEmpty(code) || !int.TryParse(TxtNewCouponAmount.Text, out int amount) || DpValidUntil.SelectedDate == null)
             {
-                MessageBox.Show("Please enter a valid code and amount.", "LitLink");
+                MessageBox.Show("Please enter a valid code, amount and date.", "LitLink");
                 return;
             }
 
@@ -313,16 +300,17 @@ namespace LitLink_FinalProject.Pages
                 Id = newId,
                 CodeText = code,
                 Amount = amount,
-                IsActive = true,
-                ValidUntil = DateTime.Now.AddMonths(1)
+                IsActive = true, // 🟢 מוגדר כפעיל אוטומטית ביצירה
+                ValidUntil = DpValidUntil.SelectedDate.Value
             };
 
             localCoupons.Add(newCoupon);
+            MessageBox.Show($"Coupon Code '{code}' created! ✨", "LitLink");
 
-            MessageBox.Show($"Coupon Code '{code}' created and activated! ✨", "LitLink");
             TxtNewCouponCode.Text = ""; TxtNewCouponAmount.Text = "";
-            LoadCouponsData();
+            DpValidUntil.SelectedDate = DateTime.Now.AddMonths(1);
 
+            LoadCouponsData();
             await apiService.InsertDiscountCode(newCoupon);
         }
 
@@ -331,29 +319,21 @@ namespace LitLink_FinalProject.Pages
             var coupon = (sender as FrameworkElement)?.DataContext as DiscountCodes;
             if (coupon == null) return;
 
-            if (MessageBox.Show($"Delete coupon code '{coupon.CodeText}'?", "LitLink", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            if (MessageBox.Show($"Delete coupon code '{coupon.CodeText}'?", "LitLink", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 localCoupons.Remove(coupon);
-
-                try
-                {
-                    await apiService.DeleteDiscountCode(coupon.Id);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to delete from server: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-
+                try { await apiService.DeleteDiscountCode(coupon.Id); } catch { }
                 LoadCouponsData();
             }
         }
 
-        private void TabSales_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabSales); PanelSales.Visibility = Visibility.Visible; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Collapsed; LoadSalesData(); }
+        private async void TabSales_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabSales); PanelSales.Visibility = Visibility.Visible; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Collapsed; await CalculateAndDisplaySales(null); }
         private void TabReports_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabReports); PanelSales.Visibility = Visibility.Collapsed; PanelReports.Visibility = Visibility.Visible; PanelDiscounts.Visibility = Visibility.Collapsed; LoadReportsData(); }
         private void TabDiscounts_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabDiscounts); PanelSales.Visibility = Visibility.Collapsed; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Visible; LoadCouponsData(); }
 
         private void HighlightTab(Button activeBtn)
         {
+            if (activeBtn == null) return;
             BtnTabSales.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabReports.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabDiscounts.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
@@ -364,8 +344,13 @@ namespace LitLink_FinalProject.Pages
         private void CloseMenu_Click(object sender, RoutedEventArgs e) => AdminMenuPopup.Visibility = Visibility.Collapsed;
         private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e) { if (e.OriginalSource == AdminMenuPopup) AdminMenuPopup.Visibility = Visibility.Collapsed; }
 
-        private void AddNews_Click(object sender, RoutedEventArgs e) { new WindowsFile.AddNewsWindow().ShowDialog(); }
-        private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
-        private void LogOut_Click(object sender, RoutedEventArgs e) { currentUser = null; this.NavigationService?.Navigate(new Uri("Pages/SignOut.xaml", UriKind.Relative)); }
+        private void AddNews_Click(object sender, RoutedEventArgs e)
+        {
+            var newsWindow = new WindowsFile.AddNewsWindow();
+            newsWindow.DataContext = this.currentAdmin;
+            newsWindow.ShowDialog();
+        }
+
+        private void LogOut_Click(object sender, RoutedEventArgs e) { currentAdmin = null; Window.GetWindow(this).Content = new SignOut(); }
     }
 }

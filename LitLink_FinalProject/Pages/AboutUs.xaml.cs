@@ -12,15 +12,26 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
+using Model;
+using Service;
 
 namespace LitLink_FinalProject.Pages
 {
     public partial class AboutUs : Page
     {
-        public AboutUs()
+        private Reader loggedUser;
+
+        public AboutUs(Reader currentReadr)
         {
             InitializeComponent();
+            this.loggedUser = currentReadr;
         }
-        private void Home_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
+        private void Home_Click(object sender, RoutedEventArgs e)
+        {
+            HomePage homePage = new HomePage();
+            homePage.DataContext = loggedUser; 
+            Window.GetWindow(this).Content = homePage;
+        }
     }
 }

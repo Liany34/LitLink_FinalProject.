@@ -1,6 +1,8 @@
 ﻿using Model;
+using Service;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +12,8 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Converters;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -22,6 +26,7 @@ namespace LitLink_FinalProject.Pages
 
         private List<Book> selectedBooks;
         private double discountCodeAmount = 0;
+        private int curretReader;
 
         public CheckOut()
         {
@@ -35,8 +40,17 @@ namespace LitLink_FinalProject.Pages
             BooksItemsControl.ItemsSource = selectedBooks;
             TxtConfirmEmail.Text = currentUserEmail;
             TxtConfirmPhone.Text = currentUserPhone;
+            this.curretReader = int.Parse(GetID(currentUserEmail).Result.ToString());
 
             CalculatePrices();
+        }
+
+        private async Task<int> GetID(string email)
+        {
+            Apiservice apiservice = new Apiservice();
+            List<Reader> allReader = await apiservice.GetAllReaders();
+            Reader current = allReader.Find(r => r.Email == email);
+            return current.Id;
         }
 
         private void CalculatePrices()
@@ -97,6 +111,9 @@ namespace LitLink_FinalProject.Pages
             MyBooks.AddRange(selectedBooks);
 
             MessageBox.Show("!הקנייה הושלמה בהצלחה\n.הספרים החדשים שלך נוספו בהצלחה לרשימת הספרים שלי", "LitLink Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            HomePage homePage = new HomePage();
+            homePage.DataContext = curretReader;
+            Window.GetWindow(this).Content = homePage;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -104,6 +121,11 @@ namespace LitLink_FinalProject.Pages
             if (this.NavigationService != null && this.NavigationService.CanGoBack)
             {
                 this.NavigationService.GoBack();
+            }
+            else
+            {
+                var cart = new CartPage(curretReader);
+                Window.GetWindow(this).Content = cart;
             }
         }
     }

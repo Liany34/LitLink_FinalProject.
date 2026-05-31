@@ -204,12 +204,23 @@ namespace LitLink_FinalProject.Pages
 
                 checkoutPage.SetupCheckout(chosenBooks, logedinUser.Email, logedinUser.PhoneNumber, 0);
 
-                this.NavigationService.Navigate(checkoutPage);
+                Window.GetWindow(this).Content = checkoutPage;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Could not open checkout page: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.NavigationService != null && this.NavigationService.CanGoBack)
+            {
+                this.NavigationService.GoBack();
+            }
+            HomePage homePage = new HomePage();
+            Reader current = apiService.GetAllReaders().Result.FirstOrDefault(r => r.Id == currentUserId);
+            homePage.DataContext = current;
+            Window.GetWindow(this).Content = homePage;
         }
     }
 }

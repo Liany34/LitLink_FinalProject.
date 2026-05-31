@@ -14,19 +14,20 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static MaterialDesignThemes.Wpf.Theme;
 
 namespace LitLink_FinalProject.Pages
 {
     public partial class BecomeAuthorPage : Page
     {
         private Apiservice apiService = new Apiservice();
-        private User currentUser;
+        private Reader currentReader;
 
         public BecomeAuthorPage()
         {
             InitializeComponent();
             this.Loaded += BecomeAuthorPage_Loaded;
-            currentUser = this.DataContext as User; 
+            currentReader = this.DataContext as Reader; 
         }
 
         private void BecomeAuthorPage_Loaded(object sender, RoutedEventArgs e)
@@ -36,7 +37,7 @@ namespace LitLink_FinalProject.Pages
 
         private async void CheckUserPermissionsAndLoadGenres()
         {
-            if (currentUser == null)
+            if (currentReader == null)
             {
                 MessageBox.Show("Please log in to access this page.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 this.NavigationService?.Navigate(new Uri("Pages/LoginPage.xaml", UriKind.Relative));
@@ -45,14 +46,18 @@ namespace LitLink_FinalProject.Pages
 
             List<Admin> admins = await apiService.GetAllAdmins();
             List<Author> authors = await apiService.GetAllAuthors();
-            if (admins.Contains(currentUser) || authors.Contains(currentUser))
+            if (admins.Any(a => a.Id == currentReader.Id) || authors.Any(a => a.Id == currentReader.Id))
             {
                 MessageBox.Show("Authors and Administrators cannot create a new author profile.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Stop);
 
                 if (this.NavigationService.CanGoBack)
                     this.NavigationService.GoBack();
                 else
-                    this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
+                {
+                    HomePage homePage = new HomePage();
+                    homePage.DataContext = currentReader;
+                    Window.GetWindow(this).Content = homePage;
+                }
                 return;
             }
 
@@ -83,14 +88,14 @@ namespace LitLink_FinalProject.Pages
             {
                 Author newAuthor = new Author
                 {
-                    FirstName = currentUser.FirstName,
-                    LastName = currentUser.LastName,
-                    PhoneNumber = currentUser.PhoneNumber,
-                    Email = currentUser.Email,
-                    Username = currentUser.Username,
-                    Birthdate = currentUser.Birthdate,
-                    Picture = currentUser.Picture,
-                    Pass = currentUser.Pass,
+                    FirstName = currentReader.FirstName,
+                    LastName = currentReader.LastName,
+                    PhoneNumber = currentReader.PhoneNumber,
+                    Email = currentReader.Email,
+                    Username = currentReader.Username,
+                    Birthdate = currentReader.Birthdate,
+                    Picture = currentReader.Picture,
+                    Pass = currentReader.Pass,
                     PenName = penName,
                     InformationAboutAuthor = bio,
                     Genre = selectedGenre
@@ -112,8 +117,9 @@ namespace LitLink_FinalProject.Pages
                 {
                     MessageBox.Show($"Congratulations ✨\nYou are now officially a registered LitLink Author! Welcome, {penName}.",
                         "LitLink Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    await apiService.DeleteReader(currentUser.Id);
-                    this.NavigationService?.Navigate(new Uri("Pages/AuthorProfile.xaml", UriKind.Relative));
+                    await apiService.DeleteReader(currentReader.Id);
+                    var authorProfile = new AuthorProfile();
+                    Window.GetWindow(this).Content = authorProfile;
                 }
                 else
                 {
@@ -128,7 +134,17 @@ namespace LitLink_FinalProject.Pages
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            if (this.NavigationService.CanGoBack) this.NavigationService.GoBack();
+            if (this.NavigationService != null && this.NavigationService.CanGoBack)
+            {
+                this.NavigationService.GoBack();
+            }
+            else
+            {
+                var loggedReader = currentReader;
+                HomePage homePage = new HomePage();
+                homePage.DataContext = loggedReader; 
+                Window.GetWindow(this).Content = homePage;
+            }
         }
     }
 }

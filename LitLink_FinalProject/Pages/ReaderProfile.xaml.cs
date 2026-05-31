@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using LitLink_FinalProject.UserControls;
+using LitLink_FinalProject.WindowsFile;
 
 namespace LitLink_FinalProject.Pages
 {
@@ -16,7 +17,7 @@ namespace LitLink_FinalProject.Pages
     {
         private Apiservice apiService = new Apiservice();
         private List<Book> allBooks = new List<Book>();
-        private User currentUser;
+        private Reader currentUser;
 
         public ReaderProfile()
         {
@@ -27,7 +28,7 @@ namespace LitLink_FinalProject.Pages
 
         private void ReaderProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
-            currentUser = this.DataContext as User;
+            currentUser = this.DataContext as Reader;
             LoadUserData();
         }
 
@@ -62,10 +63,8 @@ namespace LitLink_FinalProject.Pages
                     this.ImgReaderProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
                 }
 
-                // הבאת כל הספרים מהשרת
                 allBooks = await apiService.GetAllBooks();
 
-                // בניית הרשימות של המשתמש
                 BuildUserLists();
             }
             catch (Exception ex)
@@ -92,7 +91,6 @@ namespace LitLink_FinalProject.Pages
                     return;
                 }
 
-                // אם רשימת הספרים הכללית לא נטענה מסיבה כלשהי, נטען אותה עכשיו
                 if (allBooks == null || allBooks.Count == 0)
                 {
                     allBooks = await apiService.GetAllBooks();
@@ -223,17 +221,37 @@ namespace LitLink_FinalProject.Pages
             if (e.OriginalSource == EditProfilePopup) EditProfilePopup.Visibility = Visibility.Collapsed;
         }
 
-        private void Home_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
-        private void Cart_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/CartPage.xaml", UriKind.Relative));
-        private void EditDetails_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/EditProfileDetails.xaml", UriKind.Relative));
-        private void ResetPassword_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/ResetPass.xaml", UriKind.Relative));
+        private void Home_Click(object sender, RoutedEventArgs e)
+        {
+            HomePage homePage = new HomePage();
+            homePage.DataContext = currentUser;
+            Window.GetWindow(this).Content = homePage;
+        }
+        private void Cart_Click(object sender, RoutedEventArgs e)
+        {
+            var cartPage = new CartPage(currentUser.Id);
+            Window.GetWindow(this).Content = cartPage;
+        }
+        private void EditDetails_Click(object sender, RoutedEventArgs e)
+        {
+            EditReaderProfileWindow newWindow = new EditReaderProfileWindow();
+
+            newWindow.Show();
+
+        }
+        private void ResetPassword_Click(object sender, RoutedEventArgs e)
+        {
+            var resetPass = new ResetPass();
+            Window.GetWindow(this).Content = resetPass;
+        }
         private void Preference_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Preferences layout option clicked!", "LitLink");
         private void Support_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Support option clicked! Connecting to help center...", "LitLink");
 
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
             currentUser = null;
-            this.NavigationService?.Navigate(new Uri("Pages/LogOutPage.xaml", UriKind.Relative));
+            var signOut = new SignOut();
+            Window.GetWindow(this).Content = signOut;
         }
 
         private async void DeleteAccount_Click(object sender, RoutedEventArgs e)
@@ -248,7 +266,8 @@ namespace LitLink_FinalProject.Pages
                     await apiService.DeleteUser(currentUser.Id);
                     currentUser = null;
                     MessageBox.Show("Your account has been deleted successfully.", "LitLink");
-                    this.NavigationService?.Navigate(new Uri("Pages/LogOutPage.xaml", UriKind.Relative));
+                    var signOut = new SignOut();
+                    Window.GetWindow(this).Content = signOut;
                 }
                 catch (Exception ex)
                 {

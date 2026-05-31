@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LitLink_FinalProject.WindowsFile"
         mc:Ignorable="d"
-        Title="AddNewsWindow" Height="450" Width="400" 
+        Title="Publish New Update" Height="520" Width="460" 
         WindowStartupLocation="CenterScreen" Background="#FFF5F7" ResizeMode="NoResize">
 
     <Window.Resources>
@@ -16,7 +16,7 @@
         <Border Background="White" CornerRadius="15" Padding="20" Effect="{StaticResource SoftShadow}">
             <StackPanel>
                 <TextBlock Text="Publish New Update 📰" FontSize="22" FontWeight="Bold" Foreground="#4A4A4A" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                <TextBlock x:Name="TxtAuthorLabel" Text="By: PenName" FontSize="12" Foreground="#D06A8D" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <TextBlock x:Name="TxtAuthorLabel" Text="By: System Administrator" FontSize="13" Foreground="#D06A8D" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
                 <TextBlock Text="News Title" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
                 <TextBox x:Name="TxtNewsTitle" Height="35" Padding="8,5" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,15">
@@ -28,7 +28,7 @@
                 </TextBox>
 
                 <TextBlock Text="Message Content" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
-                <TextBox x:Name="TxtNewsContent" Height="120" Padding="8,5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,25">
+                <TextBox x:Name="TxtNewsContent" Height="140" Padding="8,5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,25">
                     <TextBox.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="8"/>

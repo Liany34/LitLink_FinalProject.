@@ -71,57 +71,69 @@ namespace LitLink_FinalProject.Pages
 
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
-            Apiservice buyerService = new Apiservice();
-            var readers = await buyerService.GetAllReaders();
-            var authors = await buyerService.GetAllAuthors();
-            var users = await buyerService.GetAllUsers();
-            bool wentIn = false;
-            foreach (var u in users)
+            try
             {
-                if (u.Email == EmailInput.Text && u.Pass == PasswordInput.Password)
+                Apiservice buyerService = new Apiservice();
+
+                // טעינת כל סוגי המשתמשים מהשרת
+                var users = await buyerService.GetAllUsers();
+                var readers = await buyerService.GetAllReaders();
+                var authors = await buyerService.GetAllAuthors();
+                var admins = await buyerService.GetAllAdmins(); // ✨ הוספנו טעינת אדמינים
+
+                bool wentIn = false;
+
+                foreach (var u in users)
                 {
-                    if(readers.Any(r => r.Id == u.Id))
+                    if (u.Email == EmailInput.Text && u.Pass == PasswordInput.Password)
                     {
-                        // בהנחה ש-loggedUser הוא האובייקט מסוג User שחזר מה-API אחרי התחברות מוצלחת:
-                        User loggedUser = readers.First(r => r.Id == u.Id); // או פשוט u אם הוא כבר מכיל את כל המידע הדרוש
-
-                        // 1. יצירת מופע חדש של עמוד הבית
-                        HomePage homePage = new HomePage();
-
-                        // 2. השמת המשתמש בתוך ה-DataContext של עמוד הבית החדש
-                        homePage.DataContext = loggedUser;
-
-                        // 3. ניווט למופע הקיים (ולא ל-Uri)
-                        this.NavigationService?.Navigate(homePage);
-                        wentIn = true;
-                        return;
-                    }
-                    else
-                    {
-                        if (authors.Any(a => a.Id == u.Id))
+                        var loggedReader = readers.FirstOrDefault(r => r.Id == u.Id);
+                        if (loggedReader != null)
                         {
-                            this.NavigationService.Navigate(new AuthorProfile());
+                            HomePage homePage = new HomePage();
+                            homePage.DataContext = loggedReader;
+                            Window.GetWindow(this).Content = homePage;
                             wentIn = true;
                             return;
                         }
-                        else
+
+                        var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
+                        if (loggedAuthor != null)
                         {
-                            this.NavigationService.Navigate(new AdminProfile());
+                            var authorProfile = new AuthorProfile();
+                            authorProfile.DataContext = loggedAuthor; 
+                            Window.GetWindow(this).Content = authorProfile;
                             wentIn = true;
+                            return;
+                        }
+
+                        var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
+                        if (loggedAdmin != null)
+                        {
+                            var adminProfile = new AdminProfile();
+                            adminProfile.DataContext = loggedAdmin; 
+                            Window.GetWindow(this).Content = adminProfile;
+                            wentIn = true;
+                            return;
                         }
                     }
-                   
+                }
+
+                if (!wentIn)
+                {
+                    MessageBox.Show("Invalid email or password. Please try again.", "LitLink");
                 }
             }
-            if (!wentIn)
+            catch (Exception ex)
             {
-                MessageBox.Show("Invalid email or password. Please try again.");
+                MessageBox.Show($"שגיאה בהתחברות: {ex.Message}", "LitLink Error");
             }
         }
 
         private void Navigate_SignUp(object sender, RoutedEventArgs e)
         {
-            this.NavigationService.Navigate(new SignUp());
+            var signUp = new SignUp();
+            Window.GetWindow(this).Content = signUp;
         }
 
         private void Navigate_ResetPass(object sender, RoutedEventArgs e)
@@ -134,7 +146,8 @@ namespace LitLink_FinalProject.Pages
             }
             else
             {
-                this.NavigationService.Navigate(new ResetPass(EmailInput.Text));
+                var resetPass = new ResetPass();
+                Window.GetWindow(this).Content = resetPass;
             }
         }
     }

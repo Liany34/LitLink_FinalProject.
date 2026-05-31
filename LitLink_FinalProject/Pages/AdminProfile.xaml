@@ -53,7 +53,7 @@
             <UniformGrid Grid.Row="0" Columns="3" Margin="0,0,0,15">
                 <Button x:Name="BtnTabSales" Content="Sales Data" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Click="TabSales_Click"/>
                 <Button x:Name="BtnTabReports" Content="Reports" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabReports_Click"/>
-                <Button x:Name="BtnTabDiscounts" Content="Discount Codes" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabDiscounts_Click"/>
+                <Button x:Name="BtnTabDiscounts" Content="Discount Codes" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabDiscounts_Click" Height="23" VerticalAlignment="Top"/>
             </UniformGrid>
 
             <Grid Grid.Row="1">
@@ -76,7 +76,7 @@
                         </Border>
 
                         <TextBlock Text="View Sales by Author" FontSize="16" FontWeight="Bold" Foreground="#4A4A4A" Margin="5,10,0,8"/>
-                        <ComboBox x:Name="CmbAuthors" Height="35" Width="250" HorizontalAlignment="Left" Margin="5,0,0,15" DisplayMemberPath="PenName" SelectionChanged="CmbAuthors_SelectionChanged"/>
+                        <ComboBox x:Name="CmbAuthors" Height="35" Width="250" HorizontalAlignment="Left" Margin="5,0,0,15" DisplayMemberPath="PenName" SelectionChanged="CmbAuthors_SelectionChanged" Panel.ZIndex="99"/>
 
                         <Border x:Name="AuthorSalesResultCard" Background="White" CornerRadius="12" Padding="20" Margin="0,0,10,10" Visibility="Collapsed" Effect="{StaticResource AdminShadow}">
                             <StackPanel>
@@ -110,8 +110,29 @@
                             <ListView Grid.Row="1" x:Name="LvwCoupons" Background="Transparent" BorderThickness="0">
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="Code" DisplayMemberBinding="{Binding Code}" Width="100"/>
-                                        <GridViewColumn Header="Discount (₪)" DisplayMemberBinding="{Binding Amount}" Width="90"/>
+                                        <GridViewColumn Header="Code" DisplayMemberBinding="{Binding CodeText}" Width="100"/>
+                                        <GridViewColumn Header="Discount (₪)" DisplayMemberBinding="{Binding Amount}" Width="80"/>
+
+                                        <GridViewColumn Header="Valid Until" DisplayMemberBinding="{Binding ValidUntil, StringFormat=\{0:dd/MM/yyyy\}}" Width="95"/>
+
+                                        <GridViewColumn Header="Status" Width="80">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock x:Name="TxtStatus" FontWeight="Bold"/>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                            <Setter TargetName="TxtStatus" Property="Text" Value="Active 🟢"/>
+                                                            <Setter TargetName="TxtStatus" Property="Foreground" Value="Green"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                            <Setter TargetName="TxtStatus" Property="Text" Value="Inactive 🔴"/>
+                                                            <Setter TargetName="TxtStatus" Property="Foreground" Value="Red"/>
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+
                                         <GridViewColumn Header="Actions" Width="80">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
@@ -132,8 +153,11 @@
                             <TextBlock Text="Coupon Code:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,5"/>
                             <TextBox x:Name="TxtNewCouponCode" Height="30" Padding="5,2" Margin="0,0,0,12"/>
 
-                            <TextBlock Text="Discount Amount (₪):" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,15"/>
-                            <TextBox x:Name="TxtNewCouponAmount" Height="30" Padding="5,2" Margin="0,0,0,20"/>
+                            <TextBlock Text="Discount Amount (₪):" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox x:Name="TxtNewCouponAmount" Height="30" Padding="5,2" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="Valid Until:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <DatePicker x:Name="DpValidUntil" Height="30" Margin="0,0,0,20"/>
 
                             <Button Content="Create &amp; Activate Code" Height="35" Background="#D06A8D" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="BtnCreateCoupon_Click"/>
                         </StackPanel>
@@ -151,7 +175,6 @@
                     </Grid>
 
                     <Button Content="📰 Add News Update" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddNews_Click"/>
-                    <Button Content="ℹ️ About Us" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,25" Cursor="Hand" Click="AboutUs_Click"/>
                     <Button Content="🚪 Log Out" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand" Click="LogOut_Click"/>
                 </StackPanel>
             </Border>

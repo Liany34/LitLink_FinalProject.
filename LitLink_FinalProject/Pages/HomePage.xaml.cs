@@ -21,24 +21,21 @@ namespace LitLink_FinalProject.Pages
     public partial class HomePage : Page
     {
         private Apiservice apiService = new Apiservice();
-        private User currentUser;
-        private bool isCatalogBuilt = false; // דגל שימנע טעינה כפולה ולולאות אינסופיות
+        private Reader currentUser;
+        private bool isCatalogBuilt = false;
 
         public HomePage()
         {
             InitializeComponent();
             CheckUserSession();
 
-            // האזנה לאירוע שהעמוד נטען פיזית על המסך
             this.Loaded += HomePage_Loaded;
 
-            // האזנה לשינוי המשתמש
             this.DataContextChanged += HomePage_DataContextChanged;
         }
 
         private void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            // טוענים את הספרים רק אם הם עדיין לא נבנו, כדי למנוע כפילויות בריצה
             if (!isCatalogBuilt)
             {
                 BuildDynamicCatalog();
@@ -47,17 +44,16 @@ namespace LitLink_FinalProject.Pages
 
         private void HomePage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (this.DataContext is User user)
+            if (this.DataContext is Reader user)
             {
                 currentUser = user;
 
-                // מנתקים את ה-DataContext של ה-Grid הראשי מהמשתמש, 
-                // כדי שהמשתמש לא ידרוס את רשימות הספרים והחדשות!
-                DynamicGenresContainer.DataContext = null;
-                NewsListBox.DataContext = null;
-
-                // מעדכנים את פאנל המשתמש בלבד
                 UpdateUserUI();
+            }
+            else
+            {
+                currentUser = null;
+                UpdateUserUI(); 
             }
         }
 
@@ -65,9 +61,7 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                isCatalogBuilt = true; // מסמנים שהתחלנו לבנות כדי למנוע כניסה כפולה
-
-                // טעינת הז'אנרים והספרים מה-API - רץ תמיד לכולם
+                isCatalogBuilt = true;
                 List<Genre> allGenres = await apiService.GetAllGenres();
                 List<Book_Genre> allBookGenres = await apiService.GetAllBookGenres();
 
@@ -75,7 +69,10 @@ namespace LitLink_FinalProject.Pages
 
                 foreach (Genre currentGenre in allGenres)
                 {
-                    List<Book> relatedBooks = allBookGenres.Where(b => b.IdGenre.Id == currentGenre.Id).Select(b => b.IdBook).ToList();
+                    List<Book> relatedBooks = allBookGenres
+                        .Where(b => b.IdGenre != null && b.IdGenre.Id == currentGenre.Id)
+                        .Select(b => b.IdBook)
+                        .ToList();
 
                     if (relatedBooks.Count == 0) continue;
 
@@ -89,12 +86,11 @@ namespace LitLink_FinalProject.Pages
                 List<News> allNews = await apiService.GetAllNews();
                 NewsListBox.ItemsSource = allNews;
 
-                // עדכון פאנל המשתמש בסיום הטעינה (אם הוא כבר מחובר)
                 UpdateUserUI();
             }
             catch (Exception ex)
             {
-                isCatalogBuilt = false; // אם נכשל, נאפשר ניסיון טעינה חוזר
+                isCatalogBuilt = false;
                 System.Diagnostics.Debug.WriteLine("Error building dynamic catalog: " + ex.Message);
             }
         }
@@ -103,7 +99,6 @@ namespace LitLink_FinalProject.Pages
         {
             if (currentUser != null)
             {
-                // הצגת פאנל המשתמש ועדכון השם
                 GuestPanel.Visibility = Visibility.Collapsed;
                 UserPanel.Visibility = Visibility.Visible;
                 TxtUsername.Text = currentUser.Username;
@@ -113,7 +108,6 @@ namespace LitLink_FinalProject.Pages
                 ProfileItem.Visibility = Visibility.Visible;
                 LogOutItem.Visibility = Visibility.Visible;
 
-                // טעינת תמונת הפרופיל בבלוק מבודד
                 try
                 {
                     string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
@@ -133,13 +127,16 @@ namespace LitLink_FinalProject.Pages
                     SetDefaultProfilePicture();
                 }
 
-                // בדיקת סטטוס סופר
                 try
                 {
                     List<Author> allAuthors = await apiService.GetAllAuthors();
                     if (allAuthors.Any(a => a.Id == currentUser.Id))
                     {
                         BecomeAuthorItem.Header = "Author Dashboard";
+                    }
+                    else
+                    {
+                        BecomeAuthorItem.Header = "Become Author";
                     }
                     BecomeAuthorItem.Visibility = Visibility.Visible;
                 }
@@ -150,9 +147,14 @@ namespace LitLink_FinalProject.Pages
             }
             else
             {
-                // מצב אורח ברירת מחדל
                 GuestPanel.Visibility = Visibility.Visible;
                 UserPanel.Visibility = Visibility.Collapsed;
+
+                MenuSeparator.Visibility = Visibility.Collapsed;
+                CartItem.Visibility = Visibility.Collapsed;
+                ProfileItem.Visibility = Visibility.Collapsed;
+                BecomeAuthorItem.Visibility = Visibility.Collapsed;
+                LogOutItem.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -177,9 +179,10 @@ namespace LitLink_FinalProject.Pages
             if (currentUser != null)
             {
                 List<Cart> allCarts = await apiService.GetAllCarts();
-                List<Cart> cartUser = allCarts.Where(c => c.IdReader.Id == currentUser.Id).ToList();
+                List<Cart> cartUser = allCarts.Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id).ToList();
                 List<Cart_Detail> bookDetailsList = await apiService.GetAllCartDetails();
-                List<Cart_Detail> bookDetailsUser = bookDetailsList.Where(cd => cartUser.Any(c => c.Id == cd.IdCart.Id)).ToList();
+                List<Cart_Detail> bookDetailsUser = bookDetailsList.Where(cd => cd.IdCart != null && cartUser.Any(c => c.Id == cd.IdCart.Id)).ToList();
+
                 foreach (Cart_Detail detail in bookDetailsUser)
                 {
                     if (detail.IsPurchased == true)
@@ -230,48 +233,62 @@ namespace LitLink_FinalProject.Pages
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e) { MainMenu.PlacementTarget = sender as Button; MainMenu.IsOpen = true; }
+
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            this.NavigationService?.Navigate(new Uri("C:\\Users\\yahal\\source\\repos\\LitLink_FinalProject\\LitLink_FinalProject\\Pages\\Login.xaml", UriKind.Relative));
+            var login = new Login();
+            Window.GetWindow(this).Content = login;
         }
+
         private void AboutUs_Click(object sender, RoutedEventArgs e)
         {
-            var aboutUs = new AboutUs();
+            var aboutUs = new AboutUs(currentUser);
             Window.GetWindow(this).Content = aboutUs;
         }
+
         private void Cart_Click(object sender, RoutedEventArgs e)
         {
+            if (currentUser == null) return;
             var cart = new CartPage(currentUser.Id);
             Window.GetWindow(this).Content = cart;
         }
+
         private async void Profile_Click(object sender, RoutedEventArgs e)
         {
-            List<Admin> allAdmins = await apiService.GetAllAdmins();
-            if (allAdmins.Any(a => a.Id == currentUser.Id))
+            if (currentUser == null) return;
+            List<Reader> allReaders = await apiService.GetAllReaders();
+            if (allReaders.Any(a => a.Id == currentUser.Id))
             {
-                var adminProfile = new AdminProfile();
-                Window.GetWindow(this).Content = adminProfile;
+                var readerProfile = new ReaderProfile();
+                Window.GetWindow(this).Content = readerProfile;
             }
             else
             {
-                this.NavigationService?.Navigate(new Uri("C:\\Users\\yahal\\source\\repos\\LitLink_FinalProject\\LitLink_FinalProject\\Pages\\ReaderProfile.xaml", UriKind.Relative));
+                MessageBox.Show("You are not authorized to go there.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
         private async void BecomeAuthor_Click(object sender, RoutedEventArgs e)
         {
-            List<Author> allAuthors = await apiService.GetAllAuthors();
-            if (allAuthors.Any(a => a.Id == currentUser.Id))
+            if (currentUser == null) return;
+            List<Reader> allReaders = await apiService.GetAllReaders();
+            if (allReaders.Any(r => r.Id == currentUser.Id))
             {
-                this.NavigationService?.Navigate(new Uri("C:\\Users\\yahal\\source\\repos\\LitLink_FinalProject\\LitLink_FinalProject\\Pages\\AuthorProfile.xaml", UriKind.Relative));
+                var becomeAuthor = new BecomeAuthorPage();
+                Window.GetWindow(this).Content = becomeAuthor;
             }
             else
             {
-                this.NavigationService?.Navigate(new Uri("C:\\Users\\yahal\\source\\repos\\LitLink_FinalProject\\LitLink_FinalProject\\Pages\\BecomeAuthor.xaml", UriKind.Relative));
+                MessageBox.Show("You are not authorized to go there.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void LogOut_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("C:\\Users\\yahal\\source\\repos\\LitLink_FinalProject\\LitLink_FinalProject\\Pages\\SignOut.xaml", UriKind.Relative));
+        private void LogOut_Click(object sender, RoutedEventArgs e)
+        {
+            currentUser = null;
+            var signOut = new SignOut();
+            Window.GetWindow(this).Content = signOut;
+        }
 
         private void TxtSearch_GotFocus(object sender, RoutedEventArgs e) { if (TxtSearch.Text == "Search books or authors...") { TxtSearch.Text = ""; TxtSearch.Foreground = Brushes.Black; } }
         private void TxtSearch_LostFocus(object sender, RoutedEventArgs e) { if (string.IsNullOrWhiteSpace(TxtSearch.Text)) { TxtSearch.Text = "Search books or authors..."; TxtSearch.Foreground = Brushes.Gray; } }

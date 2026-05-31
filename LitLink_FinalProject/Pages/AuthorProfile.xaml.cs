@@ -22,15 +22,14 @@ namespace LitLink_FinalProject.Pages
     public partial class AuthorProfile : Page
     {
         private Apiservice apiService = new Apiservice();
-        private Author currentAuthorData;
         private List<Book> authorBooks = new List<Book>();
-        private User currentUser;
+        private Author currentAuthor;
 
         public AuthorProfile()
         {
             InitializeComponent();
             this.Loaded += AuthorProfilePage_Loaded;
-            currentUser = this.DataContext as User;
+            currentAuthor = this.DataContext as Author;
         }
         private void AuthorProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -40,7 +39,7 @@ namespace LitLink_FinalProject.Pages
         private async void LoadAuthorData()
         {
             List<Author> allAuthors = await apiService.GetAllAuthors();
-            if (currentUser == null || !allAuthors.Contains(currentUser))
+            if (currentAuthor == null || !allAuthors.Contains(currentAuthor))
             {
                 MessageBox.Show("Unauthorized access. Redirecting to Home.", "LitLink Security", MessageBoxButton.OK, MessageBoxImage.Warning);
                 this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
@@ -49,21 +48,19 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                currentAuthorData = allAuthors.FirstOrDefault(a => a.Id == currentUser.Id);
-
-                if (currentAuthorData != null)
+                if (currentAuthor != null)
                 {
-                    TxtHelloAuthor.Text = $"Hello, {currentAuthorData.PenName}";
+                    TxtHelloAuthor.Text = $"Hello, {currentAuthor.PenName}";
 
                     List<Following> allFollowings = await apiService.GetAllFollowings();
-                    List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthorData.Id).ToList();
+                    List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthor.Id).ToList();
 
                     int followersCount = authorFollowings.Count;
                     TxtFollowersCount.Text = $"{followersCount} Followers";
                 }
 
-                string st = await apiService.GetPRPByUserIDByte64(currentAuthorData.Id);
-                if (currentAuthorData != null && !string.IsNullOrEmpty(currentAuthorData.Picture))
+                string st = await apiService.GetPRPByUserIDByte64(currentAuthor.Id);
+                if (currentAuthor != null && !string.IsNullOrEmpty(currentAuthor.Picture))
                 {
                     try
                     {
@@ -81,7 +78,7 @@ namespace LitLink_FinalProject.Pages
                 }
 
                 List<Book> allBooks = await apiService.GetAllBooks();
-                authorBooks = allBooks.Where(b => b.IdAuthor.Id == currentAuthorData.Id).ToList();
+                authorBooks = allBooks.Where(b => b.IdAuthor.Id == currentAuthor.Id).ToList();
 
                 LoadMyBooksTab();
             }
@@ -151,7 +148,7 @@ namespace LitLink_FinalProject.Pages
             try
             {
                 List<News> allNews = await apiService.GetAllNews();
-                List<News> authorNews = allNews.Where(n => n.IdUser.Id == currentAuthorData.Id).ToList();
+                List<News> authorNews = allNews.Where(n => n.IdUser.Id == currentAuthor.Id).ToList();
 
                 if (authorNews == null || authorNews.Count == 0)
                 {
@@ -187,13 +184,13 @@ namespace LitLink_FinalProject.Pages
                 int booksAddedTolists = 0;
                 int followersCount;
                 List<Following> allFollowings = await apiService.GetAllFollowings();
-                List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthorData.Id).ToList();
+                List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthor.Id).ToList();
                 followersCount = authorFollowings.Count;
 
                 List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
                 foreach (Cart_Detail cd in allCartDetails)
                 {
-                    if (cd.IdBook.IdAuthor.Id == currentAuthorData.Id)
+                    if (cd.IdBook.IdAuthor.Id == currentAuthor.Id)
                     {
                         booksAddedToCarts++;
                         if (cd.IsPurchased)
@@ -227,9 +224,9 @@ namespace LitLink_FinalProject.Pages
 
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (currentAuthorData == null) return;
+            if (currentAuthor == null) return;
 
-            EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(currentAuthorData);
+            EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(currentAuthor);
             if (editWin.ShowDialog() == true)
             {
                 LoadAuthorData();
@@ -254,11 +251,11 @@ namespace LitLink_FinalProject.Pages
                 LoadMyNewsTab();
             }
         }
-        private void AboutUs_Click(object sender, RoutedEventArgs e) => this.NavigationService?.Navigate(new Uri("Pages/AboutUs.xaml", UriKind.Relative));
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
-            currentUser = null;
-            this.NavigationService?.Navigate(new Uri("Pages/SignOut.xaml", UriKind.Relative));
+            currentAuthor = null;
+            var signOut = new SignOut();
+            Window.GetWindow(this).Content = signOut;
         }
 
         private void HighlightTab(Button activeBtn)
