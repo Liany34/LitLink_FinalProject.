@@ -19,16 +19,18 @@ namespace LitLink_FinalProject.Pages
         private List<Book> allBooks = new List<Book>();
         private Reader currentUser;
 
-        public ReaderProfile()
+        public ReaderProfile(Reader reader)
         {
             InitializeComponent();
+            this.currentUser = reader; // שמירת המשתמש שהועבר
             this.Loaded += ReaderProfilePage_Loaded;
-
         }
 
         private void ReaderProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
-            currentUser = this.DataContext as Reader;
+            // מחק או שים בהערה את השורה הישנה:
+            // currentUser = this.DataContext as Reader; 
+
             LoadUserData();
         }
 
@@ -46,7 +48,7 @@ namespace LitLink_FinalProject.Pages
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
 
                 string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
-                if (!string.IsNullOrEmpty(currentUser.Picture))
+                if (!string.IsNullOrEmpty(st))
                 {
                     try
                     {
@@ -78,35 +80,60 @@ namespace LitLink_FinalProject.Pages
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabList);
 
-            if (currentUser == null) return;
+            if (currentUser == null)
+            {
+                System.Diagnostics.Debug.WriteLine("BuildUserLists: currentUser is null!");
+                return;
+            }
 
             try
             {
+                // 1. שליפת כל הסדרות/רשימות מה-API
                 List<Book_Series> bookLists = await apiService.GetAllBookSeries();
-                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser != null && l.IdUser.Id == currentUser.Id).ToList();
+                if (bookLists == null) bookLists = new List<Book_Series>();
 
-                if (userCustomLists == null || userCustomLists.Count == 0)
+                // 2. סינון הרשימות ששייכות למשתמש הנוכחי (הגנה מפני null והשוואת מזהים בצורה בטוחה)
+                List<Book_Series> userCustomLists = bookLists
+                    .Where(l => l.IdUser != null &&
+                                l.IdUser.Id.ToString().Trim().Equals(currentUser.Id.ToString().Trim(), StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"Found {userCustomLists.Count} lists for user {currentUser.Username}");
+
+                if (userCustomLists.Count == 0)
                 {
                     ShowEmptyStateMessage("You haven't created any reading lists yet.");
                     return;
                 }
 
+                // 3. שליפת כל הספרים וכל פרטי הרשימות פעם אחת בלבד (מחוץ ללולאה!)
                 if (allBooks == null || allBooks.Count == 0)
                 {
                     allBooks = await apiService.GetAllBooks();
+                    if (allBooks == null) allBooks = new List<Book>();
                 }
 
+                List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
+                if (allListDetails == null) allListDetails = new List<Series_Detail>();
+
+                // 4. רזולוציה והצגה של כל רשימה והספרים שבה
                 foreach (var currentList in userCustomLists)
                 {
-                    List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
-                    List<Series_Detail> currentListDetails = allListDetails.Where(d => d.IdSeries != null && d.IdSeries.Id == currentList.Id).ToList();
-                    List<Book> relatedBooks = allBooks.Where(b => currentListDetails.Any(d => d.IdBook != null && d.IdBook.Id == b.Id)).ToList();
+                    // סינון הפרטים השייכים לרשימה הנוכחית
+                    List<Series_Detail> currentListDetails = allListDetails
+                        .Where(d => d.IdSeries != null && d.IdSeries.Id == currentList.Id)
+                        .ToList();
 
-                    if (relatedBooks.Count == 0) continue;
+                    // שליפת הספרים המתאימים מתוך רשימת כל הספרים
+                    List<Book> relatedBooks = allBooks
+                        .Where(b => currentListDetails.Any(d => d.IdBook != null && d.IdBook.Id == b.Id))
+                        .ToList();
 
+                    System.Diagnostics.Debug.WriteLine($"List '{currentList.NameSeries}' has {relatedBooks.Count} related books.");
+
+                    // תצוגת הרשימה (גם אם היא ריקה כרגע, כדי שתדעי שהרשימה קיימת)
                     GenreUserControl listRow = new GenreUserControl();
                     listRow.SetupGenreRow(currentList.NameSeries, relatedBooks);
-
                     listRow.BookSelected += UserRow_BookSelected;
 
                     UserListsContainer.Children.Add(listRow);
@@ -115,6 +142,7 @@ namespace LitLink_FinalProject.Pages
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Error rendering user lists: " + ex.Message);
+                MessageBox.Show("Error loading lists: " + ex.Message, "LitLink Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -154,13 +182,69 @@ namespace LitLink_FinalProject.Pages
             BuildUserLists();
         }
 
-        private void FilterReviews_Click(object sender, RoutedEventArgs e)
+        // --- החלף את FilterReviews_Click ---
+        private async void FilterReviews_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabReviews);
-            ShowEmptyStateMessage("You haven't written any reviews yet.");
+
+            if (currentUser == null) return;
+
+            try
+            {
+                List<Reviews> allReviews = await apiService.GetAllReviews();
+                List<Reviews> userReviews = allReviews
+                    .Where(r => r != null && r.IdReader != null && r.IdReader.Id == currentUser.Id)
+                    .ToList();
+
+                if (userReviews.Count == 0)
+                {
+                    ShowEmptyStateMessage("You haven't written any reviews yet.");
+                    return;
+                }
+
+                foreach (var review in userReviews)
+                {
+                    Border card = new Border
+                    {
+                        Background = Brushes.White,
+                        CornerRadius = new CornerRadius(10),
+                        Padding = new Thickness(15),
+                        Margin = new Thickness(0, 0, 10, 10)
+                    };
+                    StackPanel sp = new StackPanel();
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = review.IdBook?.BookName ?? "Unknown Book",
+                        FontSize = 14,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141))
+                    });
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = $"★ {review.Stars}/5",
+                        FontSize = 13,
+                        Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)),
+                        Margin = new Thickness(0, 4, 0, 4)
+                    });
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = review.Text,
+                        FontSize = 13,
+                        Foreground = Brushes.Gray,
+                        TextWrapping = TextWrapping.Wrap
+                    });
+                    card.Child = sp;
+                    UserListsContainer.Children.Add(card);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading reviews: " + ex.Message);
+            }
         }
 
+        // --- החלף את FilterMyBooks_Click ---
         private async void FilterMyBooks_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
@@ -170,24 +254,21 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                List<Book> ownedBooks = new List<Book>();
-                List<Book_Series> bookLists = await apiService.GetAllBookSeries();
-                List<Book_Series> userCustomLists = bookLists.Where(l => l.IdUser != null && l.IdUser.Id == currentUser.Id).ToList();
-                List<Series_Detail> allListDetails = await apiService.GetAllSeriesDetails();
-                List<Series_Detail> userListDetails = allListDetails.Where(d => d.IdSeries != null && userCustomLists.Any(l => l.Id == d.IdSeries.Id)).ToList();
+                List<Cart> allCarts = await apiService.GetAllCarts();
+                List<Cart> userCarts = allCarts
+                    .Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id)
+                    .ToList();
 
-                if (allBooks == null || allBooks.Count == 0)
-                {
-                    allBooks = await apiService.GetAllBooks();
-                }
-
-                foreach (var detail in userListDetails)
-                {
-                    if (detail.IdBook != null && !ownedBooks.Any(b => b.Id == detail.IdBook.Id))
-                    {
-                        ownedBooks.Add(detail.IdBook);
-                    }
-                }
+                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
+                List<Book> ownedBooks = allCartDetails
+                    .Where(cd => cd.IsPurchased &&
+                                 cd.IdCart != null &&
+                                 userCarts.Any(c => c.Id == cd.IdCart.Id) &&
+                                 cd.IdBook != null)
+                    .Select(cd => cd.IdBook)
+                    .GroupBy(b => b.Id)
+                    .Select(g => g.First())
+                    .ToList();
 
                 if (ownedBooks.Count == 0)
                 {
@@ -206,11 +287,56 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void FilterFollowing_Click(object sender, RoutedEventArgs e)
+        // --- החלף את FilterFollowing_Click ---
+        private async void FilterFollowing_Click(object sender, RoutedEventArgs e)
         {
             UserListsContainer.Children.Clear();
             HighlightActiveTab(BtnTabFollowing);
-            ShowEmptyStateMessage("You aren't following any authors yet.");
+
+            if (currentUser == null) return;
+
+            try
+            {
+                List<Following> allFollowings = await apiService.GetAllFollowings();
+                List<Following> userFollowings = allFollowings
+                    .Where(f => f != null && f.IdReader != null && f.IdReader.Id == currentUser.Id)
+                    .ToList();
+
+                if (userFollowings.Count == 0)
+                {
+                    ShowEmptyStateMessage("You aren't following any authors yet.");
+                    return;
+                }
+
+                foreach (var follow in userFollowings)
+                {
+                    Author a = follow.IdAuthor;
+                    if (a == null) continue;
+
+                    Border card = new Border
+                    {
+                        Background = Brushes.White,
+                        CornerRadius = new CornerRadius(10),
+                        Padding = new Thickness(15),
+                        Margin = new Thickness(0, 0, 10, 10),
+                        Cursor = Cursors.Hand
+                    };
+                    StackPanel sp = new StackPanel();
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = a.PenName ?? "Unknown Author",
+                        FontSize = 15,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141))
+                    });
+                    card.Child = sp;
+                    UserListsContainer.Children.Add(card);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading following list: " + ex.Message);
+            }
         }
 
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e) => EditProfilePopup.Visibility = Visibility.Visible;

@@ -47,13 +47,18 @@ namespace LitLink_FinalProject.Pages
             if (this.DataContext is Reader user)
             {
                 currentUser = user;
-
-                UpdateUserUI();
             }
             else
             {
                 currentUser = null;
-                UpdateUserUI(); 
+            }
+            UpdateUserUI();
+
+            // בנה מחדש את הקטלוג אם כבר נטען (כדי שהחיפוש ויתר פעולות יעבדו עם המשתמש החדש)
+            if (isCatalogBuilt)
+            {
+                isCatalogBuilt = false;
+                BuildDynamicCatalog();
             }
         }
 
@@ -222,8 +227,7 @@ namespace LitLink_FinalProject.Pages
                 return;
             }
 
-            SearchResultsPage resultsPage = new SearchResultsPage(query);
-            resultsPage.DataContext = this.DataContext;
+            SearchResultsPage resultsPage = new SearchResultsPage(query, currentUser);
             this.NavigationService?.Navigate(resultsPage);
         }
 
@@ -256,10 +260,12 @@ namespace LitLink_FinalProject.Pages
         private async void Profile_Click(object sender, RoutedEventArgs e)
         {
             if (currentUser == null) return;
+
             List<Reader> allReaders = await apiService.GetAllReaders();
             if (allReaders.Any(a => a.Id == currentUser.Id))
             {
-                var readerProfile = new ReaderProfile();
+                // העברת ה-currentUser בתוך הסוגריים!
+                var readerProfile = new ReaderProfile(currentUser);
                 Window.GetWindow(this).Content = readerProfile;
             }
             else
@@ -271,15 +277,26 @@ namespace LitLink_FinalProject.Pages
         private async void BecomeAuthor_Click(object sender, RoutedEventArgs e)
         {
             if (currentUser == null) return;
-            List<Reader> allReaders = await apiService.GetAllReaders();
-            if (allReaders.Any(r => r.Id == currentUser.Id))
+
+            try
             {
-                var becomeAuthor = new BecomeAuthorPage();
-                Window.GetWindow(this).Content = becomeAuthor;
+                List<Author> allAuthors = await apiService.GetAllAuthors();
+                Author existingAuthor = allAuthors.FirstOrDefault(a => a.Id == currentUser.Id);
+
+                if (existingAuthor != null)
+                {
+                    var authorProfile = new AuthorProfile(existingAuthor);
+                    Window.GetWindow(this).Content = authorProfile;
+                }
+                else
+                {
+                    var becomeAuthor = new BecomeAuthorPage();
+                    Window.GetWindow(this).Content = becomeAuthor;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("You are not authorized to go there.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Error: " + ex.Message, "LitLink", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

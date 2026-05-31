@@ -100,8 +100,8 @@ namespace LitLink_FinalProject.Pages
                         var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
                         if (loggedAuthor != null)
                         {
-                            var authorProfile = new AuthorProfile();
-                            authorProfile.DataContext = loggedAuthor; 
+                            // תוקן: מעביר את הסופר בקונסטרקטור
+                            var authorProfile = new AuthorProfile(loggedAuthor);
                             Window.GetWindow(this).Content = authorProfile;
                             wentIn = true;
                             return;
@@ -146,7 +146,7 @@ namespace LitLink_FinalProject.Pages
             }
             else
             {
-                var resetPass = new ResetPass();
+                var resetPass = new ResetPass(EmailInput.Text);
                 Window.GetWindow(this).Content = resetPass;
             }
         }

@@ -118,7 +118,7 @@ namespace LitLink_FinalProject.Pages
                     MessageBox.Show($"Congratulations ✨\nYou are now officially a registered LitLink Author! Welcome, {penName}.",
                         "LitLink Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     await apiService.DeleteReader(currentReader.Id);
-                    var authorProfile = new AuthorProfile();
+                    var authorProfile = new AuthorProfile(newAuthor);
                     Window.GetWindow(this).Content = authorProfile;
                 }
                 else

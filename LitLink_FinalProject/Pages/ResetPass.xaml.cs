@@ -13,19 +13,20 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Model;
 
 namespace LitLink_FinalProject.Pages
 {
     public partial class ResetPass : Page
     {
-        private string _email;
+        private string email;
         public ResetPass()
         {
             InitializeComponent();
         }
         public ResetPass(string email) : this() 
         {
-            _email = email;
+            this.email = email;
         }
 
         private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e) 
@@ -79,16 +80,18 @@ namespace LitLink_FinalProject.Pages
             else
             {
                 Apiservice buyerService = new Apiservice();
-                var users = await buyerService.GetAllUsers();
-                var user = users.Find(u => u.Email == _email);
-                var saveUser = user;
-                user.FirstName = saveUser.FirstName; 
-                user.LastName = saveUser.LastName;
-                user.PhoneNumber = saveUser.PhoneNumber;
-                user.Email = saveUser.Email;
-                user.Pass = PasswordInput.Password;
-                user.Username = saveUser.Username;
-                await buyerService.UpdateUser(user);
+                List<User> users = await buyerService.GetAllUsers();
+                User user = users.Find(u => u.Email.Trim().ToLower() == email.Trim().ToLower());
+                User newUser = user;
+                newUser.FirstName = user.FirstName; 
+                newUser.LastName = user.LastName;
+                newUser.PhoneNumber = user.PhoneNumber;
+                newUser.Email = user.Email;
+                newUser.Pass = PasswordInput.Password;
+                newUser.Birthdate = user.Birthdate;
+                newUser.Username = user.Username;
+                newUser.Picture = user.Picture;
+                await buyerService.UpdateUser(newUser);
                 MessageBox.Show("Password reset successful! Please log in with your new password.");
                 var loginPage = new Login();
                 Window.GetWindow(this).Content = loginPage;

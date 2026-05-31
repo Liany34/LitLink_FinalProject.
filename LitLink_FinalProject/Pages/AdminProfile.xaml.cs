@@ -327,6 +327,53 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
+        private void TabNews_Click(object sender, RoutedEventArgs e)
+        {
+            HighlightTab(BtnTabNews);
+            PanelSales.Visibility = Visibility.Collapsed;
+            PanelReports.Visibility = Visibility.Collapsed;
+            PanelDiscounts.Visibility = Visibility.Collapsed;
+            PanelNews.Visibility = Visibility.Visible;
+            LoadNewsTab();
+        }
+
+        private async void LoadNewsTab()
+        {
+            NewsContainer.Children.Clear();
+            try
+            {
+                List<News> allNews = await apiService.GetAllNews();
+                List<News> adminNews = allNews
+                    .Where(n => n.IdUser != null && n.IdUser.Id == currentAdmin.Id)
+                    .ToList();
+
+                if (adminNews.Count == 0)
+                {
+                    NewsContainer.Children.Add(new TextBlock
+                    {
+                        Text = "No news published yet.",
+                        FontSize = 14,
+                        Foreground = Brushes.Gray,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 40, 0, 0)
+                    });
+                    return;
+                }
+
+                foreach (var news in adminNews)
+                {
+                    LitLink_FinalProject.UserControls.NewsUserControl nc = new LitLink_FinalProject.UserControls.NewsUserControl();
+                    nc.DataContext = news;
+                    nc.NewsChanged += () => { LoadNewsTab(); };
+                    NewsContainer.Children.Add(nc);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading admin news: " + ex.Message);
+            }
+        }
+
         private async void TabSales_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabSales); PanelSales.Visibility = Visibility.Visible; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Collapsed; await CalculateAndDisplaySales(null); }
         private void TabReports_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabReports); PanelSales.Visibility = Visibility.Collapsed; PanelReports.Visibility = Visibility.Visible; PanelDiscounts.Visibility = Visibility.Collapsed; LoadReportsData(); }
         private void TabDiscounts_Click(object sender, RoutedEventArgs e) { HighlightTab(BtnTabDiscounts); PanelSales.Visibility = Visibility.Collapsed; PanelReports.Visibility = Visibility.Collapsed; PanelDiscounts.Visibility = Visibility.Visible; LoadCouponsData(); }
@@ -337,6 +384,7 @@ namespace LitLink_FinalProject.Pages
             BtnTabSales.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabReports.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             BtnTabDiscounts.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
+            BtnTabNews.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
             activeBtn.Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74));
         }
 

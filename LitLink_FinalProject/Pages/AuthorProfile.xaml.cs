@@ -25,11 +25,14 @@ namespace LitLink_FinalProject.Pages
         private List<Book> authorBooks = new List<Book>();
         private Author currentAuthor;
 
-        public AuthorProfile()
+        private Reader viewingReader; // קורא שצופה בדף הסופר (null = הסופר עצמו)
+
+        public AuthorProfile(Author author, Reader viewingReader = null)
         {
             InitializeComponent();
+            this.currentAuthor = author;
+            this.viewingReader = viewingReader;
             this.Loaded += AuthorProfilePage_Loaded;
-            currentAuthor = this.DataContext as Author;
         }
         private void AuthorProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -38,29 +41,48 @@ namespace LitLink_FinalProject.Pages
 
         private async void LoadAuthorData()
         {
-            List<Author> allAuthors = await apiService.GetAllAuthors();
-            if (currentAuthor == null || !allAuthors.Contains(currentAuthor))
+            if (currentAuthor == null)
             {
-                MessageBox.Show("Unauthorized access. Redirecting to Home.", "LitLink Security", MessageBoxButton.OK, MessageBoxImage.Warning);
-                this.NavigationService?.Navigate(new Uri("Pages/HomePage.xaml", UriKind.Relative));
+                MessageBox.Show("Author data is missing.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             try
             {
-                if (currentAuthor != null)
+                TxtHelloAuthor.Text = viewingReader != null
+                    ? currentAuthor.PenName
+                    : $"Hello, {currentAuthor.PenName}";
+
+                List<Following> allFollowings = await apiService.GetAllFollowings();
+                List<Following> authorFollowings = allFollowings
+                    .Where(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id)
+                    .ToList();
+                TxtFollowersCount.Text = $"{authorFollowings.Count} Followers";
+
+                // --- תצוגת כפתורים לפי סוג המשתמש ---
+                if (viewingReader != null)
                 {
-                    TxtHelloAuthor.Text = $"Hello, {currentAuthor.PenName}";
+                    // מצב קורא: הסתר עריכה ופרסום, הצג כפתור Follow/Unfollow
+                    BtnEditProfile.Visibility = Visibility.Collapsed;
+                    BtnMenu.Visibility = Visibility.Collapsed;
+                    BtnTabSalesData.Visibility = Visibility.Collapsed;
 
-                    List<Following> allFollowings = await apiService.GetAllFollowings();
-                    List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthor.Id).ToList();
-
-                    int followersCount = authorFollowings.Count;
-                    TxtFollowersCount.Text = $"{followersCount} Followers";
+                    bool isFollowing = authorFollowings.Any(f => f.IdAuthor != null && f.IdAuthor.Id == viewingReader.Id);
+                    BtnFollow.Visibility = isFollowing ? Visibility.Collapsed : Visibility.Visible;
+                    BtnUnfollow.Visibility = isFollowing ? Visibility.Visible : Visibility.Collapsed;
+                }
+                else
+                {
+                    // מצב הסופר עצמו
+                    BtnEditProfile.Visibility = Visibility.Visible;
+                    BtnMenu.Visibility = Visibility.Visible;
+                    BtnTabSalesData.Visibility = Visibility.Visible;
+                    BtnFollow.Visibility = Visibility.Collapsed;
+                    BtnUnfollow.Visibility = Visibility.Collapsed;
                 }
 
                 string st = await apiService.GetPRPByUserIDByte64(currentAuthor.Id);
-                if (currentAuthor != null && !string.IsNullOrEmpty(currentAuthor.Picture))
+                if (!string.IsNullOrEmpty(st))
                 {
                     try
                     {
@@ -69,16 +91,16 @@ namespace LitLink_FinalProject.Pages
                     }
                     catch
                     {
-                        this.ImgAuthorProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                        SetDefaultAuthorImage();
                     }
                 }
                 else
                 {
-                    this.ImgAuthorProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                    SetDefaultAuthorImage();
                 }
 
                 List<Book> allBooks = await apiService.GetAllBooks();
-                authorBooks = allBooks.Where(b => b.IdAuthor.Id == currentAuthor.Id).ToList();
+                authorBooks = allBooks.Where(b => b.IdAuthor != null && b.IdAuthor.Id == currentAuthor.Id).ToList();
 
                 LoadMyBooksTab();
             }
@@ -86,6 +108,16 @@ namespace LitLink_FinalProject.Pages
             {
                 System.Diagnostics.Debug.WriteLine("Error loading author profile: " + ex.Message);
             }
+        }
+
+        private void SetDefaultAuthorImage()
+        {
+            try
+            {
+                this.ImgAuthorProfile.Source = new BitmapImage(new Uri(
+                    "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
+            }
+            catch { this.ImgAuthorProfile.Source = null; }
         }
 
         private void TabMyBooks_Click(object sender, RoutedEventArgs e)
@@ -256,6 +288,54 @@ namespace LitLink_FinalProject.Pages
             currentAuthor = null;
             var signOut = new SignOut();
             Window.GetWindow(this).Content = signOut;
+        }
+        private async void BtnFollow_Click(object sender, RoutedEventArgs e)
+        {
+            if (viewingReader == null || currentAuthor == null) return;
+            try
+            {
+                Following newFollow = new Following
+                {
+                    IdReader = viewingReader,
+                    IdAuthor = currentAuthor
+                };
+                await apiService.InsertFollowing(newFollow);
+                BtnFollow.Visibility = Visibility.Collapsed;
+                BtnUnfollow.Visibility = Visibility.Visible;
+
+                List<Following> allFollowings = await apiService.GetAllFollowings();
+                int count = allFollowings.Count(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
+                TxtFollowersCount.Text = $"{count} Followers";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error following author: " + ex.Message, "LitLink");
+            }
+        }
+
+        private async void BtnUnfollow_Click(object sender, RoutedEventArgs e)
+        {
+            if (viewingReader == null || currentAuthor == null) return;
+            try
+            {
+                List<Following> allFollowings = await apiService.GetAllFollowings();
+                Following toDelete = allFollowings.FirstOrDefault(
+                    f => f.IdReader != null && f.IdReader.Id == viewingReader.Id &&
+                         f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
+                if (toDelete != null)
+                    await apiService.DeleteFollowing(toDelete.Id);
+
+                BtnFollow.Visibility = Visibility.Visible;
+                BtnUnfollow.Visibility = Visibility.Collapsed;
+
+                List<Following> updated = await apiService.GetAllFollowings();
+                int count = updated.Count(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
+                TxtFollowersCount.Text = $"{count} Followers";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error unfollowing author: " + ex.Message, "LitLink");
+            }
         }
 
         private void HighlightTab(Button activeBtn)

@@ -16,12 +16,13 @@ namespace LitLink_FinalProject.Pages
         private Apiservice apiService = new Apiservice();
         private string searchQuery;
 
-        public SearchResultsPage(string query)
+        private Reader currentUser;
+
+        public SearchResultsPage(string query, Reader currentUser = null)
         {
             InitializeComponent();
             searchQuery = query;
-
-            // נרשם לאירוע הטעינה בצורה מסודרת
+            this.currentUser = currentUser;
             this.Loaded += SearchResultsPage_Loaded;
         }
 
@@ -116,14 +117,28 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void BookImage_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void BookImage_MouseDown(object sender, MouseButtonEventArgs e)
         {
             FrameworkElement element = sender as FrameworkElement;
             Book clickedBook = element?.DataContext as Book;
 
             if (clickedBook != null)
             {
-                BookPage detailsPage = new BookPage(clickedBook, false, false, false);
+                bool ownsBook = false;
+                if (currentUser != null)
+                {
+                    try
+                    {
+                        List<Cart> allCarts = await apiService.GetAllCarts();
+                        List<Cart> userCarts = allCarts.Where(c => c.IdReader != null && c.IdReader.Id == currentUser.Id).ToList();
+                        List<Cart_Detail> details = await apiService.GetAllCartDetails();
+                        ownsBook = details.Any(cd => cd.IsPurchased && cd.IdCart != null &&
+                                                     userCarts.Any(c => c.Id == cd.IdCart.Id) &&
+                                                     cd.IdBook != null && cd.IdBook.Id == clickedBook.Id);
+                    }
+                    catch { }
+                }
+                BookPage detailsPage = new BookPage(clickedBook, ownsBook, false, false);
                 this.NavigationService?.Navigate(detailsPage);
             }
         }
@@ -135,8 +150,8 @@ namespace LitLink_FinalProject.Pages
 
             if (clickedAuthor != null)
             {
-                AuthorProfile authorPage = new AuthorProfile();
-                authorPage.DataContext = clickedAuthor;
+                // אם המשתמש הנוכחי הוא קורא (לא הסופר עצמו) — פתח בתצוגת קורא
+                AuthorProfile authorPage = new AuthorProfile(clickedAuthor, currentUser);
                 this.NavigationService?.Navigate(authorPage);
             }
         }

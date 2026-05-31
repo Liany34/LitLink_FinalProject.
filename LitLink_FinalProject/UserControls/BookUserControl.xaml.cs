@@ -45,18 +45,82 @@ namespace LitLink_FinalProject.UserControls
                     ReadMoreBtn.Visibility = Visibility.Collapsed;
 
                 Book currentBook = this.DataContext as Book;
-                string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
-                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+                if (currentBook == null) return;
+
+                // --- 1. טעינת ביקורות, חישוב ממוצע, כמות והצגתן (מוגן מפני Null) ---
+                try
                 {
-                    try
+                    ReviewsStackPanel.Children.Clear();
+                    TotalReviewsTextBlock.Text = "(0)"; // ברירת מחדל
+
+                    List<Reviews> allReviews = await apiService.GetAllReviews();
+
+                    if (allReviews != null)
+                    {
+                        // סינון בטוח: מוודא שהביקורת והקישור לספר אינם null לפני הבדיקה
+                        var bookReviews = allReviews
+                            .Where(r => r != null && r.IdBook != null && r.IdBook.Id == currentBook.Id)
+                            .ToList();
+
+                        // עדכון כמות הביקורות על המסך
+                        TotalReviewsTextBlock.Text = $"({bookReviews.Count})";
+
+                        if (bookReviews.Any())
+                        {
+                            // חישוב הממוצע
+                            double average = bookReviews.Average(r => r.Stars);
+                            StarsTextBlock.Text = $"{average:0.0} ★";
+
+                            // יצירת פקדי התצוגה של הביקורות
+                            foreach (var reviewItem in bookReviews)
+                            {
+                                if (reviewItem == null) continue;
+
+                                // יצירת פקד הביקורת הבודד (שולח 0 כמזהה זמני)
+                                ReviewsUserControl reviewControl = new ReviewsUserControl(reviewItem, 0, isAdmin);
+                                ReviewsStackPanel.Children.Add(reviewControl);
+                            }
+                        }
+                        else
+                        {
+                            StarsTextBlock.Text = "No reviews yet";
+                            StarsTextBlock.FontSize = 14;
+                            StarsTextBlock.Foreground = Brushes.Gray;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error loading reviews: " + ex.Message);
+                    StarsTextBlock.Text = "— ★";
+                }
+
+                // --- 2. טעינת תמונת הכריכה של הספר (מוגן מפני Null) ---
+                try
+                {
+                    string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
+
+                    if (!string.IsNullOrEmpty(st))
                     {
                         byte[] imgStr = Convert.FromBase64String(st);
                         this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
-                    catch (Exception)
+                    else
                     {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\Covers\\DefaultCover.png", UriKind.RelativeOrAbsolute));
+                        this.BookCoverImage.Source = new BitmapImage(new Uri(
+    "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
                     }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error loading cover image: " + ex.Message);
+                    // במקרה של שגיאה, נשים תמונת ברירת מחדל שלא תתקע את האפליקציה
+                    try
+                    {
+                        this.BookCoverImage.Source = new BitmapImage(new Uri(
+     "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
+                    }
+                    catch { /* הגנה מוחלטת מקריסה */ }
                 }
             };
         }

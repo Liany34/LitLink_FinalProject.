@@ -54,6 +54,8 @@
                 <Button x:Name="BtnTabSales" Content="Sales Data" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Click="TabSales_Click"/>
                 <Button x:Name="BtnTabReports" Content="Reports" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabReports_Click"/>
                 <Button x:Name="BtnTabDiscounts" Content="Discount Codes" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabDiscounts_Click" Height="23" VerticalAlignment="Top"/>
+                <Button x:Name="BtnTabNews" Content="News" FontSize="16" FontWeight="Bold" 
+            Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabNews_Click"/>
             </UniformGrid>
 
             <Grid Grid.Row="1">
@@ -163,6 +165,9 @@
                         </StackPanel>
                     </Border>
                 </Grid>
+                <ScrollViewer x:Name="PanelNews" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="NewsContainer" Margin="0,5,10,10"/>
+                </ScrollViewer>
             </Grid>
         </Grid>
 
