@@ -89,27 +89,37 @@ namespace LitLink_FinalProject.Pages
                         var loggedReader = readers.FirstOrDefault(r => r.Id == u.Id);
                         if (loggedReader != null)
                         {
+                            MessageBox.Show($"Reader found: {loggedReader.Username}, ID: {loggedReader.Id}");
                             HomePage homePage = new HomePage(loggedReader);
                             MainWindow.AppFrame.Navigate(homePage);
                             wentIn = true;
                             return;
                         }
-
-                        var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
-                        if (loggedAuthor != null)
+                        else
                         {
-                            MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
-                            wentIn = true;
-                            return;
-                        }
-
-                        var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
-                        if (loggedAdmin != null)
-                        {
-                            MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
-                            wentIn = true;
-                            return;
-                        }
+                            var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
+                            if (loggedAuthor != null)
+                            {
+                                MessageBox.Show($"Author found: {loggedAuthor.PenName}");
+                                MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
+                                wentIn = true;
+                                return;
+                            }
+                            else
+                            {
+                                var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
+                                if (loggedAdmin != null)
+                                {
+                                    MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
+                                    wentIn = true;
+                                    return;
+                                }
+                                else
+                                {
+                                    MessageBox.Show($"User found but no Reader/Author/Admin match. User ID: {u.Id}");
+                                }
+                            }
+                        }   
                     }
                 }
 

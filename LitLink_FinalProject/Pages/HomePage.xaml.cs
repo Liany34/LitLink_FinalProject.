@@ -40,17 +40,20 @@ namespace LitLink_FinalProject.Pages
         {
             if (!isCatalogBuilt)
             {
-                BuildDynamicCatalog();
+                _ = BuildDynamicCatalogAsync();
+            }
+            else
+            {
+                UpdateUserUI();
             }
         }
-
-        private async void BuildDynamicCatalog()
+        private async Task BuildDynamicCatalogAsync()
         {
             try
             {
                 isCatalogBuilt = true;
-                List<Genre> allGenres = await apiService.GetAllGenres();
-                List<Book_Genre> allBookGenres = await apiService.GetAllBookGenres();
+                List<Genre> allGenres = await apiService.GetAllGenres() ?? new List<Genre>();
+                List<Book_Genre> allBookGenres = await apiService.GetAllBookGenres() ?? new List<Book_Genre>();
 
                 DynamicGenresContainer.Children.Clear();
 
@@ -66,11 +69,10 @@ namespace LitLink_FinalProject.Pages
                     GenreUserControl genreRow = new GenreUserControl();
                     genreRow.SetupGenreRow(currentGenre.Name, relatedBooks);
                     genreRow.BookSelected += GenreRow_BookSelected;
-
                     DynamicGenresContainer.Children.Add(genreRow);
                 }
 
-                List<News> allNews = await apiService.GetAllNews();
+                List<News> allNews = await apiService.GetAllNews() ?? new List<News>();
                 NewsListBox.ItemsSource = allNews;
 
                 UpdateUserUI();
@@ -208,7 +210,8 @@ namespace LitLink_FinalProject.Pages
 
         private void NewsListBox_Refresh()
         {
-            BuildDynamicCatalog();
+            isCatalogBuilt = false;
+            _ = BuildDynamicCatalogAsync();
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e) { MainMenu.PlacementTarget = sender as Button; MainMenu.IsOpen = true; }
