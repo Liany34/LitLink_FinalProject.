@@ -1,25 +1,22 @@
-﻿using Model;
+﻿using LitLink_FinalProject;
+using LitLink_FinalProject.Pages;
+using Model;
 using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
     public partial class Login : Page
     {
         private const string DefaultEmail = "litlink@gmail.com";
+
         public Login()
         {
             InitializeComponent();
@@ -48,23 +45,23 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e) 
-        {                                                                            
-            PasswordPlaceholder.Visibility = PasswordInput.Password.Length > 0       
+        private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            PasswordPlaceholder.Visibility = PasswordInput.Password.Length > 0
                 ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void TogglePasswordButton_PreviewMouseDown(object sender, MouseButtonEventArgs e) 
-        {                                                                           
-            VisiblePasswordInput.Text = PasswordInput.Password;                     
-            PasswordInput.Visibility = Visibility.Collapsed;                        
+        private void TogglePasswordButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            VisiblePasswordInput.Text = PasswordInput.Password;
+            PasswordInput.Visibility = Visibility.Collapsed;
             VisiblePasswordInput.Visibility = Visibility.Visible;
             PasswordPlaceholder.Visibility = Visibility.Collapsed;
         }
 
         private void TogglePasswordButton_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {                                                                           
-            VisiblePasswordInput.Visibility = Visibility.Collapsed;                 
+        {
+            VisiblePasswordInput.Visibility = Visibility.Collapsed;
             PasswordInput.Visibility = Visibility.Visible;
             if (string.IsNullOrEmpty(PasswordInput.Password)) PasswordPlaceholder.Visibility = Visibility.Visible;
         }
@@ -74,11 +71,10 @@ namespace LitLink_FinalProject.Pages
             try
             {
                 Apiservice buyerService = new Apiservice();
-
                 var users = await buyerService.GetAllUsers();
                 var readers = await buyerService.GetAllReaders();
                 var authors = await buyerService.GetAllAuthors();
-                var admins = await buyerService.GetAllAdmins(); 
+                var admins = await buyerService.GetAllAdmins();
 
                 bool wentIn = false;
 
@@ -89,44 +85,31 @@ namespace LitLink_FinalProject.Pages
                         var loggedReader = readers.FirstOrDefault(r => r.Id == u.Id);
                         if (loggedReader != null)
                         {
-                            MessageBox.Show($"Reader found: {loggedReader.Username}, ID: {loggedReader.Id}");
-                            HomePage homePage = new HomePage(loggedReader);
-                            MainWindow.AppFrame.Navigate(homePage);
+                            MainWindow.AppFrame.Navigate(new HomePage(loggedReader));
                             wentIn = true;
                             return;
                         }
-                        else
+
+                        var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
+                        if (loggedAuthor != null)
                         {
-                            var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
-                            if (loggedAuthor != null)
-                            {
-                                MessageBox.Show($"Author found: {loggedAuthor.PenName}");
-                                MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
-                                wentIn = true;
-                                return;
-                            }
-                            else
-                            {
-                                var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
-                                if (loggedAdmin != null)
-                                {
-                                    MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
-                                    wentIn = true;
-                                    return;
-                                }
-                                else
-                                {
-                                    MessageBox.Show($"User found but no Reader/Author/Admin match. User ID: {u.Id}");
-                                }
-                            }
-                        }   
+                            MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
+                            wentIn = true;
+                            return;
+                        }
+
+                        var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
+                        if (loggedAdmin != null)
+                        {
+                            MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
+                            wentIn = true;
+                            return;
+                        }
                     }
                 }
 
                 if (!wentIn)
-                {
                     MessageBox.Show("Invalid email or password. Please try again.", "LitLink");
-                }
             }
             catch (Exception ex)
             {
@@ -134,10 +117,7 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void Navigate_SignUp(object sender, RoutedEventArgs e)
-        {
-            MainWindow.AppFrame.Navigate(new SignUp());
-        }
+        private void Navigate_SignUp(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new SignUp()); }
 
         private void Navigate_ResetPass(object sender, RoutedEventArgs e)
         {
@@ -147,10 +127,7 @@ namespace LitLink_FinalProject.Pages
                 EmailInput.Focus();
                 return;
             }
-            else
-            {
-                MainWindow.AppFrame.Navigate(new ResetPass(EmailInput.Text));
-            }
+            MainWindow.AppFrame.Navigate(new ResetPass(EmailInput.Text));
         }
     }
 }

@@ -23,7 +23,7 @@ namespace LitLink_FinalProject.UserControls
     {
         private bool isAdmin;
         private bool isAuthor;
-        private bool isGuest; // ← נוסף
+        private bool isGuest; 
         private Apiservice apiService = new Apiservice();
 
         public BookUserControl(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser = null)
@@ -32,12 +32,10 @@ namespace LitLink_FinalProject.UserControls
             this.DataContext = bookData;
             this.isAdmin = isAdmin;
             this.isAuthor = isAuthor;
-            this.isGuest = (currentUser == null); // ← נוסף
+            this.isGuest = (currentUser == null); 
 
             SetActionButtons(userOwnsBook);
             SetupPermissions();
-
-            // ... שאר הקוד הקיים ב-Loaded נשאר ללא שינוי
 
             this.Loaded += async (s, e) => {
                 if (DescriptionTextBlock.ActualHeight < 120)
@@ -46,36 +44,30 @@ namespace LitLink_FinalProject.UserControls
                 Book currentBook = this.DataContext as Book;
                 if (currentBook == null) return;
 
-                // --- 1. טעינת ביקורות, חישוב ממוצע, כמות והצגתן (מוגן מפני Null) ---
                 try
                 {
                     ReviewsStackPanel.Children.Clear();
-                    TotalReviewsTextBlock.Text = "(0)"; // ברירת מחדל
+                    TotalReviewsTextBlock.Text = "(0)"; 
 
                     List<Reviews> allReviews = await apiService.GetAllReviews();
 
                     if (allReviews != null)
                     {
-                        // סינון בטוח: מוודא שהביקורת והקישור לספר אינם null לפני הבדיקה
                         var bookReviews = allReviews
                             .Where(r => r != null && r.IdBook != null && r.IdBook.Id == currentBook.Id)
                             .ToList();
 
-                        // עדכון כמות הביקורות על המסך
                         TotalReviewsTextBlock.Text = $"({bookReviews.Count})";
 
                         if (bookReviews.Any())
                         {
-                            // חישוב הממוצע
                             double average = bookReviews.Average(r => r.Stars);
                             StarsTextBlock.Text = $"{average:0.0} ★";
 
-                            // יצירת פקדי התצוגה של הביקורות
                             foreach (var reviewItem in bookReviews)
                             {
                                 if (reviewItem == null) continue;
 
-                                // יצירת פקד הביקורת הבודד (שולח 0 כמזהה זמני)
                                 ReviewsUserControl reviewControl = new ReviewsUserControl(reviewItem, 0, isAdmin);
                                 ReviewsStackPanel.Children.Add(reviewControl);
                             }
@@ -94,7 +86,6 @@ namespace LitLink_FinalProject.UserControls
                     StarsTextBlock.Text = "— ★";
                 }
 
-                // --- 2. טעינת תמונת הכריכה של הספר (מוגן מפני Null) ---
                 try
                 {
                     string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
@@ -113,13 +104,16 @@ namespace LitLink_FinalProject.UserControls
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine("Error loading cover image: " + ex.Message);
-                    // במקרה של שגיאה, נשים תמונת ברירת מחדל שלא תתקע את האפליקציה
                     try
                     {
                         this.BookCoverImage.Source = new BitmapImage(new Uri(
      "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
                     }
-                    catch { /* הגנה מוחלטת מקריסה */ }
+                    catch
+                    {
+                        this.BookCoverImage.Source = new BitmapImage(new Uri(
+     "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
+                    }
                 }
             };
         }
@@ -128,7 +122,6 @@ namespace LitLink_FinalProject.UserControls
         {
             if (isGuest)
             {
-                // אורח — רואה מידע בלבד, ללא כפתורי פעולה
                 BuyBtn.Visibility = Visibility.Collapsed;
                 AddToListBtn.Visibility = Visibility.Collapsed;
                 return;
@@ -155,7 +148,6 @@ namespace LitLink_FinalProject.UserControls
         {
             if (isGuest)
             {
-                // אורח — אין כפתור עריכה, דיווח, או תפריט כלל
                 EditCoverItem.Visibility = Visibility.Collapsed;
                 EditNameItem.Visibility = Visibility.Collapsed;
                 EditDescItem.Visibility = Visibility.Collapsed;

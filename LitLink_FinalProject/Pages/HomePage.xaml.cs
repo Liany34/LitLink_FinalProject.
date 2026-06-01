@@ -1,4 +1,6 @@
-﻿using Model;
+﻿using LitLink_FinalProject.Pages;
+using LitLink_FinalProject.UserControls;
+using Model;
 using Service;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using LitLink_FinalProject.UserControls;
 
 namespace LitLink_FinalProject.Pages
 {
@@ -28,30 +29,29 @@ namespace LitLink_FinalProject.Pages
         {
             InitializeComponent();
             CheckUserSession();
-
             this.Loaded += HomePage_Loaded;
         }
-        public HomePage(Reader loggedInUser) : this()
+
+        public HomePage(Reader loggedInUser)
         {
+            InitializeComponent();
+            CheckUserSession();
             this.currentUser = loggedInUser;
+            this.Loaded += HomePage_Loaded;
         }
 
         private void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!isCatalogBuilt)
-            {
-                _ = BuildDynamicCatalogAsync();
-            }
-            else
-            {
-                UpdateUserUI();
-            }
+            _ = BuildDynamicCatalogAsync();
         }
+
         private async Task BuildDynamicCatalogAsync()
         {
             try
             {
                 isCatalogBuilt = true;
+                await Task.Delay(50);
+
                 List<Genre> allGenres = await apiService.GetAllGenres() ?? new List<Genre>();
                 List<Book_Genre> allBookGenres = await apiService.GetAllBookGenres() ?? new List<Book_Genre>();
 
@@ -91,7 +91,6 @@ namespace LitLink_FinalProject.Pages
                 GuestPanel.Visibility = Visibility.Collapsed;
                 UserPanel.Visibility = Visibility.Visible;
                 TxtUsername.Text = currentUser.Username;
-
                 MenuSeparator.Visibility = Visibility.Visible;
                 CartItem.Visibility = Visibility.Visible;
                 ProfileItem.Visibility = Visibility.Visible;
@@ -105,10 +104,7 @@ namespace LitLink_FinalProject.Pages
                         byte[] imgStr = Convert.FromBase64String(st);
                         this.ImgProfile.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
-                    else
-                    {
-                        SetDefaultProfilePicture();
-                    }
+                    else SetDefaultProfilePicture();
                 }
                 catch (Exception imgEx)
                 {
@@ -120,13 +116,9 @@ namespace LitLink_FinalProject.Pages
                 {
                     List<Author> allAuthors = await apiService.GetAllAuthors();
                     if (allAuthors.Any(a => a.Id == currentUser.Id))
-                    {
                         BecomeAuthorItem.Header = "Author Dashboard";
-                    }
                     else
-                    {
                         BecomeAuthorItem.Header = "Become Author";
-                    }
                     BecomeAuthorItem.Visibility = Visibility.Visible;
                 }
                 catch (Exception authorEx)
@@ -138,7 +130,6 @@ namespace LitLink_FinalProject.Pages
             {
                 GuestPanel.Visibility = Visibility.Visible;
                 UserPanel.Visibility = Visibility.Collapsed;
-
                 MenuSeparator.Visibility = Visibility.Collapsed;
                 CartItem.Visibility = Visibility.Collapsed;
                 ProfileItem.Visibility = Visibility.Collapsed;
@@ -151,12 +142,10 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                this.ImgProfile.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                this.ImgProfile.Source = new BitmapImage(new Uri(
+                    "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
             }
-            catch
-            {
-                this.ImgProfile.Source = null;
-            }
+            catch { this.ImgProfile.Source = null; }
         }
 
         private async void GenreRow_BookSelected(object sender, Book selectedBook)
@@ -204,7 +193,6 @@ namespace LitLink_FinalProject.Pages
                 MessageBox.Show("Please enter a book name or author name to search.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             MainWindow.AppFrame.Navigate(new SearchResultsPage(query, currentUser));
         }
 
@@ -215,16 +203,8 @@ namespace LitLink_FinalProject.Pages
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e) { MainMenu.PlacementTarget = sender as Button; MainMenu.IsOpen = true; }
-
-        private void BtnLogin_Click(object sender, RoutedEventArgs e)
-        {
-            MainWindow.AppFrame.Navigate(new Login());
-        }
-
-        private void AboutUs_Click(object sender, RoutedEventArgs e)
-        {
-            MainWindow.AppFrame.Navigate(new AboutUs(currentUser));
-        }
+        private void BtnLogin_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new Login()); }
+        private void AboutUs_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new AboutUs(currentUser)); }
 
         private void Cart_Click(object sender, RoutedEventArgs e)
         {
@@ -254,7 +234,7 @@ namespace LitLink_FinalProject.Pages
                 else
                 {
                     var becomeAuthorPage = new BecomeAuthorPage();
-                    becomeAuthorPage.DataContext = currentUser; 
+                    becomeAuthorPage.DataContext = currentUser;
                     MainWindow.AppFrame.Navigate(becomeAuthorPage);
                 }
             }

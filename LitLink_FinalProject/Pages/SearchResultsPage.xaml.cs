@@ -15,20 +15,20 @@ namespace LitLink_FinalProject.Pages
     {
         private Apiservice apiService = new Apiservice();
         private string searchQuery;
-        private Reader currentUser; // ← נוסף
+        private Reader currentUser; 
 
         public SearchResultsPage(string query, Reader currentUser = null)
         {
             InitializeComponent();
             searchQuery = query;
-            this.currentUser = currentUser; // ← נוסף
+            this.currentUser = currentUser; 
             this.Loaded += SearchResultsPage_Loaded;
         }
 
         private async void SearchResultsPage_Loaded(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(searchQuery))
-                await ExecuteSearch(searchQuery); // ← ישירות async, לא Task.Run
+                await ExecuteSearch(searchQuery); 
         }
 
         public async Task ExecuteSearch(string searchQuery)
@@ -38,7 +38,6 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                // טעינה מקבילה
                 var booksTask = apiService.GetAllBooks();
                 var authorsTask = apiService.GetAllAuthors();
                 await Task.WhenAll(booksTask, authorsTask);
@@ -76,7 +75,6 @@ namespace LitLink_FinalProject.Pages
 
             if (clickedBook != null)
             {
-                // אורח: isGuest=true → currentUser=null
                 BookPage detailsPage = new BookPage(clickedBook, false, false, false, currentUser);
                 this.NavigationService?.Navigate(detailsPage);
             }

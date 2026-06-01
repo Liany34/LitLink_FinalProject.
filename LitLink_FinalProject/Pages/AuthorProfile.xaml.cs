@@ -1,21 +1,17 @@
-﻿using Model;
+﻿using LitLink_FinalProject.Pages;
+using LitLink_FinalProject.UserControls;
+using LitLink_FinalProject.WindowsFile;
+using Model;
 using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
-using LitLink_FinalProject.UserControls;
-using LitLink_FinalProject.WindowsFile;
 
 namespace LitLink_FinalProject.Pages
 {
@@ -24,21 +20,19 @@ namespace LitLink_FinalProject.Pages
         private Apiservice apiService = new Apiservice();
         private List<Book> authorBooks = new List<Book>();
         private Author currentAuthor;
-        private Reader viewingReader; 
-        private bool isGuest; 
+        private Reader viewingReader;
+        private bool isGuest;
 
         public AuthorProfile(Author author, Reader viewingReader = null, bool isGuest = false)
         {
             InitializeComponent();
             this.currentAuthor = author;
             this.viewingReader = viewingReader;
-            this.isGuest = isGuest; 
+            this.isGuest = isGuest;
             this.Loaded += AuthorProfilePage_Loaded;
         }
-        private void AuthorProfilePage_Loaded(object sender, RoutedEventArgs e)
-        {
-            LoadAuthorData();
-        }
+
+        private void AuthorProfilePage_Loaded(object sender, RoutedEventArgs e) => LoadAuthorData();
 
         private async void LoadAuthorData()
         {
@@ -83,9 +77,6 @@ namespace LitLink_FinalProject.Pages
                     BtnUnfollow.Visibility = isFollowing ? Visibility.Visible : Visibility.Collapsed;
                 }
 
-
-
-
                 string st = await apiService.GetPRPByUserIDByte64(currentAuthor.Id);
                 if (!string.IsNullOrEmpty(st))
                 {
@@ -94,19 +85,12 @@ namespace LitLink_FinalProject.Pages
                         byte[] imgStr = Convert.FromBase64String(st);
                         this.ImgAuthorProfile.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
-                    catch
-                    {
-                        SetDefaultAuthorImage();
-                    }
+                    catch { SetDefaultAuthorImage(); }
                 }
-                else
-                {
-                    SetDefaultAuthorImage();
-                }
+                else SetDefaultAuthorImage();
 
                 List<Book> allBooks = await apiService.GetAllBooks();
                 authorBooks = allBooks.Where(b => b.IdAuthor != null && b.IdAuthor.Id == currentAuthor.Id).ToList();
-
                 LoadMyBooksTab();
             }
             catch (Exception ex)
@@ -117,11 +101,7 @@ namespace LitLink_FinalProject.Pages
 
         private void SetDefaultAuthorImage()
         {
-            try
-            {
-                this.ImgAuthorProfile.Source = new BitmapImage(new Uri(
-                    "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
-            }
+            try { this.ImgAuthorProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute)); }
             catch { this.ImgAuthorProfile.Source = null; }
         }
 
@@ -129,7 +109,7 @@ namespace LitLink_FinalProject.Pages
         {
             HighlightTab(BtnTabMyBooks);
             AuthorBooksContainer.Visibility = Visibility.Visible;
-            AuthorListsContainer.Visibility = Visibility.Collapsed; // ← נוסף
+            AuthorListsContainer.Visibility = Visibility.Collapsed;
             AuthorNewsContainer.Visibility = Visibility.Collapsed;
             AuthorSalesContainer.Visibility = Visibility.Collapsed;
             LoadMyBooksTab();
@@ -139,7 +119,7 @@ namespace LitLink_FinalProject.Pages
         {
             HighlightTab(BtnTabMyNews);
             AuthorBooksContainer.Visibility = Visibility.Collapsed;
-            AuthorListsContainer.Visibility = Visibility.Collapsed; // ← נוסף
+            AuthorListsContainer.Visibility = Visibility.Collapsed;
             AuthorNewsContainer.Visibility = Visibility.Visible;
             AuthorSalesContainer.Visibility = Visibility.Collapsed;
             LoadMyNewsTab();
@@ -149,162 +129,10 @@ namespace LitLink_FinalProject.Pages
         {
             HighlightTab(BtnTabSalesData);
             AuthorBooksContainer.Visibility = Visibility.Collapsed;
-            AuthorListsContainer.Visibility = Visibility.Collapsed; // ← נוסף
+            AuthorListsContainer.Visibility = Visibility.Collapsed;
             AuthorNewsContainer.Visibility = Visibility.Collapsed;
             AuthorSalesContainer.Visibility = Visibility.Visible;
             LoadSalesDataTab();
-        }
-
-        private void LoadMyBooksTab()
-        {
-            AuthorBooksContainer.Children.Clear();
-
-            if (authorBooks.Count == 0)
-            {
-                AuthorBooksContainer.Children.Add(CreateEmptyMessageTextBlock("You haven't published any books yet."));
-                return;
-            }
-
-            GenreUserControl authorRow = new GenreUserControl();
-            authorRow.SetupGenreRow("Published Works", authorBooks);
-
-            authorRow.BookSelected += AuthorRow_BookSelected;
-
-            AuthorBooksContainer.Children.Add(authorRow);
-        }
-
-        private void AuthorRow_BookSelected(object sender, Book selectedBook)
-        {
-            if (selectedBook == null) return;
-
-            BookPage bookPage = new BookPage(selectedBook, true, false, true);
-            this.NavigationService?.Navigate(bookPage);
-        }
-
-        private async void LoadMyNewsTab()
-        {
-            AuthorNewsContainer.Children.Clear();
-
-            try
-            {
-                List<News> allNews = await apiService.GetAllNews();
-                List<News> authorNews = allNews.Where(n => n.IdUser.Id == currentAuthor.Id).ToList();
-
-                if (authorNews == null || authorNews.Count == 0)
-                {
-                    AuthorNewsContainer.Children.Add(CreateEmptyMessageTextBlock("No news updates published yet."));
-                    return;
-                }
-
-                foreach (var news in authorNews)
-                {
-                    NewsUserControl newsControl = new NewsUserControl();
-
-                    newsControl.DataContext = news;
-
-                    newsControl.NewsChanged += () => { LoadMyNewsTab(); };
-
-                    AuthorNewsContainer.Children.Add(newsControl);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error rendering author news control: " + ex.Message);
-            }
-        }
-        private async void LoadSalesDataTab()
-        {
-            try
-            {
-                int bookThisMonth = 0;
-                int bookTotal = 0;
-                double incomeThisMonth = 0;
-                double incomeTotal = 0;
-                int booksAddedToCarts = 0;
-                int booksAddedTolists = 0;
-                int followersCount;
-                List<Following> allFollowings = await apiService.GetAllFollowings();
-                List<Following> authorFollowings = allFollowings.Where(f => f.IdAuthor.Id == currentAuthor.Id).ToList();
-                followersCount = authorFollowings.Count;
-
-                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
-                foreach (Cart_Detail cd in allCartDetails)
-                {
-                    if (cd.IdBook.IdAuthor.Id == currentAuthor.Id)
-                    {
-                        booksAddedToCarts++;
-                        if (cd.IsPurchased)
-                        {
-                            if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
-                            {
-                                bookThisMonth++;
-                                incomeThisMonth += cd.IdBook.Price ?? 0.0;
-                            }
-                            bookTotal++;
-                            incomeTotal += cd.IdBook.Price ?? 0.0;
-                        }
-                    }
-                }
-
-                TxtTotalSales.Text = bookTotal.ToString();
-                TxtTotalRevenue.Text = $"{incomeTotal:F2} ₪";
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error calculating sales data: " + ex.Message);
-            }
-        }
-
-        private async void LoadMyListsTab()
-        {
-            AuthorListsContainer.Children.Clear();
-
-            TextBlock mainTitle = new TextBlock
-            {
-                Text = $"Book Series by {currentAuthor.PenName}",
-                FontSize = 22,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)),
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            AuthorListsContainer.Children.Add(mainTitle);
-
-            try
-            {
-                List<Book_Series> allSeries = await apiService.GetAllBookSeries();
-                List<Book_Series> authorSeries = allSeries
-                    .Where(s => s.IdUser != null && s.IdUser.Id == currentAuthor.Id)
-                    .ToList();
-
-                if (authorSeries.Count == 0)
-                {
-                    AuthorListsContainer.Children.Add(
-                        CreateEmptyMessageTextBlock("No book lists created yet."));
-                    return;
-                }
-
-                List<Series_Detail> allDetails = await apiService.GetAllSeriesDetails();
-
-                foreach (Book_Series series in authorSeries)
-                {
-                    List<Book> seriesBooks = allDetails
-                        .Where(d => d.IdSeries != null && d.IdSeries.Id == series.Id && d.IdBook != null)
-                        .OrderBy(d => d.Number)
-                        .Select(d => d.IdBook)
-                        .ToList();
-
-                    if (seriesBooks.Count == 0) continue;
-
-                    GenreUserControl seriesRow = new GenreUserControl();
-                    seriesRow.SetupGenreRow(series.NameSeries, seriesBooks);
-                    seriesRow.BookSelected += AuthorRow_BookSelected;
-                    AuthorListsContainer.Children.Add(seriesRow);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error loading author lists: " + ex.Message);
-            }
         }
 
         private void TabMyLists_Click(object sender, RoutedEventArgs e)
@@ -317,69 +145,198 @@ namespace LitLink_FinalProject.Pages
             LoadMyListsTab();
         }
 
+        private void LoadMyBooksTab()
+        {
+            AuthorBooksContainer.Children.Clear();
+            if (authorBooks.Count == 0)
+            {
+                AuthorBooksContainer.Children.Add(CreateEmptyMessageTextBlock("You haven't published any books yet."));
+                return;
+            }
+            GenreUserControl authorRow = new GenreUserControl();
+            authorRow.SetupGenreRow("Published Works", authorBooks);
+            authorRow.BookSelected += AuthorRow_BookSelected;
+            AuthorBooksContainer.Children.Add(authorRow);
+        }
+
+        private void AuthorRow_BookSelected(object sender, Book selectedBook)
+        {
+            if (selectedBook == null) return;
+            BookPage bookPage = new BookPage(selectedBook, false, false, viewingReader == null, viewingReader);
+            this.NavigationService?.Navigate(bookPage);
+        }
+
+        private async void LoadMyNewsTab()
+        {
+            AuthorNewsContainer.Children.Clear();
+            try
+            {
+                List<News> allNews = await apiService.GetAllNews();
+                List<News> authorNews = allNews.Where(n => n.IdUser.Id == currentAuthor.Id).ToList();
+                if (authorNews == null || authorNews.Count == 0)
+                {
+                    AuthorNewsContainer.Children.Add(CreateEmptyMessageTextBlock("No news updates published yet."));
+                    return;
+                }
+                foreach (var news in authorNews)
+                {
+                    NewsUserControl newsControl = new NewsUserControl();
+                    newsControl.DataContext = news;
+                    newsControl.NewsChanged += () => { LoadMyNewsTab(); };
+                    AuthorNewsContainer.Children.Add(newsControl);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error rendering author news control: " + ex.Message);
+            }
+        }
+
+        private async void LoadSalesDataTab()
+        {
+            try
+            {
+                int bookThisMonth = 0, bookTotal = 0;
+                double incomeThisMonth = 0, incomeTotal = 0;
+                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
+                foreach (Cart_Detail cd in allCartDetails)
+                {
+                    if (cd.IdBook.IdAuthor.Id == currentAuthor.Id)
+                    {
+                        if (cd.IsPurchased)
+                        {
+                            if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
+                            {
+                                bookThisMonth++;
+                                incomeThisMonth += cd.IdBook.Price ?? 0.0;
+                            }
+                            bookTotal++;
+                            incomeTotal += cd.IdBook.Price ?? 0.0;
+                        }
+                    }
+                }
+                TxtTotalSales.Text = bookTotal.ToString();
+                TxtTotalRevenue.Text = $"{incomeTotal:F2} ₪";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error calculating sales data: " + ex.Message);
+            }
+        }
+
+        private async void LoadMyListsTab()
+        {
+            AuthorListsContainer.Children.Clear();
+            AuthorListsContainer.Children.Add(new TextBlock
+            {
+                Text = $"Book Series by {currentAuthor.PenName}",
+                FontSize = 22,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)),
+                Margin = new Thickness(0, 0, 0, 15)
+            });
+            try
+            {
+                List<Book_Series> allSeries = await apiService.GetAllBookSeries();
+                List<Book_Series> authorSeries = allSeries
+                    .Where(s => s.IdUser != null && s.IdUser.Id == currentAuthor.Id)
+                    .ToList();
+                if (authorSeries.Count == 0)
+                {
+                    AuthorListsContainer.Children.Add(CreateEmptyMessageTextBlock("No book lists created yet."));
+                    return;
+                }
+                List<Series_Detail> allDetails = await apiService.GetAllSeriesDetails();
+                foreach (Book_Series series in authorSeries)
+                {
+                    List<Book> seriesBooks = allDetails
+                        .Where(d => d.IdSeries != null && d.IdSeries.Id == series.Id && d.IdBook != null)
+                        .OrderBy(d => d.Number)
+                        .Select(d => d.IdBook)
+                        .ToList();
+                    if (seriesBooks.Count == 0) continue;
+                    GenreUserControl seriesRow = new GenreUserControl();
+                    seriesRow.SetupGenreRow(series.NameSeries, seriesBooks);
+                    seriesRow.BookSelected += AuthorRow_BookSelected;
+                    AuthorListsContainer.Children.Add(seriesRow);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading author lists: " + ex.Message);
+            }
+        }
+
         private void BtnMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Visible;
         private void CloseMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Collapsed;
-        private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.OriginalSource == AuthorMenuPopup) AuthorMenuPopup.Visibility = Visibility.Collapsed;
-        }
+        private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e) { if (e.OriginalSource == AuthorMenuPopup) AuthorMenuPopup.Visibility = Visibility.Collapsed; }
 
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e)
         {
             if (currentAuthor == null) return;
-
             EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(currentAuthor);
-            if (editWin.ShowDialog() == true)
-            {
-                LoadAuthorData();
-            }
+            if (editWin.ShowDialog() == true) LoadAuthorData();
         }
 
         private void AddBook_Click(object sender, RoutedEventArgs e)
         {
-            WindowsFile.AddBookWindow addBookWin = new WindowsFile.AddBookWindow();
-
-            if (addBookWin.ShowDialog() == true)
-            {
-                LoadAuthorData();
-            }
+            AddBookWindow addBookWin = new AddBookWindow();
+            if (addBookWin.ShowDialog() == true) LoadAuthorData();
         }
+
         private void AddNews_Click(object sender, RoutedEventArgs e)
         {
-            WindowsFile.AddNewsWindow addNewsWin = new WindowsFile.AddNewsWindow();
-            addNewsWin.DataContext = currentAuthor; 
-            if (addNewsWin.ShowDialog() == true)
+            AddNewsWindow addNewsWin = new AddNewsWindow();
+            addNewsWin.DataContext = currentAuthor;
+            if (addNewsWin.ShowDialog() == true) LoadMyNewsTab();
+        }
+
+        private async void AddList_Click(object sender, RoutedEventArgs e)
+        {
+            AddSeriesWindow win = new AddSeriesWindow(currentAuthor);
+            if (win.ShowDialog() == true) LoadMyListsTab();
+        }
+
+        private async void AddBookToList_Click(object sender, RoutedEventArgs e)
+        {
+            try
             {
-                LoadMyNewsTab();
+                List<Book_Series> allSeries = await apiService.GetAllBookSeries();
+                List<Book_Series> authorSeries = allSeries
+                    .Where(s => s.IdUser != null && s.IdUser.Id == currentAuthor.Id)
+                    .ToList();
+                if (authorSeries.Count == 0)
+                {
+                    MessageBox.Show("Create a list first.", "LitLink");
+                    return;
+                }
+                AddBookToSeriesWindow win = new AddBookToSeriesWindow(currentAuthor.Id, authorSeries, authorBooks);
+                if (win.ShowDialog() == true) LoadMyListsTab();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "LitLink");
             }
         }
+
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
             currentAuthor = null;
             MainWindow.AppFrame.Navigate(new SignOut());
         }
+
         private async void BtnFollow_Click(object sender, RoutedEventArgs e)
         {
             if (viewingReader == null || currentAuthor == null) return;
             try
             {
-                Following newFollow = new Following
-                {
-                    IdReader = viewingReader,
-                    IdAuthor = currentAuthor
-                };
-                await apiService.InsertFollowing(newFollow);
+                await apiService.InsertFollowing(new Following { IdReader = viewingReader, IdAuthor = currentAuthor });
                 BtnFollow.Visibility = Visibility.Collapsed;
                 BtnUnfollow.Visibility = Visibility.Visible;
-
-                List<Following> allFollowings = await apiService.GetAllFollowings();
-                int count = allFollowings.Count(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
-                TxtFollowersCount.Text = $"{count} Followers";
+                List<Following> all = await apiService.GetAllFollowings();
+                TxtFollowersCount.Text = $"{all.Count(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id)} Followers";
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error following author: " + ex.Message, "LitLink");
-            }
+            catch (Exception ex) { MessageBox.Show("Error following author: " + ex.Message, "LitLink"); }
         }
 
         private async void BtnUnfollow_Click(object sender, RoutedEventArgs e)
@@ -387,24 +344,17 @@ namespace LitLink_FinalProject.Pages
             if (viewingReader == null || currentAuthor == null) return;
             try
             {
-                List<Following> allFollowings = await apiService.GetAllFollowings();
-                Following toDelete = allFollowings.FirstOrDefault(
-                           f => f.IdReader != null && f.IdReader.Id == viewingReader.Id &&
-                           f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
-                if (toDelete != null)
-                    await apiService.DeleteFollowing(toDelete.Id);
-
+                List<Following> all = await apiService.GetAllFollowings();
+                Following toDelete = all.FirstOrDefault(f =>
+                    f.IdReader != null && f.IdReader.Id == viewingReader.Id &&
+                    f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
+                if (toDelete != null) await apiService.DeleteFollowing(toDelete.Id);
                 BtnFollow.Visibility = Visibility.Visible;
                 BtnUnfollow.Visibility = Visibility.Collapsed;
-
                 List<Following> updated = await apiService.GetAllFollowings();
-                int count = updated.Count(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id);
-                TxtFollowersCount.Text = $"{count} Followers";
+                TxtFollowersCount.Text = $"{updated.Count(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id)} Followers";
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error unfollowing author: " + ex.Message, "LitLink");
-            }
+            catch (Exception ex) { MessageBox.Show("Error unfollowing author: " + ex.Message, "LitLink"); }
         }
 
         private void HighlightTab(Button activeBtn)
@@ -416,11 +366,8 @@ namespace LitLink_FinalProject.Pages
             activeBtn.Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74));
         }
 
-        private TextBlock CreateEmptyMessageTextBlock(string msg)
-        {
-            return new TextBlock { Text = msg, FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) };
-        }
-
+        private TextBlock CreateEmptyMessageTextBlock(string msg) =>
+            new TextBlock { Text = msg, FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) };
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
@@ -429,6 +376,5 @@ namespace LitLink_FinalProject.Pages
             else
                 MainWindow.AppFrame.Navigate(new HomePage(viewingReader));
         }
-
     }
 }

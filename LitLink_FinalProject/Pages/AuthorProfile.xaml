@@ -41,8 +41,9 @@
                 <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="2">
                     <Image x:Name="ImgAuthorProfile" Stretch="UniformToFill"/>
                 </Border>
-                <Button x:Name="BtnEditProfile" Content="Edit Profile" Margin="0,8,0,0" Padding="10,4" 
-                        Background="Transparent" BorderBrush="#D06A8D" BorderThickness="1" Foreground="#D06A8D" FontWeight="SemiBold" Cursor="Hand" Click="BtnEditProfile_Click">
+                <Button x:Name="BtnEditProfile" Content="Edit Profile" Margin="0,8,0,0" Padding="10,4"
+                        Background="Transparent" BorderBrush="#D06A8D" BorderThickness="1"
+                        Foreground="#D06A8D" FontWeight="SemiBold" Cursor="Hand" Click="BtnEditProfile_Click">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="12"/>
@@ -79,7 +80,9 @@
                 </StackPanel>
             </StackPanel>
 
-            <Button x:Name="BtnMenu" Grid.Column="2" Content="☰" FontSize="26" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Cursor="Hand" VerticalAlignment="Top" Margin="0,10,10,0" Click="BtnMenu_Click"/>
+            <Button x:Name="BtnMenu" Grid.Column="2" Content="☰" FontSize="26" Background="Transparent"
+                    BorderThickness="0" Foreground="#4A4A4A" Cursor="Hand" VerticalAlignment="Top"
+                    Margin="0,10,10,0" Click="BtnMenu_Click"/>
         </Grid>
 
         <Rectangle Grid.Row="2" Height="1" Fill="#BCB3A4" Margin="0,5,0,15"/>
@@ -102,7 +105,6 @@
                     <StackPanel x:Name="AuthorBooksContainer" Visibility="Visible"/>
                     <StackPanel x:Name="AuthorNewsContainer" Visibility="Collapsed"/>
                     <StackPanel x:Name="AuthorListsContainer" Visibility="Collapsed"/>
-
                     <StackPanel x:Name="AuthorSalesContainer" Visibility="Collapsed">
                         <Border Background="White" CornerRadius="12" Padding="20" Effect="{StaticResource MenuShadow}" Margin="0,10,10,10">
                             <StackPanel>
@@ -133,6 +135,8 @@
                     </Grid>
                     <Button Content="➕ Add New Book" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddBook_Click"/>
                     <Button Content="📰 Add News Update" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddNews_Click"/>
+                    <Button Content="📋 New Book List" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddList_Click"/>
+                    <Button Content="➕ Add Book to List" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddBookToList_Click"/>
                     <Button Content="🚪 Log Out" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand" Click="LogOut_Click"/>
                 </StackPanel>
             </Border>
