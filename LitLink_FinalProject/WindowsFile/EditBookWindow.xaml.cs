@@ -14,6 +14,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.IO;
+
 
 namespace LitLink_FinalProject.WindowsFile
 {
@@ -21,6 +23,7 @@ namespace LitLink_FinalProject.WindowsFile
     {
         private Book bookToEdit;
         private Apiservice apiService = new Apiservice();
+        private string selectedCoverBase64 = null;
 
         public EditBookWindow(Book currentBook)
         {
@@ -63,6 +66,18 @@ namespace LitLink_FinalProject.WindowsFile
             if (bookToEdit.IdLanguage != null)
             {
                 SetSelectedLanguage(bookToEdit.IdLanguage);
+            }
+            if (!string.IsNullOrEmpty(bookToEdit.Cover))
+            {
+                try
+                {
+                    byte[] imageBytes = Convert.FromBase64String(bookToEdit.Cover);
+                    ImgBookCoverPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+                }
+                catch
+                {
+                    // אם זו לא תמונת Base64, לא נעשה כלום
+                }
             }
         }
 
@@ -118,7 +133,14 @@ namespace LitLink_FinalProject.WindowsFile
             bookToEdit.Information = TxtDescription.Text.Trim();
             bookToEdit.Price = parsedPrice;
             bookToEdit.BookLink = TxtFilePath.Text.Trim();
-            bookToEdit.Cover = TxtCoverPath.Text.Trim();
+            if (!string.IsNullOrEmpty(selectedCoverBase64))
+            {
+                bookToEdit.Cover = selectedCoverBase64;
+            }
+            else
+            {
+                bookToEdit.Cover = TxtCoverPath.Text.Trim();
+            }
             bookToEdit.PublicationDate = DpPublishDate.SelectedDate.Value;
 
             Language selectedLang = CmbLanguage.SelectedItem as Language;
@@ -158,6 +180,23 @@ namespace LitLink_FinalProject.WindowsFile
         {
             this.DialogResult = false;
             this.Close();
+        }
+        private void BrowseCover_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                byte[] imageBytes = File.ReadAllBytes(openFileDialog.FileName);
+
+                selectedCoverBase64 = Convert.ToBase64String(imageBytes);
+
+                TxtCoverPath.Text = openFileDialog.FileName;
+
+                ImgBookCoverPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+            }
         }
     }
 }

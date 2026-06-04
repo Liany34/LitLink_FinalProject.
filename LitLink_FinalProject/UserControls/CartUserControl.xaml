@@ -63,16 +63,18 @@
                            TextWrapping="Wrap"/>
 
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding OriginalPrice, StringFormat={}{0:C}}" 
-                               FontSize="14" 
-                               Foreground="#999999" 
-                               TextDecorations="Strikethrough" 
-                               Margin="0,0,8,0" 
-                               Visibility="{Binding HasDiscount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                    <TextBlock Text="{Binding Price, StringFormat={}{0:C}}" 
-                               FontSize="16" 
-                               FontWeight="Bold" 
-                               Foreground="#FF1493"/>
+                    <TextBlock x:Name="OriginalPriceText"
+           FontSize="14" 
+           Foreground="#999999" 
+           TextDecorations="Strikethrough" 
+           Margin="0,0,8,0" 
+           Visibility="Collapsed"/>
+
+                    <TextBlock x:Name="FinalPriceText"
+           Text="{Binding Price, StringFormat={}{0:C}}" 
+           FontSize="16" 
+           FontWeight="Bold" 
+           Foreground="#FF1493"/>
                 </StackPanel>
             </StackPanel>
 

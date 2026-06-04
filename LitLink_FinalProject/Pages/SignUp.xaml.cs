@@ -13,7 +13,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Model;
-using Service;
 using System.Windows.Shapes;
 using System.Text.RegularExpressions;
 
@@ -26,6 +25,8 @@ namespace LitLink_FinalProject.Pages
         private const string DefaultPhone = "000-0000000";
         private const string DefaultEmail = "litlink@gmail.com";
         private const string DefaultUsername= "Username";
+        private const string DefaultNickname = "Nickname";
+        private Apiservice apiService = new Apiservice();
 
         public SignUp()
         {
@@ -193,6 +194,7 @@ namespace LitLink_FinalProject.Pages
 
         private async void SignUpButton_Click(object sender, RoutedEventArgs e)
         { 
+            List<User> existingUsers = await apiService.GetAllUsers();
             bool isValid = true;
             InvaildPhone.Visibility = Visibility.Collapsed;
             InvalidEmail.Visibility = Visibility.Collapsed;
@@ -203,11 +205,23 @@ namespace LitLink_FinalProject.Pages
                 PhoneInput.Focus();
                 isValid = false;
             }
+            if(existingUsers.Any(u => u.PhoneNumber == PhoneInput.Text))
+            {
+                ExistingPhone.Visibility = Visibility.Visible;
+                PhoneInput.Focus();
+                isValid = false;
+            }
             if(!Regex.IsMatch(EmailInput.Text, @"^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+[a-zA-Z0-9]+$"))
             {
                 InvalidEmail.Visibility = Visibility.Visible;
                 EmailInput.Focus();
                 isValid = false;
+            }
+            if(existingUsers.Any(u => u.Email == EmailInput.Text))
+            {
+                    ExistingEmail.Visibility = Visibility.Visible;
+                    EmailInput.Focus();
+                    isValid = false;
             }
             if (PasswordInput.Password != ReenterInput.Password)
             {
@@ -221,8 +235,15 @@ namespace LitLink_FinalProject.Pages
                 BirthDatePicker.Focus();
                 isValid = false;
             }
-            if(!isValid)
+            if(existingUsers.Any(u => u.Username == UsernameInput.Text))
             {
+                InvalidUsername.Visibility = Visibility.Visible;
+                UsernameInput.Focus();
+                isValid = false;
+            }
+            if (!isValid)
+            {
+                MessageBox.Show("Please correct the highlighted errors before proceeding.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             else
@@ -230,9 +251,9 @@ namespace LitLink_FinalProject.Pages
 
                 InvaildPhone.Visibility = Visibility.Collapsed;
                 Apiservice buyerService = new Apiservice();
-                if (FirstNameInput.Text != DefaultFirstName && LastNameInput.Text != DefaultLastName && PhoneInput.Text != DefaultPhone && EmailInput.Text != DefaultEmail && UsernameInput.Text != DefaultUsername)
+                if (FirstNameInput.Text != DefaultFirstName && LastNameInput.Text != DefaultLastName && PhoneInput.Text != DefaultPhone && EmailInput.Text != DefaultEmail && UsernameInput.Text != DefaultUsername && NicknameInput.Text != DefaultNickname)
                 {
-                    User newUser = new User
+                    Reader newUser = new Reader
                     {
                         FirstName = FirstNameInput.Text,
                         LastName = LastNameInput.Text,
@@ -240,9 +261,12 @@ namespace LitLink_FinalProject.Pages
                         Email = EmailInput.Text,
                         Username = UsernameInput.Text,
                         Pass = PasswordInput.Password,
-                        Birthdate = DateTime.Parse(BirthDatePicker.SelectedDate.ToString())
+                        Birthdate = DateTime.Parse(BirthDatePicker.SelectedDate.ToString()),
+                        Picture = "UserPicture1.png",
+                        Nickname = NicknameInput.Text
                     };
-                    var homepagePage = new HomePage();
+                    apiService.InsertReader(newUser);
+                    var homepagePage = new HomePage(newUser);
                     Window.GetWindow(this).Content = homepagePage;
                 }
                 else
@@ -250,6 +274,34 @@ namespace LitLink_FinalProject.Pages
                     MessageBox.Show("Please fill in all the required fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void NicknameInput_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (NicknameInput.Text == DefaultNickname)
+            {
+                NicknameInput.Text = "";
+                NicknameInput.FontStyle = FontStyles.Normal;
+                NicknameInput.FontFamily = new FontFamily("/Fonts/Roboto Slab;component/#Roboto Slab");
+                NicknameInput.FontSize = 14;
+            }
+        }
+
+        private void NicknameInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(NicknameInput.Text))
+            {
+                NicknameInput.Text = "Please enter your nickname.";
+                NicknameInput.Foreground = Brushes.DarkRed;
+                NicknameInput.FontStyle = FontStyles.Italic;
+                NicknameInput.FontFamily = new FontFamily("/Fonts/Roboto Slab;component/#Roboto Slab");
+                NicknameInput.FontSize = 14;
+            }
+        }
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            var loginPage = new Login();
+            Window.GetWindow(this).Content = loginPage;
         }
     }
 }

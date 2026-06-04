@@ -56,7 +56,7 @@ namespace LitLink_FinalProject.Pages
                     this.NavigationService.GoBack();
                 else
                 {
-                    HomePage homePage = new HomePage();
+                    HomePage homePage = new HomePage(currentReader);
                     homePage.DataContext = currentReader;
                     Window.GetWindow(this).Content = homePage;
                 }
@@ -95,12 +95,12 @@ namespace LitLink_FinalProject.Pages
                     PhoneNumber = currentReader.PhoneNumber,
                     Email = currentReader.Email,
                     Username = currentReader.Username,
+                    Pass = currentReader.Pass,
                     Birthdate = currentReader.Birthdate,
                     Picture = currentReader.Picture,
-                    Pass = currentReader.Pass,
                     PenName = penName,
-                    InformationAboutAuthor = bio,
-                    Genre = selectedGenre
+                    Genre = selectedGenre,
+                    InformationAboutAuthor = bio
                 };
 
                 await apiService.InsertAuthor(newAuthor);

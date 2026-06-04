@@ -10,7 +10,7 @@
 
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource = "/Covers/ResetPass.png" Stretch = "UniformToFill"/>
+            <ImageBrush ImageSource = "/Covers/ResetPassPicture.png" Stretch = "UniformToFill"/>
         </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -24,6 +24,22 @@
             <RowDefinition Height="30"/>
             <RowDefinition Height="90"/>
         </Grid.RowDefinitions>
+        <Button x:Name="BackButton"
+                Content="← back"
+                Grid.Row="0"
+                Grid.Column="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="20,20,0,0"
+                Width="80"
+                Height="35"
+                Background="Transparent"
+                Foreground="#6c3134"
+                BorderThickness="0"
+                Cursor="Hand"
+                FontSize="16"
+                FontFamily="/Fonts/Roboto Slab"
+                Click="BackButton_Click"/>
         <Grid Grid.Row="1" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>

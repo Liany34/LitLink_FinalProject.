@@ -71,7 +71,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- כפתור חזרה -->
             <Button Grid.Row="0" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" 
             Cursor="Hand" Click="BackButton_Click">
                 <StackPanel Orientation="Horizontal">
@@ -80,7 +79,6 @@
                 </StackPanel>
             </Button>
 
-            <!-- Select All -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <CheckBox x:Name="ChkSelectAll" Content="Select All Items" 
                   Style="{StaticResource CartCheckBoxStyle}" 
@@ -88,7 +86,6 @@
                 <TextBlock x:Name="TxtCartCount" Text=" (0 items)" FontSize="14" Foreground="#666666" VerticalAlignment="Center"/>
             </StackPanel>
 
-            <!-- רשימת הספרים - Row 2 -->
             <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                 <ListBox x:Name="LstCartItems" Background="Transparent" BorderThickness="0" 
                  HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">

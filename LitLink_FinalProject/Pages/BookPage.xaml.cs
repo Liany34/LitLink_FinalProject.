@@ -23,13 +23,17 @@ namespace LitLink_FinalProject.Pages
     {
         private Reader currentUser;
 
-        public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser = null)
+        public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser)
         {
             InitializeComponent();
+
             this.currentUser = currentUser;
 
-            BookUserControl bookControl = new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor, currentUser);
-            MainContainer.Children.Add(bookControl);
+            BookUserControl bookUserControl =
+                new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor, currentUser);
+
+            MainContainer.Children.Clear();
+            MainContainer.Children.Add(bookUserControl);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

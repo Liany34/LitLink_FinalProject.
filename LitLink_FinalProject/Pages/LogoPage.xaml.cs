@@ -35,7 +35,7 @@ namespace LitLink_FinalProject.Pages
         private void Timer_Tick(object sender, EventArgs e)
         {
             timer.Stop();
-            NavigationService.Navigate(new HomePage());
+            NavigationService.Navigate(new Login());
         }
     }
 }

@@ -38,7 +38,7 @@ namespace LitLink_FinalProject.UserControls
                     }
                     catch (Exception)
                     {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\Covers\\DefaultCover.png", UriKind.RelativeOrAbsolute));
+                        this.BookCoverImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/To_be_revealed.png", UriKind.RelativeOrAbsolute));
                     }
                 }
             };
@@ -59,6 +59,20 @@ namespace LitLink_FinalProject.UserControls
         private void CartCheckBox_CheckedChange(object sender, RoutedEventArgs e)
         {
             IsSelectedChanged?.Invoke(this, EventArgs.Empty);
+        }
+        public void ApplyDiscount(double percent)
+        {
+            Book book = this.DataContext as Book;
+            if (book == null || book.Price == null)
+                return;
+
+            double originalPrice = book.Price.Value;
+            double finalPrice = originalPrice - (originalPrice * percent / 100.0);
+
+            OriginalPriceText.Text = originalPrice.ToString("C");
+            FinalPriceText.Text = finalPrice.ToString("C");
+
+            OriginalPriceText.Visibility = Visibility.Visible;
         }
     }
 }

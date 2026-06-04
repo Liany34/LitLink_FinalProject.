@@ -35,12 +35,26 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
-                <TextBlock x:Name="TxtHelloAdmin" Text="Hello, AdminName" FontSize="28" FontWeight="Bold" Foreground="#4A4A4A"/>
-                <TextBlock Text="System Administrator Mode 👑" FontSize="13" Foreground="#D06A8D" Margin="2,4,0,0"/>
+                <TextBlock x:Name="TxtHelloAdmin" 
+                           Text="Hello, AdminName" 
+                           FontSize="28" 
+                           FontWeight="Bold" 
+                           Foreground="#4A4A4A"/>
+                <TextBlock Text="System Administrator Mode 👑" 
+                           FontSize="13" 
+                           Foreground="#D06A8D" 
+                           Margin="2,4,0,0"/>
             </StackPanel>
 
-            <Button Grid.Column="2" Content="☰" FontSize="26" Background="Transparent" BorderThickness="0"
-                    Foreground="#4A4A4A" Cursor="Hand" VerticalAlignment="Top" Margin="0,10,10,0" Click="BtnMenu_Click"/>
+            <Button Grid.Column="2" 
+                    Content="☰" FontSize="26" 
+                    Background="Transparent" 
+                    BorderThickness="0"
+                    Foreground="#4A4A4A" 
+                    Cursor="Hand" 
+                    VerticalAlignment="Top" 
+                    Margin="0,10,10,0" 
+                    Click="BtnMenu_Click"/>
         </Grid>
 
         <Rectangle Grid.Row="1" Height="1" Fill="#BCB3A4" Margin="0,5,0,15"/>
@@ -52,10 +66,38 @@
             </Grid.RowDefinitions>
 
             <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,15">
-                <Button x:Name="BtnTabSales" Content="Sales Data" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Click="TabSales_Click"/>
-                <Button x:Name="BtnTabReports" Content="Reports" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabReports_Click"/>
-                <Button x:Name="BtnTabDiscounts" Content="Discount Codes" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabDiscounts_Click"/>
-                <Button x:Name="BtnTabNews" Content="News" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Foreground="#999999" Click="TabNews_Click"/>
+                <Button x:Name="BtnTabSales" 
+                        Content="Sales Data" 
+                        FontSize="16" 
+                        FontWeight="Bold" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Foreground="#4A4A4A" 
+                        Click="TabSales_Click"/>
+                <Button x:Name="BtnTabReports" 
+                        Content="Reports" 
+                        FontSize="16" 
+                        FontWeight="Bold" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Foreground="#999999" 
+                        Click="TabReports_Click"/>
+                <Button x:Name="BtnTabDiscounts" 
+                        Content="Discount Codes" 
+                        FontSize="16" 
+                        FontWeight="Bold" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Foreground="#999999" 
+                        Click="TabDiscounts_Click"/>
+                <Button x:Name="BtnTabNews" 
+                        Content="News" 
+                        FontSize="16" 
+                        FontWeight="Bold" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Foreground="#999999" 
+                        Click="TabNews_Click"/>
             </UniformGrid>
 
             <Grid Grid.Row="1">
@@ -66,28 +108,61 @@
                                 <TextBlock Text="🌐 Platform Wide Financial Overview" FontSize="18" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,0,0,15"/>
                                 <UniformGrid Columns="2">
                                     <StackPanel Margin="10">
-                                        <TextBlock Text="Total Books Sold (All Platform)" FontSize="13" Foreground="Gray"/>
-                                        <TextBlock x:Name="TxtGlobalSales" Text="0" FontSize="26" FontWeight="Bold" Foreground="#D06A8D"/>
+                                        <TextBlock Text="Total Books Sold (All Platform)" 
+                                                   FontSize="13" 
+                                                   Foreground="Gray"/>
+                                        <TextBlock x:Name="TxtGlobalSales" 
+                                                   Text="0" FontSize="26" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="#D06A8D"/>
                                     </StackPanel>
                                     <StackPanel Margin="10">
-                                        <TextBlock Text="Total Global Revenue" FontSize="13" Foreground="Gray"/>
-                                        <TextBlock x:Name="TxtGlobalRevenue" Text="0 ₪" FontSize="26" FontWeight="Bold" Foreground="#2ECC71"/>
+                                        <TextBlock Text="Total Global Revenue" 
+                                                   FontSize="13" 
+                                                   Foreground="Gray"/>
+                                        <TextBlock x:Name="TxtGlobalRevenue" 
+                                                   Text="0 ₪" 
+                                                   FontSize="26" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="#2ECC71"/>
                                     </StackPanel>
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
 
                         <TextBlock Text="View Sales by Author" FontSize="16" FontWeight="Bold" Foreground="#4A4A4A" Margin="5,10,0,8"/>
-                        <ComboBox x:Name="CmbAuthors" Height="35" Width="250" HorizontalAlignment="Left"
-                                  Margin="5,0,0,15" DisplayMemberPath="PenName" SelectionChanged="CmbAuthors_SelectionChanged"/>
+                        <ComboBox x:Name="CmbAuthors" 
+                                  Height="35" 
+                                  Width="250" 
+                                  HorizontalAlignment="Left"
+                                  Margin="5,0,0,15" 
+                                  DisplayMemberPath="PenName" 
+                                  SelectionChanged="CmbAuthors_SelectionChanged"/>
 
-                        <Border x:Name="AuthorSalesResultCard" Background="White" CornerRadius="12" Padding="20"
-                                Margin="0,0,10,10" Visibility="Collapsed" Effect="{StaticResource AdminShadow}">
+                        <Border x:Name="AuthorSalesResultCard" 
+                                Background="White" 
+                                CornerRadius="12" 
+                                Padding="20"
+                                Margin="0,0,10,10" 
+                                Visibility="Collapsed" 
+                                Effect="{StaticResource AdminShadow}">
                             <StackPanel>
-                                <TextBlock x:Name="TxtSelectedAuthorTitle" Text="Author Sales Data" FontSize="16" FontWeight="Bold" Foreground="#D06A8D" Margin="0,0,0,10"/>
+                                <TextBlock x:Name="TxtSelectedAuthorTitle" 
+                                           Text="Author Sales Data" 
+                                           FontSize="16" 
+                                           FontWeight="Bold" 
+                                           Foreground="#D06A8D" 
+                                           Margin="0,0,0,10"/>
                                 <UniformGrid Columns="2">
-                                    <TextBlock x:Name="TxtAuthorSoldCopies" Text="Copies Sold: 0" FontSize="14" Foreground="#4A4A4A"/>
-                                    <TextBlock x:Name="TxtAuthorRevenue" Text="Revenue: 0 ₪" FontSize="14" FontWeight="Bold" Foreground="#2ECC71"/>
+                                    <TextBlock x:Name="TxtAuthorSoldCopies" 
+                                               Text="Copies Sold: 0" 
+                                               FontSize="14" 
+                                               Foreground="#4A4A4A"/>
+                                    <TextBlock x:Name="TxtAuthorRevenue" 
+                                               Text="Revenue: 0 ₪" 
+                                               FontSize="14" 
+                                               FontWeight="Bold" 
+                                               Foreground="#2ECC71"/>
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
@@ -110,7 +185,12 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Active Discount Coupons" FontSize="16" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,0,0,10"/>
+                            <TextBlock Grid.Row="0" 
+                                       Text="Active Discount Coupons" 
+                                       FontSize="16" 
+                                       FontWeight="Bold" 
+                                       Foreground="#4A4A4A" 
+                                       Margin="0,0,0,10"/>
                             <ListView Grid.Row="1" x:Name="LvwCoupons" Background="Transparent" BorderThickness="0">
                                 <ListView.View>
                                     <GridView>
@@ -171,11 +251,36 @@
             <Border HorizontalAlignment="Right" Background="#FFF5F7" Width="260" Padding="20" Effect="{StaticResource AdminShadow}">
                 <StackPanel>
                     <Grid Margin="0,0,0,25">
-                        <TextBlock Text="Admin Menu" FontSize="18" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
-                        <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" FontSize="16" Foreground="Gray" Cursor="Hand" Click="CloseMenu_Click"/>
+                        <TextBlock Text="Admin Menu" 
+                                   FontSize="18" 
+                                   FontWeight="Bold" 
+                                   Foreground="#4A4A4A" 
+                                   VerticalAlignment="Center"/>
+                        <Button Content="✕" 
+                                HorizontalAlignment="Right" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                FontSize="16" 
+                                Foreground="Gray" 
+                                Cursor="Hand" 
+                                Click="CloseMenu_Click"/>
                     </Grid>
-                    <Button Content="📰 Add News Update" Background="White" HorizontalContentAlignment="Left" Padding="12,10" Margin="0,0,0,8" Cursor="Hand" Click="AddNews_Click"/>
-                    <Button Content="🚪 Log Out" Background="Transparent" BorderThickness="0" Foreground="#D06A8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand" Click="LogOut_Click"/>
+                    <Button Content="📰 Add News Update" 
+                            Background="White" 
+                            HorizontalContentAlignment="Left" 
+                            Padding="12,10" 
+                            Margin="0,0,0,8" 
+                            Cursor="Hand" 
+                            Click="AddNews_Click"/>
+                    <Button Content="🚪 Log Out" 
+                            Background="Transparent" 
+                            BorderThickness="0" 
+                            Foreground="#D06A8D" 
+                            FontWeight="Bold" 
+                            HorizontalAlignment="Center" 
+                            Margin="0,20,0,0" 
+                            Cursor="Hand" 
+                            Click="LogOut_Click"/>
                 </StackPanel>
             </Border>
         </Grid>

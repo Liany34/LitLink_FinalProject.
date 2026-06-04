@@ -111,7 +111,7 @@ namespace LitLink_FinalProject.Pages
             MyBooks.AddRange(selectedBooks);
 
             MessageBox.Show("!הקנייה הושלמה בהצלחה\n.הספרים החדשים שלך נוספו בהצלחה לרשימת הספרים שלי", "LitLink Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            HomePage homePage = new HomePage();
+            HomePage homePage = new HomePage(curretReader);
             homePage.DataContext = curretReader;
             Window.GetWindow(this).Content = homePage;
         }

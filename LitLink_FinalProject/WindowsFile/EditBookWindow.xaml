@@ -90,8 +90,29 @@
                     <Button Content="Browse..." Grid.Column="1" Margin="5,0,0,0" Background="#D06A8D" Foreground="White" Click="BrowseFile_Click"/>
                 </Grid>
 
-                <Label Content="Cover Image Path/URL:"/>
-                <TextBox x:Name="TxtCoverPath"/>
+                <Label Content="Cover Image:"/>
+
+                <Image x:Name="ImgBookCoverPreview"
+                       Height="120"
+                       Width="90"
+                       Stretch="UniformToFill"
+                       Margin="0,0,0,8"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="TxtCoverPath" Grid.Column="0"/>
+
+                    <Button Content="Browse..."
+                            Grid.Column="1"
+                            Margin="5,0,0,0"
+                            Background="#D06A8D"
+                            Foreground="White"
+                            Click="BrowseCover_Click"/>
+                </Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0">
                     <Button Content="Save Changes" Width="130" Height="40" Style="{StaticResource PinkRoundedButton}" Click="Save_Click" Margin="0,0,15,0"/>

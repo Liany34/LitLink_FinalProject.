@@ -22,6 +22,12 @@
             <RowDefinition Height="1.5*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Button Content="🏠" FontSize="22" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,15,0" Click="Home_Click"/>
+        <Button Content="🏠" 
+                FontSize="22" 
+                Background="Transparent" 
+                BorderThickness="0" 
+                Cursor="Hand" 
+                Margin="0,0,15,0" 
+                Click="Home_Click"/>
     </Grid>
 </Page>

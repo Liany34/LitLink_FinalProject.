@@ -34,7 +34,7 @@ namespace LitLink_FinalProject.WindowsFile
                 Book_Series newSeries = new Book_Series
                 {
                     NameSeries = name,
-                    IdUser = new Reader { Id = ownerId }
+                    IdUser = new User { Id = ownerId }
                 };
                 await apiService.InsertBookSeries(newSeries);
                 DialogResult = true;

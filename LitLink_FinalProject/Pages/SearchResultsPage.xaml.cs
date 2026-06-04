@@ -87,8 +87,7 @@ namespace LitLink_FinalProject.Pages
 
             if (clickedAuthor != null)
             {
-                bool isGuest = (currentUser == null);
-                AuthorProfile authorPage = new AuthorProfile(clickedAuthor, currentUser, isGuest);
+                AuthorProfile authorPage = new AuthorProfile(clickedAuthor, currentUser);
                 this.NavigationService?.Navigate(authorPage);
             }
         }
@@ -109,12 +108,12 @@ namespace LitLink_FinalProject.Pages
                     }
                     catch (Exception)
                     {
-                        imgControl.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                        imgControl.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.RelativeOrAbsolute));
                     }
                 }
                 else
                 {
-                    imgControl.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                    imgControl.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.RelativeOrAbsolute));
                 }
             }
         }

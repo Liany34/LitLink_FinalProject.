@@ -32,8 +32,34 @@
                 <TextBlock Text="Email Address:" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
                 <TextBox x:Name="TxtEditEmail" Height="35" Padding="5" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,12"/>
 
-                <TextBlock Text="Profile Image URL / Path:" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
-                <TextBox x:Name="TxtEditImgUrl" Height="35" Padding="5" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,25"/>
+                <TextBlock Text="Profile Image:" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
+
+                <Image x:Name="ImgReaderPreview"
+                       Height="100"
+                       Width="100"
+                       Stretch="UniformToFill"
+                       Margin="0,0,0,8"/>
+
+                <Grid Margin="0,0,0,25">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="TxtEditImgUrl"
+                             Grid.Column="0"
+                             Height="35"
+                             Padding="5"
+                             BorderBrush="#FFC0CB"
+                             BorderThickness="1.5"/>
+
+                    <Button Content="Browse..."
+                            Grid.Column="1"
+                            Margin="5,0,0,0"
+                            Background="#D06A8D"
+                            Foreground="White"
+                            Click="BrowseReaderImage_Click"/>
+                </Grid>
 
                 <Grid>
                     <Grid.ColumnDefinitions>

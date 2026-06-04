@@ -34,24 +34,36 @@ namespace LitLink_FinalProject.UserControls
                 BtnReadMore.Visibility = Visibility.Collapsed;
             }
 
-            if (currentNewsData != null && !string.IsNullOrEmpty(currentNewsData.IdUser.Picture))
+            if (currentNewsData != null && currentNewsData.IdUser != null && !string.IsNullOrEmpty(currentNewsData.IdUser.Picture))
             {
                 try
                 {
                     byte[] imgStr = Convert.FromBase64String(currentNewsData.IdUser.Picture);
                     this.AuthorProfileImage.Source = ByteImageConverter.ByteToImage(imgStr);
                 }
-                catch (Exception)
+                catch
                 {
-                    this.AuthorProfileImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                    SetDefaultUserPicture();
                 }
             }
             else
             {
-                this.AuthorProfileImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                SetDefaultUserPicture();
             }
 
             SetupPermissions();
+        }
+
+        private void SetDefaultUserPicture()
+        {
+            try
+            {
+                AuthorProfileImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.Absolute));
+            }
+            catch
+            {
+                AuthorProfileImage.Source = null;
+            }
         }
 
         private async void SetupPermissions()

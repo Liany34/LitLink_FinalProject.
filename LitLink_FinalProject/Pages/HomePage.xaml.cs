@@ -25,13 +25,6 @@ namespace LitLink_FinalProject.Pages
         private Reader currentUser;
         private bool isCatalogBuilt = false;
 
-        public HomePage()
-        {
-            InitializeComponent();
-            CheckUserSession();
-            this.Loaded += HomePage_Loaded;
-        }
-
         public HomePage(Reader loggedInUser)
         {
             InitializeComponent();
@@ -88,7 +81,6 @@ namespace LitLink_FinalProject.Pages
         {
             if (currentUser != null)
             {
-                GuestPanel.Visibility = Visibility.Collapsed;
                 UserPanel.Visibility = Visibility.Visible;
                 TxtUsername.Text = currentUser.Username;
                 MenuSeparator.Visibility = Visibility.Visible;
@@ -98,7 +90,7 @@ namespace LitLink_FinalProject.Pages
 
                 try
                 {
-                    string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
+                    string st = await apiService.GetPictureByUserIDByte64(currentUser.Id);
                     if (!string.IsNullOrEmpty(st))
                     {
                         byte[] imgStr = Convert.FromBase64String(st);
@@ -128,7 +120,6 @@ namespace LitLink_FinalProject.Pages
             }
             else
             {
-                GuestPanel.Visibility = Visibility.Visible;
                 UserPanel.Visibility = Visibility.Collapsed;
                 MenuSeparator.Visibility = Visibility.Collapsed;
                 CartItem.Visibility = Visibility.Collapsed;
@@ -142,8 +133,7 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                this.ImgProfile.Source = new BitmapImage(new Uri(
-                    "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
+                this.ImgProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.Absolute));
             }
             catch { this.ImgProfile.Source = null; }
         }
@@ -203,7 +193,6 @@ namespace LitLink_FinalProject.Pages
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e) { MainMenu.PlacementTarget = sender as Button; MainMenu.IsOpen = true; }
-        private void BtnLogin_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new Login()); }
         private void AboutUs_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new AboutUs(currentUser)); }
 
         private void Cart_Click(object sender, RoutedEventArgs e)

@@ -13,7 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Model;
-using Service;
+using Microsoft.Win32;
+using System.IO;
 
 namespace LitLink_FinalProject.WindowsFile
 {
@@ -21,12 +22,12 @@ namespace LitLink_FinalProject.WindowsFile
     {
         private Apiservice apiService = new Apiservice();
         private Reader currentReader;
-
-        public EditReaderProfileWindow()
+        private string selectedReaderImageBase64 = null;
+        public EditReaderProfileWindow(Reader reader)
         {
             InitializeComponent();
+            this.currentReader = reader;
             LoadCurrentUserData();
-            currentReader = this.DataContext as Reader;
         }
 
         private void LoadCurrentUserData()
@@ -40,6 +41,17 @@ namespace LitLink_FinalProject.WindowsFile
                 TxtEditPhone.Text = currentReader.PhoneNumber;
                 TxtEditEmail.Text = currentReader.Email;
                 TxtEditImgUrl.Text = currentReader.Picture;
+            }
+            if (!string.IsNullOrEmpty(currentReader.Picture))
+            {
+                try
+                {
+                    byte[] imageBytes = Convert.FromBase64String(currentReader.Picture);
+                    ImgReaderPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -59,7 +71,14 @@ namespace LitLink_FinalProject.WindowsFile
                 currentReader.LastName = TxtEditLastName.Text.Trim();
                 currentReader.PhoneNumber = TxtEditPhone.Text.Trim();
                 currentReader.Email = TxtEditEmail.Text.Trim();
-                currentReader.Picture = TxtEditImgUrl.Text.Trim();
+                if (!string.IsNullOrEmpty(selectedReaderImageBase64))
+                {
+                    currentReader.Picture = selectedReaderImageBase64;
+                }
+                else
+                {
+                    currentReader.Picture = TxtEditImgUrl.Text.Trim();
+                }
 
                 await apiService.UpdateUser(currentReader);
                 List<Reader> updatedReaders = await apiService.GetAllReaders();
@@ -84,6 +103,22 @@ namespace LitLink_FinalProject.WindowsFile
         {
             this.DialogResult = false;
             this.Close();
+        }
+        private void BrowseReaderImage_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                byte[] imageBytes = File.ReadAllBytes(openFileDialog.FileName);
+
+                selectedReaderImageBase64 = Convert.ToBase64String(imageBytes);
+
+                TxtEditImgUrl.Text = openFileDialog.FileName;
+
+                ImgReaderPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+            }
         }
     }
 }

@@ -38,7 +38,11 @@ namespace LitLink_FinalProject.Pages
         private async void AdminProfilePage_Loaded(object sender, RoutedEventArgs e)
         {
             currentAdmin = this.DataContext as Admin;
-            if (currentAdmin == null) { await Task.Delay(50); currentAdmin = this.DataContext as Admin; }
+            if (currentAdmin == null) 
+            { 
+                await Task.Delay(50); 
+                currentAdmin = this.DataContext as Admin; 
+            }
             if (currentAdmin == null)
             {
                 MessageBox.Show("Unauthorized access.", "LitLink Security", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -95,24 +99,34 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                string st = await apiService.GetPRPByUserIDByte64(currentAdmin.Id);
+                string st = await apiService.GetPictureByUserIDByte64(currentAdmin.Id);
                 if (!string.IsNullOrEmpty(st))
                 {
                     byte[] imgStr = Convert.FromBase64String(st);
                     this.ImgAdminProfile.Source = ByteImageConverter.ByteToImage(imgStr);
+                    Console.WriteLine("Admin profile image loaded from byte array.");
                 }
                 else if (!string.IsNullOrEmpty(currentAdmin.Picture))
                     this.ImgAdminProfile.Source = new BitmapImage(new Uri(currentAdmin.Picture, UriKind.RelativeOrAbsolute));
                 else
                     SetDefaultImage();
             }
-            catch { SetDefaultImage(); }
+            catch 
+            { 
+                SetDefaultImage(); 
+            }
         }
 
         private void SetDefaultImage()
         {
-            try { this.ImgAdminProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute)); }
-            catch { this.ImgAdminProfile.Source = null; }
+            try 
+            { 
+                this.ImgAdminProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.Absolute));
+            }
+            catch
+            { 
+                this.ImgAdminProfile.Source = null; 
+            }
         }
 
         private async Task CalculateAndDisplaySales(int? targetAuthorId)
@@ -246,7 +260,11 @@ namespace LitLink_FinalProject.Pages
 
         private void BtnMenu_Click(object sender, RoutedEventArgs e) => AdminMenuPopup.Visibility = Visibility.Visible;
         private void CloseMenu_Click(object sender, RoutedEventArgs e) => AdminMenuPopup.Visibility = Visibility.Collapsed;
-        private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e) { if (e.OriginalSource == AdminMenuPopup) AdminMenuPopup.Visibility = Visibility.Collapsed; }
+        private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e) 
+        {
+            if (e.OriginalSource == AdminMenuPopup)
+                AdminMenuPopup.Visibility = Visibility.Collapsed; 
+        }
 
         private void AddNews_Click(object sender, RoutedEventArgs e)
         {
@@ -255,6 +273,10 @@ namespace LitLink_FinalProject.Pages
             newsWindow.ShowDialog();
         }
 
-        private void LogOut_Click(object sender, RoutedEventArgs e) { currentAdmin = null; MainWindow.AppFrame.Navigate(new SignOut()); }
+        private void LogOut_Click(object sender, RoutedEventArgs e) 
+        {
+            currentAdmin = null; 
+            MainWindow.AppFrame.Navigate(new SignOut()); 
+        }
     }
 }

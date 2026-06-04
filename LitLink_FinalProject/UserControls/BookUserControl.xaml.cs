@@ -23,7 +23,6 @@ namespace LitLink_FinalProject.UserControls
     {
         private bool isAdmin;
         private bool isAuthor;
-        private bool isGuest; 
         private Apiservice apiService = new Apiservice();
 
         public BookUserControl(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser = null)
@@ -32,7 +31,6 @@ namespace LitLink_FinalProject.UserControls
             this.DataContext = bookData;
             this.isAdmin = isAdmin;
             this.isAuthor = isAuthor;
-            this.isGuest = (currentUser == null); 
 
             SetActionButtons(userOwnsBook);
             SetupPermissions();
@@ -95,38 +93,46 @@ namespace LitLink_FinalProject.UserControls
                         byte[] imgStr = Convert.FromBase64String(st);
                         this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
-                    else
-                    {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri(
-    "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
-                    }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine("Error loading cover image: " + ex.Message);
-                    try
-                    {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri(
-     "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
-                    }
-                    catch
-                    {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri(
-     "pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute));
-                    }
+                    System.Diagnostics.Debug.WriteLine($"[WPF Image Load Error]: {ex.Message}");
                 }
+
+                //            try
+                //            {
+                //                string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
+
+                //                if (!string.IsNullOrEmpty(st))
+                //                {
+                //                    byte[] imgStr = Convert.FromBase64String(st);
+                //                    this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
+                //                }
+                //                else
+                //                {
+                //                    this.BookCoverImage.Source = new BitmapImage(new Uri(
+                //"pack://application:,,,/Covers/To_be_revealed.png", UriKind.Absolute));
+                //                }
+                //            }
+                //            catch (Exception ex)
+                //            {
+                //                System.Diagnostics.Debug.WriteLine("Error loading cover image: " + ex.Message);
+                //                try
+                //                {
+                //                    this.BookCoverImage.Source = new BitmapImage(new Uri(
+                // "pack://application:,,,/Covers/To_be_revealed.png", UriKind.Absolute));
+                //                }
+                //                catch
+                //                {
+                //                    this.BookCoverImage.Source = new BitmapImage(new Uri(
+                // "pack://application:,,,/Covers/To_be_revealed.png", UriKind.Absolute));
+                //                }
+                //            }
             };
         }
 
         private void SetActionButtons(bool ownsBook)
         {
-            if (isGuest)
-            {
-                BuyBtn.Visibility = Visibility.Collapsed;
-                AddToListBtn.Visibility = Visibility.Collapsed;
-                return;
-            }
-
             if (isAdmin)
             {
                 BuyBtn.Visibility = Visibility.Collapsed;
@@ -146,19 +152,6 @@ namespace LitLink_FinalProject.UserControls
 
         private void SetupPermissions()
         {
-            if (isGuest)
-            {
-                EditCoverItem.Visibility = Visibility.Collapsed;
-                EditNameItem.Visibility = Visibility.Collapsed;
-                EditDescItem.Visibility = Visibility.Collapsed;
-                EditPriceItem.Visibility = Visibility.Collapsed;
-                EditDateItem.Visibility = Visibility.Collapsed;
-                DeleteItem.Visibility = Visibility.Collapsed;
-                AdminSeparator.Visibility = Visibility.Collapsed;
-                ReportItem.Visibility = Visibility.Collapsed;
-                return;
-            }
-
             Visibility editVis = (isAdmin || isAuthor) ? Visibility.Visible : Visibility.Collapsed;
             Visibility reportVis = (isAdmin || isAuthor) ? Visibility.Collapsed : Visibility.Visible;
 

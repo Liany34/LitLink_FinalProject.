@@ -11,28 +11,53 @@ namespace LitLink_FinalProject.UserControls
     public partial class CatalogUserControl : UserControl
     {
         private Apiservice apiService = new Apiservice();
+
         public CatalogUserControl()
         {
             InitializeComponent();
 
-
             this.Loaded += async (s, e) =>
             {
                 Book currentBook = this.DataContext as Book;
-                string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
-                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+
+                if (currentBook == null)
                 {
-                    try
+                    SetDefaultCover();
+                    return;
+                }
+
+                try
+                {
+                    string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
+
+                    if (!string.IsNullOrWhiteSpace(st))
                     {
                         byte[] imgStr = Convert.FromBase64String(st);
                         this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
-                    catch (Exception)
+                    else
                     {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\Covers\\DefaultCover.png", UriKind.RelativeOrAbsolute));
+                        SetDefaultCover();
                     }
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Catalog image load failed: " + ex.Message);
+                    SetDefaultCover();
+                }
             };
+        }
+
+        private void SetDefaultCover()
+        {
+            try
+            {
+                BookCoverImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/To_be_revealed.png", UriKind.Absolute));
+            }
+            catch
+            {
+                BookCoverImage.Source = null;
+            }
         }
 
         public static readonly DependencyProperty BookNameProperty =

@@ -45,7 +45,7 @@ namespace LitLink_FinalProject.Pages
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
                 try
                 {
-                    string st = await apiService.GetPRPByUserIDByte64(currentUser.Id);
+                    string st = await apiService.GetPictureByUserIDByte64(currentUser.Id);
                     if (!string.IsNullOrEmpty(st))
                     {
                         byte[] imgBytes = Convert.FromBase64String(st);
@@ -86,7 +86,7 @@ namespace LitLink_FinalProject.Pages
 
         private void SetDefaultImage()
         {
-            try { ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute)); }
+            try { ImgReaderProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.Absolute)); }
             catch { ImgReaderProfile.Source = null; }
         }
 
@@ -192,7 +192,7 @@ namespace LitLink_FinalProject.Pages
                 Border card = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(15), Margin = new Thickness(0, 0, 10, 10), Cursor = Cursors.Hand };
                 StackPanel sp = new StackPanel();
                 sp.Children.Add(new TextBlock { Text = a.PenName ?? "Unknown Author", FontSize = 15, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(Color.FromRgb(208, 106, 141)) });
-                card.MouseDown += (s, ev) => { Window.GetWindow(this).Content = new AuthorProfile(a, currentUser, false); };
+                card.MouseDown += (s, ev) => { Window.GetWindow(this).Content = new AuthorProfile(a, currentUser); };
                 card.Child = sp;
                 UserListsContainer.Children.Add(card);
             }
@@ -247,9 +247,19 @@ namespace LitLink_FinalProject.Pages
         private void ShowEmptyStateMessage(string message) =>
             UserListsContainer.Children.Add(new TextBlock { Text = message, FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) });
 
-        private void Home_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new HomePage(currentUser)); }
-        private void Cart_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new CartPage(currentUser)); }
-        private void LogOut_Click(object sender, RoutedEventArgs e) { currentUser = null; MainWindow.AppFrame.Navigate(new SignOut()); }
+        private void Home_Click(object sender, RoutedEventArgs e) 
+        {
+            MainWindow.AppFrame.Navigate(new HomePage(currentUser));
+        }
+        private void Cart_Click(object sender, RoutedEventArgs e) 
+        {
+            MainWindow.AppFrame.Navigate(new CartPage(currentUser)); 
+        }
+        private void LogOut_Click(object sender, RoutedEventArgs e) 
+        {
+            currentUser = null; 
+            MainWindow.AppFrame.Navigate(new SignOut()); 
+        }
 
         private async void DeleteAccount_Click(object sender, RoutedEventArgs e)
         {
@@ -271,7 +281,17 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void EditDetails_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new EditReaderProfileWindow()); }
-        private void ResetPassword_Click(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new ResetPass()); }
+        private void EditDetails_Click(object sender, RoutedEventArgs e) 
+        {
+            EditReaderProfileWindow win = new EditReaderProfileWindow(currentUser);
+            if (win.ShowDialog() == true)
+            {
+                LoadAllData();
+            }
+        }
+        private void ResetPassword_Click(object sender, RoutedEventArgs e) 
+        {
+            MainWindow.AppFrame.Navigate(new ResetPass()); 
+        }
     }
 }

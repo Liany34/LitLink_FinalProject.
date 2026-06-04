@@ -94,34 +94,28 @@ namespace LitLink_FinalProject.Pages
 
         private void ChkSelectAll_Checked(object sender, RoutedEventArgs e)
         {
+            chosenBooks.Clear();
             SetAllItemsSelection(true);
-            foreach(CartUserControl bookControl in loadedControls)
+
+            foreach (CartUserControl bookControl in loadedControls)
             {
-                chosenBooks.Add(bookControl.DataContext as Book);
+                Book book = bookControl.DataContext as Book;
+                if (book != null)
+                    chosenBooks.Add(book);
             }
         }
 
         private void ChkSelectAll_Unchecked(object sender, RoutedEventArgs e)
         {
             SetAllItemsSelection(false);
-            foreach (CartUserControl bookControl in loadedControls)
-            {
-                chosenBooks.Remove(bookControl.DataContext as Book);
-            }
+            chosenBooks.Clear();
         }
 
         private void SetAllItemsSelection(bool isSelected)
         {
             foreach (CartUserControl bookControl in loadedControls)
             {
-                if (bookControl != null)
-                {
-                    var checkBox = bookControl.FindName("ItemCheckBox") as CheckBox;
-                    if (checkBox != null)
-                    {
-                        checkBox.IsChecked = isSelected;
-                    }
-                }
+                bookControl.IsBookSelected = isSelected;
             }
         }
 
@@ -154,6 +148,10 @@ namespace LitLink_FinalProject.Pages
 
                             MessageBox.Show($"Coupon '{enteredCode}' applied successfully! You received a {matchingCoupon.Amount}% discount.",
                                             "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+                            foreach (CartUserControl bookControl in loadedControls)
+                            {
+                                bookControl.ApplyDiscount(matchingCoupon.Amount);
+                            }
                         }
                         else
                         {
@@ -183,12 +181,11 @@ namespace LitLink_FinalProject.Pages
 
             try
             {
-                chosenBooks.Clear(); 
+                chosenBooks.Clear();
 
                 foreach (CartUserControl bookControl in loadedControls)
                 {
-                    var checkBox = bookControl.FindName("ItemCheckBox") as CheckBox;
-                    if (checkBox != null && checkBox.IsChecked == true)
+                    if (bookControl.IsBookSelected)
                     {
                         Book selectedBook = bookControl.DataContext as Book;
                         if (selectedBook != null)

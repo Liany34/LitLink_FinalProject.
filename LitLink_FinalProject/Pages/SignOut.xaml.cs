@@ -26,7 +26,7 @@ namespace LitLink_FinalProject.Pages
         private void Timer_Tick(object sender, EventArgs e)
         {
             timer.Stop();
-            MainWindow.AppFrame.Navigate(new HomePage());
+            MainWindow.AppFrame.Navigate(new Login());
         }
     }
 }

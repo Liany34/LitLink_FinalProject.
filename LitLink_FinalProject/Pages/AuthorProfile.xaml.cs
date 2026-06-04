@@ -21,14 +21,12 @@ namespace LitLink_FinalProject.Pages
         private List<Book> authorBooks = new List<Book>();
         private Author currentAuthor;
         private Reader viewingReader;
-        private bool isGuest;
 
-        public AuthorProfile(Author author, Reader viewingReader = null, bool isGuest = false)
+        public AuthorProfile(Author author, Reader viewingReader = null)
         {
             InitializeComponent();
             this.currentAuthor = author;
             this.viewingReader = viewingReader;
-            this.isGuest = isGuest;
             this.Loaded += AuthorProfilePage_Loaded;
         }
 
@@ -53,18 +51,7 @@ namespace LitLink_FinalProject.Pages
                     .Where(f => f.IdAuthor != null && f.IdAuthor.Id == currentAuthor.Id)
                     .ToList();
                 TxtFollowersCount.Text = $"{authorFollowings.Count} Followers";
-
-                if (isGuest)
-                {
-                    BtnEditProfile.Visibility = Visibility.Collapsed;
-                    BtnMenu.Visibility = Visibility.Collapsed;
-                    BtnTabSalesData.Visibility = Visibility.Collapsed;
-                    BtnFollow.Visibility = Visibility.Collapsed;
-                    BtnUnfollow.Visibility = Visibility.Collapsed;
-                    BtnTabMyLists.Visibility = Visibility.Visible;
-                    BtnBack.Visibility = Visibility.Visible;
-                }
-                else if (viewingReader != null)
+                if (viewingReader != null)
                 {
                     BtnEditProfile.Visibility = Visibility.Collapsed;
                     BtnMenu.Visibility = Visibility.Collapsed;
@@ -77,15 +64,19 @@ namespace LitLink_FinalProject.Pages
                     BtnUnfollow.Visibility = isFollowing ? Visibility.Visible : Visibility.Collapsed;
                 }
 
-                string st = await apiService.GetPRPByUserIDByte64(currentAuthor.Id);
+                string st = await apiService.GetPictureByUserIDByte64(currentAuthor.Id);
                 if (!string.IsNullOrEmpty(st))
                 {
                     try
                     {
                         byte[] imgStr = Convert.FromBase64String(st);
                         this.ImgAuthorProfile.Source = ByteImageConverter.ByteToImage(imgStr);
+                        Console.WriteLine("Admin profile image loaded from byte array.");
                     }
-                    catch { SetDefaultAuthorImage(); }
+                    catch 
+                    {
+                        SetDefaultAuthorImage(); 
+                    }
                 }
                 else SetDefaultAuthorImage();
 
@@ -101,8 +92,14 @@ namespace LitLink_FinalProject.Pages
 
         private void SetDefaultAuthorImage()
         {
-            try { this.ImgAuthorProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/DefultUser.png", UriKind.Absolute)); }
-            catch { this.ImgAuthorProfile.Source = null; }
+            try 
+            {
+                this.ImgAuthorProfile.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.Absolute)); 
+            }
+            catch 
+            {
+                this.ImgAuthorProfile.Source = null; 
+            }
         }
 
         private void TabMyBooks_Click(object sender, RoutedEventArgs e)
@@ -269,7 +266,11 @@ namespace LitLink_FinalProject.Pages
 
         private void BtnMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Visible;
         private void CloseMenu_Click(object sender, RoutedEventArgs e) => AuthorMenuPopup.Visibility = Visibility.Collapsed;
-        private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e) { if (e.OriginalSource == AuthorMenuPopup) AuthorMenuPopup.Visibility = Visibility.Collapsed; }
+        private void OutsideMenu_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource == AuthorMenuPopup) 
+                AuthorMenuPopup.Visibility = Visibility.Collapsed; 
+        }
 
         private void BtnEditProfile_Click(object sender, RoutedEventArgs e)
         {

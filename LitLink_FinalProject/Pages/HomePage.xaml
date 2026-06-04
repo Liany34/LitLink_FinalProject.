@@ -24,26 +24,39 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBox x:Name="TxtSearch" Width="250" Height="30" Padding="5,2" VerticalContentAlignment="Center" 
-                         Text="Search books or authors..." Foreground="Gray" GotFocus="TxtSearch_GotFocus" LostFocus="TxtSearch_LostFocus"/>
-                <Button Content="🔍" Width="35" Height="30" Margin="5,0,0,0" Background="#FF1493" Foreground="White" BorderThickness="0" Click="BtnSearch_Click"/>
+                <TextBox x:Name="TxtSearch" 
+                         Width="250" 
+                         Height="30"
+                         Padding="5,2"
+                         VerticalContentAlignment="Center" 
+                         Text="Search books or authors..." 
+                         Foreground="Gray"
+                         GotFocus="TxtSearch_GotFocus"
+                         LostFocus="TxtSearch_LostFocus"/>
+                <Button Content="🔍" 
+                        Width="35"
+                        Height="30"
+                        Margin="5,0,0,0" 
+                        Background="#FF1493"
+                        Foreground="White" 
+                        BorderThickness="0"
+                        Click="BtnSearch_Click"/>
             </StackPanel>
 
             <Grid Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                <StackPanel x:Name="GuestPanel" Orientation="Horizontal" Visibility="Visible">
-                    <Button x:Name="BtnLogin" Content="Login" Width="80" Height="30" Background="#FF1493" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="BtnLogin_Click">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="15"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </StackPanel>
-
                 <StackPanel x:Name="UserPanel" Orientation="Horizontal" Visibility="Collapsed">
                     <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
-                        <TextBlock x:Name="TxtGreeting" Text="Good Morning," FontSize="12" Foreground="#D06A8D" TextAlignment="Right"/>
-                        <TextBlock x:Name="TxtUsername" Text="Guest" FontSize="14" FontWeight="Bold" Foreground="#4A4A4A" TextAlignment="Right"/>
+                        <TextBlock x:Name="TxtGreeting" 
+                                   Text="Good Morning,"
+                                   FontSize="12" 
+                                   Foreground="#D06A8D"
+                                   TextAlignment="Right"/>
+                        <TextBlock x:Name="TxtUsername" 
+                                   Text="Guest" 
+                                   FontSize="14" 
+                                   FontWeight="Bold"
+                                   Foreground="#4A4A4A"
+                                   TextAlignment="Right"/>
                     </StackPanel>
                     <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" BorderBrush="#FFC0CB" BorderThickness="1">
                         <Image x:Name="ImgProfile" Stretch="UniformToFill"/>
@@ -56,10 +69,10 @@
                     <ContextMenu x:Name="MainMenu">
                         <MenuItem Header="About Us" Click="AboutUs_Click"/>
                         <Separator x:Name="MenuSeparator" Visibility="Collapsed"/>
-                        <MenuItem Header="Cart" x:Name="CartItem" Visibility="Collapsed" Click="Cart_Click"/>
-                        <MenuItem Header="My Profile" x:Name="ProfileItem" Visibility="Collapsed" Click="Profile_Click"/>
-                        <MenuItem Header="Become Author" x:Name="BecomeAuthorItem" Visibility="Collapsed" Click="BecomeAuthor_Click"/>
-                        <MenuItem Header="Log Out" x:Name="LogOutItem" Visibility="Collapsed" Foreground="Red" Click="LogOut_Click"/>
+                        <MenuItem Header="Cart" x:Name="CartItem"  Click="Cart_Click"/>
+                        <MenuItem Header="My Profile" x:Name="ProfileItem" Click="Profile_Click"/>
+                        <MenuItem Header="Become Author" x:Name="BecomeAuthorItem" Click="BecomeAuthor_Click"/>
+                        <MenuItem Header="Log Out" x:Name="LogOutItem" Foreground="Red" Click="LogOut_Click"/>
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
@@ -81,8 +94,18 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="News And Announcements" FontSize="16" FontWeight="Bold" Foreground="#FF1493" Margin="0,0,0,10" HorizontalAlignment="Center"/>
-                    <ListBox Grid.Row="1" x:Name="NewsListBox" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
+                    <TextBlock Grid.Row="0"
+                               Text="News And Announcements"
+                               FontSize="16"
+                               FontWeight="Bold" 
+                               Foreground="#FF1493" 
+                               Margin="0,0,0,10"
+                               HorizontalAlignment="Center"/>
+                    <ListBox Grid.Row="1"
+                             x:Name="NewsListBox"
+                             Background="Transparent"
+                             BorderThickness="0" 
+                             HorizontalContentAlignment="Stretch">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <uc:NewsUserControl NewsChanged="NewsListBox_Refresh"/>

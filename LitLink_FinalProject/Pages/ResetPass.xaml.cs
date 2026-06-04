@@ -47,7 +47,7 @@ namespace LitLink_FinalProject.Pages
         {                                                                          
             VisiblePasswordInput.Visibility = Visibility.Collapsed;                 
             PasswordInput.Visibility = Visibility.Visible;
-            if (string.IsNullOrEmpty(PasswordInput.Password)) PasswordPlaceholder.Visibility = Visibility.Visible;
+            if (string.IsNullOrEmpty(ReenterInput.Password)) ReenterPlaceholder.Visibility = Visibility.Visible;
         }
 
         private void ReenterInput_PasswordChanged(object sender, RoutedEventArgs e)
@@ -73,17 +73,36 @@ namespace LitLink_FinalProject.Pages
 
         private async void ResetPassword_Click(object sender, RoutedEventArgs e)
         {
-            if(PasswordInput.Password != ReenterInput.Password)
+            DiffPass.Visibility = Visibility.Collapsed;
+            if (PasswordInput.Password != ReenterInput.Password)
             {
                 DiffPass.Visibility = Visibility.Visible;
+                return;
             }
-            else
+            if (string.IsNullOrEmpty(PasswordInput.Password))
+            {
+                MessageBox.Show("Please enter a valid password.");
+                return;
+            }
+            try
             {
                 Apiservice buyerService = new Apiservice();
                 List<User> users = await buyerService.GetAllUsers();
-                User user = users.Find(u => u.Email.Trim().ToLower() == email.Trim().ToLower());
+                if (users == null)
+                {
+                    MessageBox.Show("Error retrieving user list. Please try again.");
+                    return;
+                }
+
+                User user = users.Find(u => u != null && !string.IsNullOrEmpty(u.Email) && u.Email.Trim().ToLower() == email.Trim().ToLower());
+                if (user == null)
+                {
+                    MessageBox.Show("User not found in the system.");
+                    return;
+                }
+
                 User newUser = user;
-                newUser.FirstName = user.FirstName; 
+                newUser.FirstName = user.FirstName;
                 newUser.LastName = user.LastName;
                 newUser.PhoneNumber = user.PhoneNumber;
                 newUser.Email = user.Email;
@@ -96,6 +115,15 @@ namespace LitLink_FinalProject.Pages
                 var loginPage = new Login();
                 Window.GetWindow(this).Content = loginPage;
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while resetting the password: {ex.Message}");
+            }
+        }
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            var loginPage = new Login();
+            Window.GetWindow(this).Content = loginPage;
         }
     }
 }

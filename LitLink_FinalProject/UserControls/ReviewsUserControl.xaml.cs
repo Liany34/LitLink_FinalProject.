@@ -43,12 +43,12 @@ namespace LitLink_FinalProject.UserControls
                     }
                     catch (Exception)
                     {
-                        this.ReaderProfileImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                        this.ReaderProfileImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.RelativeOrAbsolute));
                     }
                 }
                 else
                 {
-                    this.ReaderProfileImage.Source = new BitmapImage(new Uri("C:\\Users\\yahal\\source\\repos\\Liany34\\LitLink_Liany\\ViewModel\\PRP\\DefaultUser.png", UriKind.RelativeOrAbsolute));
+                    this.ReaderProfileImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/UserPicture1.png", UriKind.RelativeOrAbsolute));
                 }
             };
         }

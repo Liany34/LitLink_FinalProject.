@@ -13,6 +13,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.Win32;
+using System.IO;
 
 namespace LitLink_FinalProject.WindowsFile
 {
@@ -21,13 +23,16 @@ namespace LitLink_FinalProject.WindowsFile
         private Apiservice apiService = new Apiservice();
         private Author authorToEdit;
         private Author currentAuthor;
+        private string selectedAuthorImageBase64 = null;
 
         public EditAuthorProfileWindow(Author currentAuthor)
         {
             InitializeComponent();
-            authorToEdit = currentAuthor;
+
+            this.authorToEdit = currentAuthor;
+            this.currentAuthor = currentAuthor;
+
             LoadAuthorAndUserData();
-            currentAuthor = this.DataContext as Author;
         }
 
         private void LoadAuthorAndUserData()
@@ -45,6 +50,17 @@ namespace LitLink_FinalProject.WindowsFile
                 TxtEditEmail.Text = currentAuthor.Email;
                 TxtEditImgUrl.Text = currentAuthor.Picture;
             }
+            if (!string.IsNullOrEmpty(authorToEdit.Picture))
+            {
+                try
+                {
+                    byte[] imageBytes = Convert.FromBase64String(authorToEdit.Picture);
+                    ImgAuthorPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+                }
+                catch
+                {
+                }
+            }
         }
 
         private async void BtnSave_Click(object sender, RoutedEventArgs e)
@@ -60,13 +76,22 @@ namespace LitLink_FinalProject.WindowsFile
                 authorToEdit.PenName = TxtEditPenName.Text.Trim();
                 authorToEdit.InformationAboutAuthor = TxtEditBio.Text.Trim();
 
-                currentAuthor.Username = TxtEditUsername.Text.Trim();
-                currentAuthor.Username = TxtEditNickname.Text.Trim();
-                currentAuthor.FirstName = TxtEditFirstName.Text.Trim();
-                currentAuthor.LastName = TxtEditLastName.Text.Trim();
-                currentAuthor.PhoneNumber = TxtEditPhone.Text.Trim();
-                currentAuthor.Email = TxtEditEmail.Text.Trim();
-                currentAuthor.Picture = TxtEditImgUrl.Text.Trim();
+                authorToEdit.Username = TxtEditUsername.Text.Trim();
+                authorToEdit.FirstName = TxtEditFirstName.Text.Trim();
+                authorToEdit.LastName = TxtEditLastName.Text.Trim();
+                authorToEdit.PhoneNumber = TxtEditPhone.Text.Trim();
+                authorToEdit.Email = TxtEditEmail.Text.Trim();
+                authorToEdit.Birthdate = currentAuthor.Birthdate;
+                authorToEdit.Pass = currentAuthor.Pass;
+                authorToEdit.Genre = currentAuthor.Genre;
+                if (!string.IsNullOrEmpty(selectedAuthorImageBase64))
+                {
+                    authorToEdit.Picture = selectedAuthorImageBase64;
+                }
+                else
+                {
+                    authorToEdit.Picture = TxtEditImgUrl.Text.Trim();
+                }
                 await apiService.UpdateAuthor(authorToEdit);
                 List<Author> authors = await apiService.GetAllAuthors();
                 bool authorSuccess = authors.Any(a => a.Id == authorToEdit.Id && a.Username == authorToEdit.Username && a.PenName == authorToEdit.PenName && a.InformationAboutAuthor == authorToEdit.InformationAboutAuthor && a.FirstName == authorToEdit.FirstName && a.LastName == authorToEdit.LastName && a.Email == authorToEdit.Email && a.PhoneNumber == authorToEdit.PhoneNumber && a.Picture == authorToEdit.Picture);
@@ -91,6 +116,22 @@ namespace LitLink_FinalProject.WindowsFile
         {
             this.DialogResult = false;
             this.Close();
+        }
+        private void BrowseAuthorImage_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                byte[] imageBytes = File.ReadAllBytes(openFileDialog.FileName);
+
+                selectedAuthorImageBase64 = Convert.ToBase64String(imageBytes);
+
+                TxtEditImgUrl.Text = openFileDialog.FileName;
+
+                ImgAuthorPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+            }
         }
     }
 }

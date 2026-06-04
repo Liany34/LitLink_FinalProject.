@@ -29,9 +29,7 @@ namespace LitLink_FinalProject.Pages
         }
         private void Home_Click(object sender, RoutedEventArgs e)
         {
-            HomePage homePage = new HomePage();
-            homePage.DataContext = loggedUser; 
-            Window.GetWindow(this).Content = homePage;
+            MainWindow.AppFrame.Navigate(new HomePage(loggedUser));
         }
     }
 }

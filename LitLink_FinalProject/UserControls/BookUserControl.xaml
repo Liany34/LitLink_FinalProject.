@@ -73,7 +73,9 @@
             <StackPanel>
                 <Border CornerRadius="15" ClipToBounds="True" Background="White" 
                         BorderBrush="#FFC0CB" BorderThickness="2" Height="420">
-                    <Image x:Name="BookCoverImage" Stretch="UniformToFill"/>
+                    <Grid>
+                        <Image x:Name="BookCoverImage" Stretch="UniformToFill"/>
+                    </Grid>
                 </Border>
 
                 <TextBlock Text="{Binding IdAuthor.PenName}" 
