@@ -28,13 +28,12 @@ namespace LitLink_FinalProject.WindowsFile
             public bool IsSelected { get; set; } = false;
         }
 
-        public AddBookWindow()
+        public AddBookWindow(Author author)
         {
             InitializeComponent();
+            currentAuthor = author;
             LoadFormDatabaseData();
-            currentUser = this.DataContext as User; 
         }
-
         private async void LoadFormDatabaseData()
         {
             try

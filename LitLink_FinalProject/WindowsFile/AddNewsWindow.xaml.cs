@@ -10,21 +10,16 @@ namespace LitLink_FinalProject.WindowsFile
         private Apiservice apiService = new Apiservice();
         private User currentUser;
 
-        public AddNewsWindow()
+        public AddNewsWindow(User user)
         {
             InitializeComponent();
-            this.Loaded += AddNewsWindow_Loaded;
-        }
 
-        private void AddNewsWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            currentUser = this.DataContext as User;
+            currentUser = user;
 
             if (currentUser == null)
             {
-                MessageBox.Show("Error: Unauthorized access. Missing active admin context.", "LitLink Control");
-                this.DialogResult = false;
-                this.Close();
+                MessageBox.Show("Error: Missing active user context.", "LitLink");
+                Close();
                 return;
             }
 
@@ -36,9 +31,16 @@ namespace LitLink_FinalProject.WindowsFile
             string title = TxtNewsTitle.Text.Trim();
             string content = TxtNewsContent.Text.Trim();
 
+            if (currentUser == null)
+            {
+                MessageBox.Show("Cannot publish news because no active user was found.", "LitLink");
+                return;
+            }
+
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(content))
             {
-                MessageBox.Show("Please provide both a title and a message content 🌸", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please provide both a title and a message content 🌸",
+                    "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -54,20 +56,23 @@ namespace LitLink_FinalProject.WindowsFile
 
                 await apiService.InsertNews(newUpdate);
 
-                MessageBox.Show("Your admin update has been published successfully! ✨", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                this.DialogResult = true;
-                this.Close();
+                MessageBox.Show("Your update has been published successfully! ✨",
+                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                DialogResult = true;
+                Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error publishing news: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error publishing news: " + ex.Message,
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
     }
 }

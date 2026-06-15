@@ -109,11 +109,18 @@ namespace LitLink_FinalProject.Pages
                 newUser.Pass = PasswordInput.Password;
                 newUser.Birthdate = user.Birthdate;
                 newUser.Username = user.Username;
-                newUser.Picture = user.Picture;
                 await buyerService.UpdateUser(newUser);
-                MessageBox.Show("Password reset successful! Please log in with your new password.");
-                var loginPage = new Login();
-                Window.GetWindow(this).Content = loginPage;
+                List<User> updatedUsers = await buyerService.GetAllUsers();
+                if(updatedUsers.Any(u => u.Pass == newUser.Pass && u.Email == newUser.Email))
+                {
+                    MessageBox.Show("Password reset successful! Please log in with your new password.");
+                    var loginPage = new Login();
+                    Window.GetWindow(this).Content = loginPage;
+                }
+                else
+                {
+                    MessageBox.Show("Password reset failed. Please try again.");
+                }
             }
             catch (Exception ex)
             {

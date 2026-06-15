@@ -1,4 +1,5 @@
 ﻿using LitLink_FinalProject.Pages;
+using LitLink_FinalProject.WindowsFile;
 using Model;
 using Service;
 using System;
@@ -268,9 +269,8 @@ namespace LitLink_FinalProject.Pages
 
         private void AddNews_Click(object sender, RoutedEventArgs e)
         {
-            var newsWindow = new WindowsFile.AddNewsWindow();
-            newsWindow.DataContext = this.currentAdmin;
-            newsWindow.ShowDialog();
+            AddNewsWindow win = new AddNewsWindow(currentAdmin);
+            win.ShowDialog();
         }
 
         private void LogOut_Click(object sender, RoutedEventArgs e) 

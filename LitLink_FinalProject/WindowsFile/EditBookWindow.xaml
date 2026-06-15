@@ -78,7 +78,7 @@
                 <DatePicker x:Name="DpPublishDate"/>
 
                 <Label Content="Language:"/>
-                <ComboBox x:Name="CmbLanguage" DisplayMemberPath="LanguageName"/>
+                <ComboBox x:Name="CmbLanguage" DisplayMemberPath="Name"/>
 
                 <Label Content="Book File Path (EPUB format only):"/>
                 <Grid>

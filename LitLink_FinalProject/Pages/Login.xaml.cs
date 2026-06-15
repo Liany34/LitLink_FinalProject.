@@ -5,6 +5,7 @@ using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,6 +17,7 @@ namespace LitLink_FinalProject.Pages
     public partial class Login : Page
     {
         private const string DefaultEmail = "litlink@gmail.com";
+        private Apiservice apiservice = new Apiservice();
 
         public Login()
         {
@@ -66,60 +68,128 @@ namespace LitLink_FinalProject.Pages
             if (string.IsNullOrEmpty(PasswordInput.Password)) PasswordPlaceholder.Visibility = Visibility.Visible;
         }
 
+        //private async void Login_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        Apiservice buyerService = new Apiservice();
+        //        var users = await buyerService.GetAllUsers();
+        //        var readers = await buyerService.GetAllReaders();
+        //        var authors = await buyerService.GetAllAuthors();
+        //        var admins = await buyerService.GetAllAdmins();
+
+        //        bool wentIn = false;
+
+        //        foreach (var u in users)
+        //        {
+        //            if (u.Email == EmailInput.Text && u.Pass == PasswordInput.Password)
+        //            {
+        //                var loggedReader = readers.FirstOrDefault(r => r.Id == u.Id);
+        //                if (loggedReader != null)
+        //                {
+        //                    MainWindow.AppFrame.Navigate(new HomePage(loggedReader));
+        //                    wentIn = true;
+        //                    return;
+        //                }
+        //                else
+        //                {
+        //                    var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
+        //                    if (loggedAuthor != null)
+        //                    {
+        //                        MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
+        //                        wentIn = true;
+        //                        return;
+        //                    }
+        //                    else
+        //                    {
+        //                        var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
+        //                        if (loggedAdmin != null)
+        //                        {
+        //                            MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
+        //                            wentIn = true;
+        //                            return;
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        if (!wentIn)
+        //            MessageBox.Show("Invalid email or password. Please try again.", "LitLink");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error while logging in: {ex.Message}", "LitLink Error");
+        //    }
+        //}
+
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                Apiservice buyerService = new Apiservice();
-                var users = await buyerService.GetAllUsers();
-                var readers = await buyerService.GetAllReaders();
-                var authors = await buyerService.GetAllAuthors();
-                var admins = await buyerService.GetAllAdmins();
+                Apiservice service = new Apiservice();
 
-                bool wentIn = false;
+                var users = await service.GetAllUsers();
+                var readers = await service.GetAllReaders();
+                var authors = await service.GetAllAuthors();
+                var admins = await service.GetAllAdmins();
 
-                foreach (var u in users)
+                string email = EmailInput.Text.Trim();
+                string password = PasswordInput.Password.Trim();
+
+                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 {
-                    if (u.Email == EmailInput.Text && u.Pass == PasswordInput.Password)
-                    {
-                        var loggedReader = readers.FirstOrDefault(r => r.Id == u.Id);
-                        if (loggedReader != null)
-                        {
-                            MainWindow.AppFrame.Navigate(new HomePage(loggedReader));
-                            wentIn = true;
-                            return;
-                        }
-
-                        var loggedAuthor = authors.FirstOrDefault(a => a.Id == u.Id);
-                        if (loggedAuthor != null)
-                        {
-                            MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
-                            wentIn = true;
-                            return;
-                        }
-
-                        var loggedAdmin = admins.FirstOrDefault(a => a.Id == u.Id);
-                        if (loggedAdmin != null)
-                        {
-                            MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
-                            wentIn = true;
-                            return;
-                        }
-                    }
+                    MessageBox.Show("Please enter email and password.", "LitLink");
+                    return;
                 }
 
-                if (!wentIn)
+                User loggedUser = users.FirstOrDefault(u =>
+                    u.Email != null &&
+                    u.Pass != null &&
+                    u.Email.Trim().Equals(email, StringComparison.OrdinalIgnoreCase) &&
+                    u.Pass.Trim() == password);
+
+                if (loggedUser == null)
+                {
                     MessageBox.Show("Invalid email or password. Please try again.", "LitLink");
+                    return;
+                }
+
+                Reader loggedReader = readers.FirstOrDefault(r => r.Id == loggedUser.Id);
+                if (loggedReader != null)
+                {
+                    MainWindow.AppFrame.Navigate(new HomePage(loggedReader));
+                    return;
+                }
+
+                Author loggedAuthor = authors.FirstOrDefault(a => a.Id == loggedUser.Id);
+                if (loggedAuthor != null)
+                {
+                    MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
+                    return;
+                }
+
+                Admin loggedAdmin = admins.FirstOrDefault(a => a.Id == loggedUser.Id);
+                if (loggedAdmin != null)
+                {
+                    MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
+                    return;
+                }
+
+                MessageBox.Show("User exists, but no matching Reader / Author / Admin record was found.", "LitLink");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"שגיאה בהתחברות: {ex.Message}", "LitLink Error");
+                MessageBox.Show($"Error while logging in: {ex.Message}", "LitLink Error");
             }
         }
 
-        private void Navigate_SignUp(object sender, RoutedEventArgs e) { MainWindow.AppFrame.Navigate(new SignUp()); }
+        private async void Navigate_SignUp(object sender, RoutedEventArgs e) 
+        {
+            MainWindow.AppFrame.Navigate(new SignUp());
+        }
 
-        private void Navigate_ResetPass(object sender, RoutedEventArgs e)
+        private async void Navigate_ResetPass(object sender, RoutedEventArgs e)
         {
             if (EmailInput.Text == DefaultEmail || string.IsNullOrWhiteSpace(EmailInput.Text))
             {
@@ -127,7 +197,18 @@ namespace LitLink_FinalProject.Pages
                 EmailInput.Focus();
                 return;
             }
-            MainWindow.AppFrame.Navigate(new ResetPass(EmailInput.Text));
+            List<User> users = await apiservice.GetAllUsers();
+            if (users.Any(u => u.Email == EmailInput.Text))
+            {
+                MainWindow.AppFrame.Navigate(new ResetPass(EmailInput.Text));
+                return;
+            }
+            else
+            {
+                MessageBox.Show("No account found with that email. Please check and try again.");
+                EmailInput.Focus();
+                return;
+            }
         }
     }
 }

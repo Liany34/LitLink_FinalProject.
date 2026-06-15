@@ -193,37 +193,61 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
-                int bookThisMonth = 0, bookTotal = 0;
-                double incomeThisMonth = 0, incomeTotal = 0;
+                int bookThisMonth = 0;
+                int bookTotal = 0;
+
+                double incomeThisMonth = 0;
+                double incomeTotal = 0;
+
                 List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
+                List<Book> allBooks = await apiService.GetAllBooks();
+
+                if (allCartDetails == null || allBooks == null)
+                    return;
+
                 foreach (Cart_Detail cd in allCartDetails)
                 {
-                    if (cd.IdBook.IdAuthor.Id == currentAuthor.Id)
+                    if (cd == null || cd.IdBook == null)
+                        continue;
+
+                    // למצוא את הספר המלא לפי ה-ID
+                    Book fullBook = allBooks.FirstOrDefault(b => b.Id == cd.IdBook.Id);
+
+                    if (fullBook == null || fullBook.IdAuthor == null)
+                        continue;
+
+                    if (fullBook.IdAuthor.Id != currentAuthor.Id)
+                        continue;
+
+                    if (cd.IsPurchased)
                     {
-                        if (cd.IsPurchased)
+                        if (cd.PurchaseDate.HasValue &&
+                            cd.PurchaseDate.Value.Month == DateTime.Now.Month &&
+                            cd.PurchaseDate.Value.Year == DateTime.Now.Year)
                         {
-                            if (cd.PurchaseDate?.Month == DateTime.Now.Month && cd.PurchaseDate?.Year == DateTime.Now.Year)
-                            {
-                                bookThisMonth++;
-                                incomeThisMonth += cd.IdBook.Price ?? 0.0;
-                            }
-                            bookTotal++;
-                            incomeTotal += cd.IdBook.Price ?? 0.0;
+                            bookThisMonth++;
+                            incomeThisMonth += fullBook.Price ?? 0.0;
                         }
+
+                        bookTotal++;
+                        incomeTotal += fullBook.Price ?? 0.0;
                     }
                 }
+
                 TxtTotalSales.Text = bookTotal.ToString();
                 TxtTotalRevenue.Text = $"{incomeTotal:F2} ₪";
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Error calculating sales data: " + ex.Message);
+                MessageBox.Show("Error calculating sales data: " + ex.Message, "LitLink");
             }
         }
 
         private async void LoadMyListsTab()
         {
             AuthorListsContainer.Children.Clear();
+
             AuthorListsContainer.Children.Add(new TextBlock
             {
                 Text = $"Book Series by {currentAuthor.PenName}",
@@ -232,35 +256,51 @@ namespace LitLink_FinalProject.Pages
                 Foreground = new SolidColorBrush(Color.FromRgb(74, 74, 74)),
                 Margin = new Thickness(0, 0, 0, 15)
             });
+
             try
             {
                 List<Book_Series> allSeries = await apiService.GetAllBookSeries();
+
                 List<Book_Series> authorSeries = allSeries
                     .Where(s => s.IdUser != null && s.IdUser.Id == currentAuthor.Id)
                     .ToList();
+
                 if (authorSeries.Count == 0)
                 {
                     AuthorListsContainer.Children.Add(CreateEmptyMessageTextBlock("No book lists created yet."));
                     return;
                 }
+
                 List<Series_Detail> allDetails = await apiService.GetAllSeriesDetails();
+
+                // טוענים ספרים מלאים, לא רק Book עם Id
+                List<Book> allBooks = await apiService.GetAllBooks();
+
                 foreach (Book_Series series in authorSeries)
                 {
                     List<Book> seriesBooks = allDetails
-                        .Where(d => d.IdSeries != null && d.IdSeries.Id == series.Id && d.IdBook != null)
+                        .Where(d => d.IdSeries != null &&
+                                    d.IdSeries.Id == series.Id &&
+                                    d.IdBook != null)
                         .OrderBy(d => d.Number)
-                        .Select(d => d.IdBook)
+                        .Select(d => allBooks.FirstOrDefault(b => b.Id == d.IdBook.Id))
+                        .Where(b => b != null)
                         .ToList();
-                    if (seriesBooks.Count == 0) continue;
+
+                    if (seriesBooks.Count == 0)
+                        continue;
+
                     GenreUserControl seriesRow = new GenreUserControl();
                     seriesRow.SetupGenreRow(series.NameSeries, seriesBooks);
                     seriesRow.BookSelected += AuthorRow_BookSelected;
+
                     AuthorListsContainer.Children.Add(seriesRow);
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Error loading author lists: " + ex.Message);
+                MessageBox.Show("Error loading author lists: " + ex.Message, "LitLink");
             }
         }
 
@@ -281,15 +321,14 @@ namespace LitLink_FinalProject.Pages
 
         private void AddBook_Click(object sender, RoutedEventArgs e)
         {
-            AddBookWindow addBookWin = new AddBookWindow();
-            if (addBookWin.ShowDialog() == true) LoadAuthorData();
+            AddBookWindow win = new AddBookWindow(currentAuthor);
+            win.ShowDialog();
         }
 
         private void AddNews_Click(object sender, RoutedEventArgs e)
         {
-            AddNewsWindow addNewsWin = new AddNewsWindow();
-            addNewsWin.DataContext = currentAuthor;
-            if (addNewsWin.ShowDialog() == true) LoadMyNewsTab();
+            AddNewsWindow win = new AddNewsWindow(currentAuthor);
+            win.ShowDialog();
         }
 
         private async void AddList_Click(object sender, RoutedEventArgs e)
