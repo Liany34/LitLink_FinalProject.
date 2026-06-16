@@ -22,7 +22,7 @@ namespace LitLink_FinalProject.WindowsFile
     {
         private Apiservice apiService = new Apiservice();
         private Reader currentReader;
-        private string selectedReaderImageBase64 = null;
+        private string selectedReaderImagePath = null;
         public EditReaderProfileWindow(Reader reader)
         {
             InitializeComponent();
@@ -57,7 +57,8 @@ namespace LitLink_FinalProject.WindowsFile
 
         private async void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(TxtEditUsername.Text) || string.IsNullOrWhiteSpace(TxtEditEmail.Text))
+            if (string.IsNullOrWhiteSpace(TxtEditUsername.Text) ||
+                string.IsNullOrWhiteSpace(TxtEditEmail.Text))
             {
                 MessageBox.Show("Username and Email are required Fields 🌸", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -65,37 +66,48 @@ namespace LitLink_FinalProject.WindowsFile
 
             try
             {
-                currentReader.Username = TxtEditUsername.Text.Trim();
-                currentReader.Nickname = TxtEditNickname.Text.Trim();
-                currentReader.FirstName = TxtEditFirstName.Text.Trim();
-                currentReader.LastName = TxtEditLastName.Text.Trim();
-                currentReader.PhoneNumber = TxtEditPhone.Text.Trim();
-                currentReader.Email = TxtEditEmail.Text.Trim();
-                if (!string.IsNullOrEmpty(selectedReaderImageBase64))
+                ReaderUpdateDto dto = new ReaderUpdateDto
                 {
-                    currentReader.Picture = selectedReaderImageBase64;
-                }
-                else
+                    Id = currentReader.Id,
+
+                    FirstName = TxtEditFirstName.Text.Trim(),
+                    LastName = TxtEditLastName.Text.Trim(),
+                    PhoneNumber = TxtEditPhone.Text.Trim(),
+                    Email = TxtEditEmail.Text.Trim(),
+                    Username = TxtEditUsername.Text.Trim(),
+                    Pass = currentReader.Pass,
+                    Birthdate = currentReader.Birthdate,
+
+                    PicturePath = currentReader.PicturePath,
+
+                    Nickname = TxtEditNickname.Text.Trim(),
+                    IsFlaged = currentReader.IsFlaged
+                };
+
+                if (!string.IsNullOrEmpty(selectedReaderImagePath))
                 {
-                    currentReader.Picture = TxtEditImgUrl.Text.Trim();
+                    dto.FileName = System.IO.Path.GetFileName(selectedReaderImagePath);
+
+                    byte[] imageBytes = File.ReadAllBytes(selectedReaderImagePath);
+                    dto.Base64Image = Convert.ToBase64String(imageBytes);
                 }
 
-                await apiService.UpdateUser(currentReader);
-                List<Reader> updatedReaders = await apiService.GetAllReaders();
-                bool isSuccess = updatedReaders.Any(r => r.Id == currentReader.Id && r.Username == currentReader.Username && r.Email == currentReader.Email && r.Nickname == currentReader.Nickname && r.FirstName == currentReader.FirstName && r.LastName == currentReader.LastName && r.PhoneNumber == currentReader.PhoneNumber && r.Picture == currentReader.Picture);
-                if (isSuccess)
+                bool success = await apiService.UpdateReader(dto);
+
+                if (success)
                 {
+                    MessageBox.Show("Reader profile updated successfully.", "LitLink");
                     this.DialogResult = true;
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to update profile details in database.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Reader profile was not updated.", "LitLink");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error updating details: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error updating reader profile: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -111,12 +123,11 @@ namespace LitLink_FinalProject.WindowsFile
 
             if (openFileDialog.ShowDialog() == true)
             {
-                byte[] imageBytes = File.ReadAllBytes(openFileDialog.FileName);
+                selectedReaderImagePath = openFileDialog.FileName;
 
-                selectedReaderImageBase64 = Convert.ToBase64String(imageBytes);
+                TxtEditImgUrl.Text = System.IO.Path.GetFileName(selectedReaderImagePath);
 
-                TxtEditImgUrl.Text = openFileDialog.FileName;
-
+                byte[] imageBytes = File.ReadAllBytes(selectedReaderImagePath);
                 ImgReaderPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
             }
         }

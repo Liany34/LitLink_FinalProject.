@@ -80,15 +80,8 @@
                 <Label Content="Language:"/>
                 <ComboBox x:Name="CmbLanguage" DisplayMemberPath="Name"/>
 
-                <Label Content="Book File Path (EPUB format only):"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="80"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="TxtFilePath" Grid.Column="0"/>
-                    <Button Content="Browse..." Grid.Column="1" Margin="5,0,0,0" Background="#D06A8D" Foreground="White" Click="BrowseFile_Click"/>
-                </Grid>
+                <Label Content="Book Link:"/>
+                <TextBox x:Name="TxtFilePath"/>
 
                 <Label Content="Cover Image:"/>
 
@@ -111,12 +104,22 @@
                             Margin="5,0,0,0"
                             Background="#D06A8D"
                             Foreground="White"
-                            Click="BrowseCover_Click"/>
+                            Click="BtnBrowseCover_Click"/>
                 </Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0">
-                    <Button Content="Save Changes" Width="130" Height="40" Style="{StaticResource PinkRoundedButton}" Click="Save_Click" Margin="0,0,15,0"/>
-                    <Button Content="Cancel" Width="130" Height="40" Style="{StaticResource PinkRoundedButton}" Background="#D06A8D" Click="Cancel_Click"/>
+                    <Button Content="Save Changes" 
+                            Width="130" 
+                            Height="40"
+                            Style="{StaticResource PinkRoundedButton}"
+                            Click="BtnSave_Click"
+                            Margin="0,0,15,0"/>
+                    <Button Content="Cancel" 
+                            Width="130" 
+                            Height="40" 
+                            Style="{StaticResource PinkRoundedButton}" 
+                            Background="#D06A8D" 
+                            Click="Cancel_Click"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

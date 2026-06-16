@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using System.Linq; 
 
 namespace LitLink_FinalProject.UserControls
 {
@@ -13,6 +14,9 @@ namespace LitLink_FinalProject.UserControls
         private Apiservice apiService = new Apiservice();
         private News currentNewsData;
         private User currentUser;
+        public User LoggedInUser { get; set; }
+        public bool IsLoggedInUserAdmin { get; set; }
+        public bool IsLoggedInUserAuthor { get; set; }
 
         public event Action NewsChanged;
 
@@ -27,14 +31,14 @@ namespace LitLink_FinalProject.UserControls
             currentNewsData = this.DataContext as News;
             if (currentNewsData == null) return;
 
-            currentUser = this.DataContext as User;
+            currentUser = LoggedInUser;
 
             if (TxtNewsContent.ActualHeight < 60)
             {
                 BtnReadMore.Visibility = Visibility.Collapsed;
             }
 
-            if (currentNewsData != null && currentNewsData.IdUser != null && !string.IsNullOrEmpty(currentNewsData.IdUser.Picture))
+            if (currentNewsData.IdUser != null && !string.IsNullOrEmpty(currentNewsData.IdUser.Picture))
             {
                 try
                 {
@@ -66,37 +70,22 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        private async void SetupPermissions()
+        private void SetupPermissions()
         {
-            if (currentNewsData == null)
-            {
-                BtnNewsMenu.Visibility = Visibility.Collapsed;
+            BtnNewsMenu.Visibility = Visibility.Collapsed;
+            MenuDeleteNews.Visibility = Visibility.Collapsed;
+
+            if (currentNewsData == null || currentNewsData.IdUser == null || currentUser == null)
                 return;
-            }
 
-            try
+            bool isOwner = currentNewsData.IdUser.Id == currentUser.Id;
+
+            bool canDelete = IsLoggedInUserAdmin || (IsLoggedInUserAuthor && isOwner);
+
+            if (canDelete)
             {
-                List<Admin> admins = await apiService.GetAllAdmins();
-                bool isAdmin = currentUser != null && admins.Exists(a => a.Id == currentUser.Id);
-
-                List<Author> authors = await apiService.GetAllAuthors();
-                bool isOwner = currentUser != null && currentNewsData.IdUser != null &&
-                               authors.Exists(a => a.Id == currentUser.Id) && currentUser.Id == currentNewsData.IdUser.Id;
-
-                if (isAdmin || isOwner)
-                {
-                    BtnNewsMenu.Visibility = Visibility.Visible;
-                    MenuDeleteNews.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    BtnNewsMenu.Visibility = Visibility.Collapsed;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error setting up permissions: " + ex.Message);
-                BtnNewsMenu.Visibility = Visibility.Collapsed;
+                BtnNewsMenu.Visibility = Visibility.Visible;
+                MenuDeleteNews.Visibility = Visibility.Visible;
             }
         }
 
@@ -122,18 +111,28 @@ namespace LitLink_FinalProject.UserControls
 
         private async void MenuDeleteNews_Click(object sender, RoutedEventArgs e)
         {
-            if (currentNewsData == null) return;
+            if (currentNewsData == null || currentUser == null)
+                return;
 
-            if (MessageBox.Show($"Are you sure you want to delete this news update?", "Delete News", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            bool isOwner = currentNewsData.IdUser != null &&
+                           currentNewsData.IdUser.Id == currentUser.Id;
+
+            bool canDelete = IsLoggedInUserAdmin || (IsLoggedInUserAuthor && isOwner);
+
+            if (!canDelete)
+            {
+                MessageBox.Show("You do not have permission to delete this news update.");
+                return;
+            }
+
+            if (MessageBox.Show("Are you sure you want to delete this news update?",
+                "Delete News",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 await apiService.DeleteNews(currentNewsData.Id);
-                List<News> allNews = await apiService.GetAllNews();
 
-                bool isDeleted = !allNews.Exists(n => n.Id == currentNewsData.Id);
-                if (isDeleted)
-                {
-                    NewsChanged?.Invoke();
-                }
+                NewsChanged?.Invoke();
             }
         }
     }

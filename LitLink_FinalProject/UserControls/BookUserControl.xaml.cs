@@ -23,137 +23,152 @@ namespace LitLink_FinalProject.UserControls
     {
         private bool isAdmin;
         private bool isAuthor;
+        private bool readerPurchasedBook;
+        private bool bookAlreadyInCart;
+        private bool userAlreadyPurchasedBook;
+
+        private Reader currentReader;
+
         private Apiservice apiService = new Apiservice();
 
         public BookUserControl(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser = null)
         {
             InitializeComponent();
+
             this.DataContext = bookData;
             this.isAdmin = isAdmin;
             this.isAuthor = isAuthor;
+            this.currentReader = currentUser;
+            this.userAlreadyPurchasedBook = userOwnsBook;
 
-            SetActionButtons(userOwnsBook);
+            SetActionButtons();
             SetupPermissions();
 
-            this.Loaded += async (s, e) => {
+            this.Loaded += BookUserControl_Loaded;
+        }
+        private async void BookUserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null)
+                return;
+
+            try
+            {
+                // בדיקה אם צריך להציג Read More
                 if (DescriptionTextBlock.ActualHeight < 120)
+                {
                     ReadMoreBtn.Visibility = Visibility.Collapsed;
-
-                Book currentBook = this.DataContext as Book;
-                if (currentBook == null) return;
-
-                try
+                }
+                else
                 {
-                    ReviewsStackPanel.Children.Clear();
-                    TotalReviewsTextBlock.Text = "(0)"; 
+                    ReadMoreBtn.Visibility = Visibility.Visible;
+                }
 
-                    List<Reviews> allReviews = await apiService.GetAllReviews();
+                // בדיקה אם קורא כבר קנה את הספר או שהספר כבר בעגלה
+                await CheckReaderBookStatus();
 
-                    if (allReviews != null)
+                // הרשאות של שלוש נקודות
+                SetupPermissions();
+
+                // טעינת ביקורות
+                ReviewsStackPanel.Children.Clear();
+                TotalReviewsTextBlock.Text = "(0)";
+
+                List<Reviews> allReviews = await apiService.GetAllReviews();
+
+                if (allReviews != null)
+                {
+                    List<Reviews> bookReviews = allReviews
+                        .Where(r => r != null &&
+                                    r.IdBook != null &&
+                                    r.IdBook.Id == currentBook.Id)
+                        .ToList();
+
+                    TotalReviewsTextBlock.Text = $"({bookReviews.Count})";
+
+                    if (bookReviews.Count > 0)
                     {
-                        var bookReviews = allReviews
-                            .Where(r => r != null && r.IdBook != null && r.IdBook.Id == currentBook.Id)
-                            .ToList();
+                        double average = bookReviews.Average(r => r.Stars);
 
-                        TotalReviewsTextBlock.Text = $"({bookReviews.Count})";
+                        StarsTextBlock.Text = $"{average:0.0} ★";
+                        StarsTextBlock.FontSize = 22;
+                        StarsTextBlock.Foreground = Brushes.Gold;
 
-                        if (bookReviews.Any())
+                        foreach (Reviews reviewItem in bookReviews)
                         {
-                            double average = bookReviews.Average(r => r.Stars);
-                            StarsTextBlock.Text = $"{average:0.0} ★";
-
-                            foreach (var reviewItem in bookReviews)
-                            {
-                                if (reviewItem == null) continue;
-
-                                ReviewsUserControl reviewControl = new ReviewsUserControl(reviewItem, 0, isAdmin);
-                                ReviewsStackPanel.Children.Add(reviewControl);
-                            }
-                        }
-                        else
-                        {
-                            StarsTextBlock.Text = "No reviews yet";
-                            StarsTextBlock.FontSize = 14;
-                            StarsTextBlock.Foreground = Brushes.Gray;
+                            ReviewsUserControl reviewControl = new ReviewsUserControl(reviewItem, 0, isAdmin);
+                            ReviewsStackPanel.Children.Add(reviewControl);
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine("Error loading reviews: " + ex.Message);
-                    StarsTextBlock.Text = "— ★";
-                }
-
-                try
-                {
-                    string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
-
-                    if (!string.IsNullOrEmpty(st))
+                    else
                     {
-                        byte[] imgStr = Convert.FromBase64String(st);
-                        this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
+                        StarsTextBlock.Text = "No reviews yet";
+                        StarsTextBlock.FontSize = 14;
+                        StarsTextBlock.Foreground = Brushes.Gray;
                     }
                 }
-                catch (Exception ex)
+
+                // טעינת תמונת כריכה
+                string coverBase64 = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
+
+                if (!string.IsNullOrEmpty(coverBase64))
                 {
-                    System.Diagnostics.Debug.WriteLine($"[WPF Image Load Error]: {ex.Message}");
+                    byte[] imgBytes = Convert.FromBase64String(coverBase64);
+                    BookCoverImage.Source = ByteImageConverter.ByteToImage(imgBytes);
                 }
-
-                //            try
-                //            {
-                //                string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
-
-                //                if (!string.IsNullOrEmpty(st))
-                //                {
-                //                    byte[] imgStr = Convert.FromBase64String(st);
-                //                    this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
-                //                }
-                //                else
-                //                {
-                //                    this.BookCoverImage.Source = new BitmapImage(new Uri(
-                //"pack://application:,,,/Covers/To_be_revealed.png", UriKind.Absolute));
-                //                }
-                //            }
-                //            catch (Exception ex)
-                //            {
-                //                System.Diagnostics.Debug.WriteLine("Error loading cover image: " + ex.Message);
-                //                try
-                //                {
-                //                    this.BookCoverImage.Source = new BitmapImage(new Uri(
-                // "pack://application:,,,/Covers/To_be_revealed.png", UriKind.Absolute));
-                //                }
-                //                catch
-                //                {
-                //                    this.BookCoverImage.Source = new BitmapImage(new Uri(
-                // "pack://application:,,,/Covers/To_be_revealed.png", UriKind.Absolute));
-                //                }
-                //            }
-            };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading book user control: " + ex.Message);
+            }
         }
 
-        private void SetActionButtons(bool ownsBook)
+        private void SetActionButtons()
         {
-            if (isAdmin)
+            BuyBtn.Visibility = Visibility.Collapsed;
+            AddReviewBtn.Visibility = Visibility.Collapsed;
+            AddToListBtn.Visibility = Visibility.Collapsed;
+
+            // מנהל וסופר לא קונים ספרים מתוך המסך הזה
+            if (isAdmin || isAuthor)
+                return;
+
+            // קורא רגיל
+            AddToListBtn.Visibility = Visibility.Visible;
+
+            if (userAlreadyPurchasedBook)
             {
+                // אם הקורא כבר קנה את הספר — במקום קנייה הוא יכול להוסיף ביקורת
+                AddReviewBtn.Visibility = Visibility.Visible;
                 BuyBtn.Visibility = Visibility.Collapsed;
-                AddToListBtn.Visibility = Visibility.Collapsed;
             }
-            else if (isAuthor)
+            else if (bookAlreadyInCart)
             {
+                // אם הספר כבר בעגלה — לא מציגים כפתור הוספה לעגלה
                 BuyBtn.Visibility = Visibility.Collapsed;
-                AddToListBtn.Visibility = Visibility.Visible;
+                AddReviewBtn.Visibility = Visibility.Collapsed;
             }
             else
             {
-                AddToListBtn.Visibility = Visibility.Visible;
-                BuyBtn.Visibility = ownsBook ? Visibility.Collapsed : Visibility.Visible;
+                // אם לא קנה ולא בעגלה — אפשר להוסיף לעגלה
+                BuyBtn.Visibility = Visibility.Visible;
+                AddReviewBtn.Visibility = Visibility.Collapsed;
             }
         }
 
         private void SetupPermissions()
         {
-            Visibility editVis = (isAdmin || isAuthor) ? Visibility.Visible : Visibility.Collapsed;
-            Visibility reportVis = (isAdmin || isAuthor) ? Visibility.Collapsed : Visibility.Visible;
+            Book currentBook = this.DataContext as Book;
+
+            bool canEditOrDelete = isAdmin || isAuthor;
+            bool canReport = !isAdmin && !isAuthor && currentReader != null;
+
+            MenuBtn.Visibility = (canEditOrDelete || canReport)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            Visibility editVis = canEditOrDelete ? Visibility.Visible : Visibility.Collapsed;
+            Visibility reportVis = canReport ? Visibility.Visible : Visibility.Collapsed;
 
             EditCoverItem.Visibility = editVis;
             EditNameItem.Visibility = editVis;
@@ -162,7 +177,58 @@ namespace LitLink_FinalProject.UserControls
             EditDateItem.Visibility = editVis;
             DeleteItem.Visibility = editVis;
             AdminSeparator.Visibility = editVis;
+
             ReportItem.Visibility = reportVis;
+
+            if (currentBook != null)
+            {
+                ReportItem.Header = currentBook.IsFlaged ? "Remove Report" : "Report Book";
+            }
+        }
+
+        private async Task CheckReaderBookStatus()
+        {
+            if (currentReader == null)
+                return;
+
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null)
+                return;
+
+            try
+            {
+                List<Cart_Detail> allCartDetails = await apiService.GetAllCartDetails();
+
+                if (allCartDetails == null)
+                    return;
+
+                // כאן צריך להתאים לפי המודל שלך:
+                // אם ב-Cart_Detail יש IdReader ישירות — השתמשי בזה.
+                // אם יש IdCart.IdReader — השתמשי בשורה שמתאימה לך.
+
+                userAlreadyPurchasedBook = allCartDetails.Any(cd =>
+                    cd.IdCart != null &&
+                    cd.IdCart.IdReader != null &&
+                    cd.IdCart.IdReader.Id == currentReader.Id &&
+                    cd.IdBook != null &&
+                    cd.IdBook.Id == currentBook.Id
+                );
+
+                bookAlreadyInCart = allCartDetails.Any(cd =>
+                   cd.IdCart != null &&
+                   cd.IdCart.IdReader != null &&
+                   cd.IdCart.IdReader.Id == currentReader.Id &&
+                   cd.IdBook != null &&
+                   cd.IdBook.Id == currentBook.Id &&
+                   !cd.IsPurchased
+                );
+
+                SetActionButtons();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error checking cart/purchase status: " + ex.Message);
+            }
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e)
@@ -185,19 +251,33 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        private void Buy_Click(object sender, RoutedEventArgs e)
+        private async void Buy_Click(object sender, RoutedEventArgs e)
         {
             Book currentBook = this.DataContext as Book;
-            if (currentBook == null) return;
+            if (currentBook == null || currentReader == null) return;
 
             try
             {
-                MessageBox.Show($"'{currentBook.BookName}' has been added to your purchases successfully!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
-                BuyBtn.Visibility = Visibility.Collapsed;
+                // כאן תכניסי את פעולת ההוספה לעגלה שיש לך ב-API.
+                // לדוגמה, אם יש לך InsertCartDetail:
+
+                Cart_Detail cd = new Cart_Detail
+                {
+                    IdBook = currentBook,
+                    IsPurchased = false,
+                    PurchaseDate = null
+                };
+
+                await apiService.InsertCartDetail(cd);
+
+                MessageBox.Show($"'{currentBook.BookName}' was added to your cart.", "LitLink");
+
+                bookAlreadyInCart = true;
+                SetActionButtons();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to complete purchase: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Failed to add book to cart: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -238,25 +318,44 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        private void ReportBook_Click(object sender, RoutedEventArgs e)
+        private async void ReportBook_Click(object sender, RoutedEventArgs e)
         {
             Book currentBook = this.DataContext as Book;
             if (currentBook == null) return;
 
-            if (MessageBox.Show("Report this book for inappropriate content?", "Report Book", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            try
             {
-                try
-                {
-                    currentBook.IsFlaged = true;
-                    apiService.UpdateBook(currentBook);
+                string message = currentBook.IsFlaged
+                    ? "Do you want to remove your report from this book?"
+                    : "Report this book for inappropriate content?";
 
-                    MessageBox.Show("Thank you. This book has been flagged and will be reviewed by an administrator.", "Report Sent");
-                    ReportItem.IsEnabled = false;
-                }
-                catch (Exception ex)
+                if (MessageBox.Show(message, "Report Book", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
-                    MessageBox.Show("Failed to send report: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    currentBook.IsFlaged = !currentBook.IsFlaged;
+
+                    BookUpdateDto dto = CreateBookUpdateDto(currentBook);
+
+                    bool success = await apiService.UpdateBook(dto);
+
+                    if (success)
+                    {
+                        ReportItem.Header = currentBook.IsFlaged ? "Remove Report" : "Report Book";
+
+                        MessageBox.Show(
+                            currentBook.IsFlaged
+                                ? "Thank you. This book has been reported."
+                                : "The report was removed.",
+                            "LitLink");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Report update failed.", "LitLink");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to update report: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -284,6 +383,48 @@ namespace LitLink_FinalProject.UserControls
             catch (Exception ex)
             {
                 MessageBox.Show("Could not open edit window: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private BookUpdateDto CreateBookUpdateDto(Book book)
+        {
+            return new BookUpdateDto
+            {
+                Id = book.Id,
+                BookName = book.BookName,
+                PublicationDate = book.PublicationDate,
+                Price = book.Price,
+                Information = book.Information,
+                BookLink = book.BookLink,
+                IsFlaged = book.IsFlaged,
+
+                IdAuthor = book.IdAuthor.Id,
+                IdLanguage = book.IdLanguage.Id,
+
+                CoverPath = book.CoverPath,
+                FileName = null,
+                Base64Image = null
+            };
+        }
+        private void AddReview_Click(object sender, RoutedEventArgs e)
+        {
+            Book currentBook = this.DataContext as Book;
+            if (currentBook == null || currentReader == null) return;
+
+            try
+            {
+                // אם יש לך חלון להוספת ביקורת, תפתחי אותו כאן.
+                // לדוגמה:
+                // AddReviewWindow win = new AddReviewWindow(currentBook, currentReader);
+                // if (win.ShowDialog() == true)
+                // {
+                //     // לרענן ביקורות
+                // }
+
+                MessageBox.Show("Open add review window here.", "LitLink");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not open review window: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

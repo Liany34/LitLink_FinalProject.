@@ -178,9 +178,48 @@ namespace LitLink_FinalProject.Pages
                 return;
             }
             foreach (Book report in reportedBooks.ToList())
-                ReportsContainer.Children.Add(CreateReportCard($"[BOOK] Title: {report.BookName} | ID: {report.Id}", async () => { reportedBooks.Remove(report); report.IsFlaged = false; await apiService.UpdateBook(report); }, async () => { reportedBooks.Remove(report); await apiService.DeleteBook(report.Id); }));
+            {
+                ReportsContainer.Children.Add(
+                    CreateReportCard(
+                        $"[BOOK] Title: {report.BookName} | ID: {report.Id}",
+                        async () =>
+                        {
+                            reportedBooks.Remove(report);
+                            report.IsFlaged = false;
+
+                            BookUpdateDto dto = CreateBookUpdateDto(report);
+                            await apiService.UpdateBook(dto);
+                        },
+                        async () =>
+                        {
+                            reportedBooks.Remove(report);
+                            await apiService.DeleteBook(report.Id);
+                        }
+                    )
+                );
+            }
+
             foreach (Reader reportU in reportedUsers.ToList())
-                ReportsContainer.Children.Add(CreateReportCard($"[USER] Username: {reportU.Username} | ID: {reportU.Id}", async () => { reportedUsers.Remove(reportU); reportU.IsFlaged = false; await apiService.UpdateReader(reportU); }, async () => { reportedUsers.Remove(reportU); await apiService.DeleteReader(reportU.Id); }));
+            {
+                ReportsContainer.Children.Add(
+                    CreateReportCard(
+                        $"[USER] Username: {reportU.Username} | ID: {reportU.Id}",
+                        async () =>
+                        {
+                            reportedUsers.Remove(reportU);
+                            reportU.IsFlaged = false;
+
+                            ReaderUpdateDto dto = CreateReaderUpdateDto(reportU);
+                            await apiService.UpdateReader(dto);
+                        },
+                        async () =>
+                        {
+                            reportedUsers.Remove(reportU);
+                            await apiService.DeleteReader(reportU.Id);
+                        }
+                    )
+                );
+            }
             foreach (Reviews reportR in reportedReviews.ToList())
                 ReportsContainer.Children.Add(CreateReportCard($"[REVIEW] \"{reportR.Text}\" | ID: {reportR.Id}", async () => { reportedReviews.Remove(reportR); reportR.IsFlaged = false; await apiService.UpdateReview(reportR); }, async () => { reportedReviews.Remove(reportR); await apiService.DeleteReview(reportR.Id); }));
         }
@@ -277,6 +316,49 @@ namespace LitLink_FinalProject.Pages
         {
             currentAdmin = null; 
             MainWindow.AppFrame.Navigate(new SignOut()); 
+        }
+        private BookUpdateDto CreateBookUpdateDto(Book book)
+        {
+            return new BookUpdateDto
+            {
+                Id = book.Id,
+                BookName = book.BookName,
+                PublicationDate = book.PublicationDate,
+                Price = book.Price,
+                Information = book.Information,
+                BookLink = book.BookLink,
+                IsFlaged = book.IsFlaged,
+
+                IdAuthor = book.IdAuthor != null ? book.IdAuthor.Id : 0,
+                IdLanguage = book.IdLanguage != null ? book.IdLanguage.Id : 0,
+
+                CoverPath = book.CoverPath,
+                FileName = null,
+                Base64Image = null
+            };
+        }
+
+        private ReaderUpdateDto CreateReaderUpdateDto(Reader reader)
+        {
+            return new ReaderUpdateDto
+            {
+                Id = reader.Id,
+
+                FirstName = reader.FirstName,
+                LastName = reader.LastName,
+                PhoneNumber = reader.PhoneNumber,
+                Email = reader.Email,
+                Username = reader.Username,
+                Pass = reader.Pass,
+                Birthdate = reader.Birthdate,
+
+                PicturePath = reader.PicturePath,
+                FileName = null,
+                Base64Image = null,
+
+                Nickname = reader.Nickname,
+                IsFlaged = reader.IsFlaged
+            };
         }
     }
 }

@@ -166,26 +166,44 @@ namespace LitLink_FinalProject.Pages
         private async void LoadMyNewsTab()
         {
             AuthorNewsContainer.Children.Clear();
+
             try
             {
                 List<News> allNews = await apiService.GetAllNews();
-                List<News> authorNews = allNews.Where(n => n.IdUser.Id == currentAuthor.Id).ToList();
-                if (authorNews == null || authorNews.Count == 0)
+
+                List<News> authorNews = allNews
+                    .Where(n => n.IdUser != null && n.IdUser.Id == currentAuthor.Id)
+                    .ToList();
+
+                if (authorNews.Count == 0)
                 {
                     AuthorNewsContainer.Children.Add(CreateEmptyMessageTextBlock("No news updates published yet."));
                     return;
                 }
-                foreach (var news in authorNews)
+
+                foreach (News news in authorNews)
                 {
                     NewsUserControl newsControl = new NewsUserControl();
+
                     newsControl.DataContext = news;
-                    newsControl.NewsChanged += () => { LoadMyNewsTab(); };
+
+                    newsControl.LoggedInUser = viewingReader == null ? currentAuthor : viewingReader;
+
+                    newsControl.IsLoggedInUserAuthor = viewingReader == null;
+                    newsControl.IsLoggedInUserAdmin = false;
+
+                    newsControl.NewsChanged += () =>
+                    {
+                        LoadMyNewsTab();
+                    };
+
                     AuthorNewsContainer.Children.Add(newsControl);
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Error rendering author news control: " + ex.Message);
+                MessageBox.Show("Error loading news: " + ex.Message, "LitLink");
             }
         }
 
@@ -329,6 +347,8 @@ namespace LitLink_FinalProject.Pages
         {
             AddNewsWindow win = new AddNewsWindow(currentAuthor);
             win.ShowDialog();
+
+            LoadMyNewsTab();
         }
 
         private async void AddList_Click(object sender, RoutedEventArgs e)

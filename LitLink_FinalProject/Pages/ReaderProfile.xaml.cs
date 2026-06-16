@@ -39,41 +39,39 @@ namespace LitLink_FinalProject.Pages
 
         private async void LoadAllData()
         {
-            if (currentUser == null) return;
+            if (currentUser == null)
+                return;
+
             try
             {
                 TxtHelloUser.Text = $"Hello, {currentUser.Username}";
+
                 try
                 {
                     string st = await apiService.GetPictureByUserIDByte64(currentUser.Id);
+
                     if (!string.IsNullOrEmpty(st))
                     {
                         byte[] imgBytes = Convert.FromBase64String(st);
                         ImgReaderProfile.Source = ByteImageConverter.ByteToImage(imgBytes);
                     }
-                    else SetDefaultImage();
+                    else
+                    {
+                        SetDefaultImage();
+                    }
                 }
-                catch { SetDefaultImage(); }
+                catch
+                {
+                    SetDefaultImage();
+                }
 
-                var booksTask = apiService.GetAllBooks();
-                var seriesTask = apiService.GetAllBookSeries();
-                var detailsTask = apiService.GetAllSeriesDetails();
-                var cartsTask = apiService.GetAllCarts();
-                var cartDetailsTask = apiService.GetAllCartDetails();
-                var reviewsTask = apiService.GetAllReviews();
-                var followingsTask = apiService.GetAllFollowings();
-
-                await System.Threading.Tasks.Task.WhenAll(
-                    booksTask, seriesTask, detailsTask,
-                    cartsTask, cartDetailsTask, reviewsTask, followingsTask);
-
-                allBooks = booksTask.Result ?? new List<Book>();
-                allSeries = seriesTask.Result ?? new List<Book_Series>();
-                allSeriesDetails = detailsTask.Result ?? new List<Series_Detail>();
-                allCarts = cartsTask.Result ?? new List<Cart>();
-                allCartDetails = cartDetailsTask.Result ?? new List<Cart_Detail>();
-                allReviews = reviewsTask.Result ?? new List<Reviews>();
-                allFollowings = followingsTask.Result ?? new List<Following>();
+                allBooks = await apiService.GetAllBooks() ?? new List<Book>();
+                allSeries = await apiService.GetAllBookSeries() ?? new List<Book_Series>();
+                allSeriesDetails = await apiService.GetAllSeriesDetails() ?? new List<Series_Detail>();
+                allCarts = await apiService.GetAllCarts() ?? new List<Cart>();
+                allCartDetails = await apiService.GetAllCartDetails() ?? new List<Cart_Detail>();
+                allReviews = await apiService.GetAllReviews() ?? new List<Reviews>();
+                allFollowings = await apiService.GetAllFollowings() ?? new List<Following>();
 
                 dataLoaded = true;
                 BuildUserLists();

@@ -74,46 +74,76 @@ namespace LitLink_FinalProject.Pages
         private async void ResetPassword_Click(object sender, RoutedEventArgs e)
         {
             DiffPass.Visibility = Visibility.Collapsed;
+
             if (PasswordInput.Password != ReenterInput.Password)
             {
                 DiffPass.Visibility = Visibility.Visible;
                 return;
             }
-            if (string.IsNullOrEmpty(PasswordInput.Password))
+
+            if (string.IsNullOrWhiteSpace(PasswordInput.Password))
             {
                 MessageBox.Show("Please enter a valid password.");
                 return;
             }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                MessageBox.Show("Email is missing. Please go back and enter your email again.");
+                return;
+            }
+
             try
             {
                 Apiservice buyerService = new Apiservice();
+
                 List<User> users = await buyerService.GetAllUsers();
+
                 if (users == null)
                 {
                     MessageBox.Show("Error retrieving user list. Please try again.");
                     return;
                 }
 
-                User user = users.Find(u => u != null && !string.IsNullOrEmpty(u.Email) && u.Email.Trim().ToLower() == email.Trim().ToLower());
+                User user = users.Find(u =>
+                    u != null &&
+                    !string.IsNullOrEmpty(u.Email) &&
+                    u.Email.Trim().ToLower() == email.Trim().ToLower());
+
                 if (user == null)
                 {
                     MessageBox.Show("User not found in the system.");
                     return;
                 }
 
-                User newUser = user;
-                newUser.FirstName = user.FirstName;
-                newUser.LastName = user.LastName;
-                newUser.PhoneNumber = user.PhoneNumber;
-                newUser.Email = user.Email;
-                newUser.Pass = PasswordInput.Password;
-                newUser.Birthdate = user.Birthdate;
-                newUser.Username = user.Username;
-                await buyerService.UpdateUser(newUser);
-                List<User> updatedUsers = await buyerService.GetAllUsers();
-                if(updatedUsers.Any(u => u.Pass == newUser.Pass && u.Email == newUser.Email))
+                UserUpdateDto dto = new UserUpdateDto
+                {
+                    Id = user.Id,
+
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber,
+                    Email = user.Email,
+                    Username = user.Username,
+
+                    // הסיסמה החדשה
+                    Pass = PasswordInput.Password,
+
+                    Birthdate = user.Birthdate,
+
+                    // שומרים את התמונה הקיימת, לא מעלים תמונה חדשה
+                    PicturePath = user.PicturePath,
+
+                    FileName = null,
+                    Base64Image = null
+                };
+
+                bool success = await buyerService.UpdateUser(dto);
+
+                if (success)
                 {
                     MessageBox.Show("Password reset successful! Please log in with your new password.");
+
                     var loginPage = new Login();
                     Window.GetWindow(this).Content = loginPage;
                 }

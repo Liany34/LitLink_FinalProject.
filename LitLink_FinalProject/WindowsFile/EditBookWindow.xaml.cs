@@ -23,7 +23,7 @@ namespace LitLink_FinalProject.WindowsFile
     {
         private Book bookToEdit;
         private Apiservice apiService = new Apiservice();
-        private string selectedCoverBase64 = null;
+        private string selectedCoverPath;
 
         public EditBookWindow(Book currentBook)
         {
@@ -60,13 +60,14 @@ namespace LitLink_FinalProject.WindowsFile
             TxtDescription.Text = bookToEdit.Information;
             TxtPrice.Text = bookToEdit.Price.ToString();
             TxtFilePath.Text = bookToEdit.BookLink;
-            TxtCoverPath.Text = bookToEdit.Cover;
+            TxtCoverPath.Text = bookToEdit.CoverPath;
             DpPublishDate.SelectedDate = bookToEdit.PublicationDate;
 
             if (bookToEdit.IdLanguage != null)
             {
                 SetSelectedLanguage(bookToEdit.IdLanguage);
             }
+
             if (!string.IsNullOrEmpty(bookToEdit.Cover))
             {
                 try
@@ -76,7 +77,6 @@ namespace LitLink_FinalProject.WindowsFile
                 }
                 catch
                 {
-                    // אם זו לא תמונת Base64, לא נעשה כלום
                 }
             }
         }
@@ -95,107 +95,154 @@ namespace LitLink_FinalProject.WindowsFile
             }
         }
 
-        private void Save_Click(object sender, RoutedEventArgs e)
+        private async void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(TxtBookName.Text.Trim()) || string.IsNullOrEmpty(TxtPrice.Text.Trim()))
-            {
-                MessageBox.Show("Book Name and Price are required fields!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (!double.TryParse(TxtPrice.Text.Trim(), out double parsedPrice))
-            {
-                MessageBox.Show("Please enter a valid number for the price.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (DpPublishDate.SelectedDate == null)
-            {
-                MessageBox.Show("Please select a valid publication date.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            string filePath = TxtFilePath.Text.Trim().ToLower();
-            if (!string.IsNullOrEmpty(filePath) && !filePath.EndsWith(".epub"))
-            {
-                MessageBox.Show("LitLink only supports books in EPUB format! Please select a valid .epub file.",
-                                "Invalid Format", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (CmbLanguage.SelectedItem == null)
-            {
-                MessageBox.Show("Please select a language for the book.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            bookToEdit.BookName = TxtBookName.Text.Trim();
-            bookToEdit.Information = TxtDescription.Text.Trim();
-            bookToEdit.Price = parsedPrice;
-            bookToEdit.BookLink = TxtFilePath.Text.Trim();
-            if (!string.IsNullOrEmpty(selectedCoverBase64))
-            {
-                bookToEdit.Cover = selectedCoverBase64;
-            }
-            else
-            {
-                bookToEdit.Cover = TxtCoverPath.Text.Trim();
-            }
-            bookToEdit.PublicationDate = DpPublishDate.SelectedDate.Value;
-
-            Language selectedLang = CmbLanguage.SelectedItem as Language;
-            if (selectedLang != null)
-            {
-                bookToEdit.IdLanguage = selectedLang;
-            }
-
             try
             {
-                apiService.UpdateBook(bookToEdit);
+                if (string.IsNullOrWhiteSpace(TxtBookName.Text))
+                {
+                    MessageBox.Show("Book name is required.", "LitLink");
+                    return;
+                }
 
-                MessageBox.Show("Book details updated successfully!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (!double.TryParse(TxtPrice.Text, out double parsedPrice))
+                {
+                    MessageBox.Show("Please enter a valid price.", "LitLink");
+                    return;
+                }
 
-                this.DialogResult = true;
-                this.Close();
+                if (CmbLanguage.SelectedItem == null)
+                {
+                    MessageBox.Show("Please select a language.", "LitLink");
+                    return;
+                }
+
+                BookUpdateDto dto = new BookUpdateDto
+                {
+                    Id = bookToEdit.Id,
+                    BookName = TxtBookName.Text.Trim(),
+                    PublicationDate = DpPublishDate.SelectedDate,
+                    Information = TxtDescription.Text.Trim(),
+                    BookLink = TxtFilePath.Text.Trim(),
+                    IsFlaged = bookToEdit.IsFlaged,
+                    IdAuthor = bookToEdit.IdAuthor.Id,
+                    IdLanguage = ((Language)CmbLanguage.SelectedItem).Id,
+                    CoverPath = bookToEdit.CoverPath,
+                    Price = parsedPrice
+                };
+
+                if (!string.IsNullOrEmpty(selectedCoverPath))
+                {
+                    dto.FileName = System.IO.Path.GetFileName(selectedCoverPath);
+
+                    byte[] imageBytes = File.ReadAllBytes(selectedCoverPath);
+                    dto.Base64Image = Convert.ToBase64String(imageBytes);
+                }
+
+                bool success = await apiService.UpdateBook(dto);
+
+                if (success)
+                {
+                    MessageBox.Show("Book updated successfully.", "LitLink");
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Book was not updated.", "LitLink");
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to save changes to the database: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error updating book: " + ex.Message, "LitLink");
             }
         }
 
-        private void BrowseFile_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+        //private void Save_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (string.IsNullOrEmpty(TxtBookName.Text.Trim()) || string.IsNullOrEmpty(TxtPrice.Text.Trim()))
+        //    {
+        //        MessageBox.Show("Book Name and Price are required fields!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        return;
+        //    }
 
-            openFileDialog.Filter = "E-Books (*.epub)|*.epub";
+        //    if (!double.TryParse(TxtPrice.Text.Trim(), out double parsedPrice))
+        //    {
+        //        MessageBox.Show("Please enter a valid number for the price.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        return;
+        //    }
 
-            if (openFileDialog.ShowDialog() == true)
-            {
-                TxtFilePath.Text = openFileDialog.FileName;
-            }
-        }
+        //    if (DpPublishDate.SelectedDate == null)
+        //    {
+        //        MessageBox.Show("Please select a valid publication date.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        return;
+        //    }
+
+        //    string filePath = TxtFilePath.Text.Trim().ToLower();
+        //    if (!string.IsNullOrEmpty(filePath) && !filePath.EndsWith(".epub"))
+        //    {
+        //        MessageBox.Show("LitLink only supports books in EPUB format! Please select a valid .epub file.",
+        //                        "Invalid Format", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        return;
+        //    }
+
+        //    if (CmbLanguage.SelectedItem == null)
+        //    {
+        //        MessageBox.Show("Please select a language for the book.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        return;
+        //    }
+
+        //    bookToEdit.BookName = TxtBookName.Text.Trim();
+        //    bookToEdit.Information = TxtDescription.Text.Trim();
+        //    bookToEdit.Price = parsedPrice;
+        //    bookToEdit.BookLink = TxtFilePath.Text.Trim();
+        //    if (!string.IsNullOrEmpty(selectedCoverBase64))
+        //    {
+        //        bookToEdit.Cover = selectedCoverBase64;
+        //    }
+        //    else
+        //    {
+        //        bookToEdit.Cover = TxtCoverPath.Text.Trim();
+        //    }
+        //    bookToEdit.PublicationDate = DpPublishDate.SelectedDate.Value;
+
+        //    Language selectedLang = CmbLanguage.SelectedItem as Language;
+        //    if (selectedLang != null)
+        //    {
+        //        bookToEdit.IdLanguage = selectedLang;
+        //    }
+
+        //    try
+        //    {
+        //        apiService.UpdateBook(bookToEdit);
+
+        //        MessageBox.Show("Book details updated successfully!", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+
+        //        this.DialogResult = true;
+        //        this.Close();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("Failed to save changes to the database: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        //    }
+        //}
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
             this.Close();
         }
-        private void BrowseCover_Click(object sender, RoutedEventArgs e)
+        private void BtnBrowseCover_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
-            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+            dlg.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
 
-            if (openFileDialog.ShowDialog() == true)
+            if (dlg.ShowDialog() == true)
             {
-                byte[] imageBytes = File.ReadAllBytes(openFileDialog.FileName);
+                selectedCoverPath = dlg.FileName;
 
-                selectedCoverBase64 = Convert.ToBase64String(imageBytes);
-
-                TxtCoverPath.Text = openFileDialog.FileName;
-
-                ImgBookCoverPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+                ImgBookCoverPreview.Source = new BitmapImage(new Uri(selectedCoverPath));
             }
         }
     }

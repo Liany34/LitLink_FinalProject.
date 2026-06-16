@@ -35,11 +35,25 @@
                     <TextBlock Text="{Binding PublishDate, StringFormat={}{0:dd/MM/yyyy}}" FontSize="10" Foreground="Gray" Margin="0,2,0,0"/>
                 </StackPanel>
 
-                <Button Grid.Column="2" x:Name="BtnNewsMenu" Content="⋮" FontSize="20" Background="Transparent" BorderThickness="0" 
-                        Foreground="Gray" FontWeight="Bold" VerticalAlignment="Top" Cursor="Hand" Click="BtnNewsMenu_Click">
+                <Button Grid.Column="2"
+                        x:Name="BtnNewsMenu"
+                        Content="⋮"
+                        FontSize="20"
+                        Background="Transparent"
+                        BorderThickness="0" 
+                        Foreground="Gray"
+                        FontWeight="Bold"
+                        VerticalAlignment="Top"
+                        Cursor="Hand"
+                        Visibility="Collapsed"
+                        Click="BtnNewsMenu_Click">
                     <Button.ContextMenu>
                         <ContextMenu x:Name="NewsContextMenu">
-                            <MenuItem x:Name="MenuDeleteNews" Header="Delete Update" Foreground="Red" Click="MenuDeleteNews_Click"/>
+                            <MenuItem x:Name="MenuDeleteNews"
+                                      Header="Delete Update"
+                                      Foreground="Red"
+                                      Visibility="Collapsed"
+                                      Click="MenuDeleteNews_Click"/>
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>

@@ -28,8 +28,11 @@ namespace LitLink_FinalProject.Pages
         public HomePage(Reader loggedInUser)
         {
             InitializeComponent();
-            CheckUserSession();
+
             this.currentUser = loggedInUser;
+
+            CheckUserSession();
+
             this.Loaded += HomePage_Loaded;
         }
 
@@ -201,14 +204,15 @@ namespace LitLink_FinalProject.Pages
             MainWindow.AppFrame.Navigate(new CartPage(currentUser));
         }
 
-        private async void Profile_Click(object sender, RoutedEventArgs e)
+        private void Profile_Click(object sender, RoutedEventArgs e)
         {
-            if (currentUser == null) return;
-            List<Reader> allReaders = await apiService.GetAllReaders();
-            if (allReaders.Any(a => a.Id == currentUser.Id))
-                MainWindow.AppFrame.Navigate(new ReaderProfile(currentUser));
-            else
-                MessageBox.Show("You are not authorized to go there.", "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (currentUser == null)
+            {
+                MessageBox.Show("No reader is logged in.", "LitLink");
+                return;
+            }
+
+            MainWindow.AppFrame.Navigate(new ReaderProfile(currentUser));
         }
 
         private async void BecomeAuthor_Click(object sender, RoutedEventArgs e)
