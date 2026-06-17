@@ -31,12 +31,10 @@ namespace LitLink_FinalProject.WindowsFile
             }
             try
             {
-                List<User> users = await apiService.GetAllUsers();
-                User owner = users.Find(u => u.Id == ownerId);
                 Book_Series newSeries = new Book_Series
                 {
                     NameSeries = name,
-                    IdUser = owner
+                    IdUser = new User { Id = ownerId }
                 };
                 await apiService.InsertBookSeries(newSeries);
                 DialogResult = true;

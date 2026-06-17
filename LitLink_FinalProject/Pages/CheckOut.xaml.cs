@@ -33,15 +33,14 @@ namespace LitLink_FinalProject.Pages
             InitializeComponent();
         }
 
-        public void SetupCheckout(List<Book> cartBooks, string currentUserEmail, string currentUserPhone, double discountAmount = 0)
+        public void SetupCheckout(List<Book> cartBooks, string currentUserEmail, string currentUserPhone, double discountAmount = 0, Reader reader = null)
         {
             selectedBooks = cartBooks ?? new List<Book>();
             discountCodeAmount = discountAmount;
             BooksItemsControl.ItemsSource = selectedBooks;
             TxtConfirmEmail.Text = currentUserEmail;
             TxtConfirmPhone.Text = currentUserPhone;
-            this.curretReader = GetID(currentUserEmail).Result;
-
+            this.curretReader = reader;
             CalculatePrices();
         }
 

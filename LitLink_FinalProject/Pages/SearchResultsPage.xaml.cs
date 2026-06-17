@@ -68,15 +68,27 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void BookImage_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void BookImage_MouseDown(object sender, MouseButtonEventArgs e)
         {
             FrameworkElement element = sender as FrameworkElement;
             Book clickedBook = element?.DataContext as Book;
 
             if (clickedBook != null)
             {
-                BookPage detailsPage = new BookPage(clickedBook, false, false, false, currentUser);
-                this.NavigationService?.Navigate(detailsPage);
+                List<Cart_Detail> books = await apiService.GetAllCartDetails();
+                List<Book> ownedBooks = books.FindAll(b => b.IdCart.IdReader == currentUser && b.IdBook == clickedBook && b.IsPurchased).Select(b => b.IdBook).ToList();
+                if (ownedBooks.Contains(clickedBook))
+                {
+                    BookPage detailsPage = new BookPage(clickedBook, true, isAdmin: false, isAuthor: false,
+                 currentReader: currentUser, currentAuthor: null);
+                    this.NavigationService?.Navigate(detailsPage);
+                }
+                else
+                {
+                    BookPage detailsPage = new BookPage(clickedBook, false, isAdmin: false, isAuthor: false,
+                 currentReader: currentUser, currentAuthor: null);
+                    this.NavigationService?.Navigate(detailsPage);
+                }
             }
         }
 

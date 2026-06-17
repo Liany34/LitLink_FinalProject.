@@ -23,14 +23,14 @@ namespace LitLink_FinalProject.Pages
     {
         private Reader currentUser;
 
-        public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser)
+        public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentReader = null, Author currentAuthor = null)
         {
             InitializeComponent();
 
-            this.currentUser = currentUser;
+            this.currentUser = currentReader;
 
             BookUserControl bookUserControl =
-                new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor, currentUser);
+                new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor, currentReader, currentAuthor);
 
             MainContainer.Children.Clear();
             MainContainer.Children.Add(bookUserControl);
@@ -42,30 +42,28 @@ namespace LitLink_FinalProject.Pages
                 this.NavigationService.GoBack();
         }
     }
+
+    //public partial class BookPage : Page
+    //{
+    //    private Reader currentUser;
+
+    //    public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser)
+    //    {
+    //        InitializeComponent();
+
+    //        this.currentUser = currentUser;
+
+    //        BookUserControl bookUserControl =
+    //            new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor, currentUser);
+
+    //        MainContainer.Children.Clear();
+    //        MainContainer.Children.Add(bookUserControl);
+    //    }
+
+    //    private void BackButton_Click(object sender, RoutedEventArgs e)
+    //    {
+    //        if (this.NavigationService != null && this.NavigationService.CanGoBack)
+    //            this.NavigationService.GoBack();
+    //    }
+    //}
 }
-
-
-
-//< Border Cursor = "Hand" MouseDown = "BookImage_MouseDown" >
-//    < Image Source = "{Binding cover}" Stretch = "UniformToFill" Width = "120" Height = "180" />
-//</ Border >
-
-//private void BookImage_MouseDown(object sender, MouseButtonEventArgs e)
-//{
-//    // 1. שליפת הספר שעליו המשתמש לחץ מתוך ה-DataContext של האלמנט
-//    FrameworkElement element = sender as FrameworkElement;
-//    Book clickedBook = element?.DataContext as Book;
-
-//    if (clickedBook == null) return;
-
-//    // 2. שליפת נתוני המשתמש הנוכחי באפליקציה (שני את המשתנים האלו לשמות אצלך בפרויקט)
-//    bool ownsBook = false; // כאן תבדקי אם למשתמש יש את הספר, למשל: App.CurrentUser.OwnedBooks.Contains(clickedBook.Id)
-//    bool isAdmin = App.CurrentUser.IsAdmin;     // דוגמה
-//    bool isAuthor = App.CurrentUser.IsAuthor;   // דוגמה
-
-//    // 3. יצירת עמוד הפרטים החדש וניווט אליו בתוך ה-Frame הראשי של האפליקציה
-//    BookDetailsPage detailsPage = new BookDetailsPage(clickedBook, ownsBook, isAdmin, isAuthor);
-
-//    // ניווט דרך ה-NavigationService המובנה של העמוד הנוכחי
-//    this.NavigationService?.Navigate(detailsPage);
-//}

@@ -159,7 +159,8 @@ namespace LitLink_FinalProject.Pages
         private void AuthorRow_BookSelected(object sender, Book selectedBook)
         {
             if (selectedBook == null) return;
-            BookPage bookPage = new BookPage(selectedBook, false, false, viewingReader == null, viewingReader);
+            BookPage bookPage = new BookPage(selectedBook, true, isAdmin: false, isAuthor: true,
+             currentReader: null, currentAuthor: currentAuthor);
             this.NavigationService?.Navigate(bookPage);
         }
 

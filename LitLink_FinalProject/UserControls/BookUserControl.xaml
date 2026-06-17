@@ -57,11 +57,7 @@
                 Click="MenuBtn_Click">
             <Button.ContextMenu>
                 <ContextMenu x:Name="BookContextMenu">
-                    <MenuItem Header="Edit Cover" x:Name="EditCoverItem" Click="EditBook_Click"/>
-                    <MenuItem Header="Edit Name" x:Name="EditNameItem" Click="EditBook_Click"/>
-                    <MenuItem Header="Edit Description" x:Name="EditDescItem" Click="EditBook_Click"/>
-                    <MenuItem Header="Edit Price" x:Name="EditPriceItem" Click="EditBook_Click"/>
-                    <MenuItem Header="Edit Publication Date" x:Name="EditDateItem" Click="EditBook_Click"/>
+                    <MenuItem Header="Edit Book" x:Name="EditBookItem" Click="EditBook_Click"/>
                     <Separator x:Name="AdminSeparator"/>
                     <MenuItem Header="Delete Book" x:Name="DeleteItem" Foreground="Red" Click="DeleteBook_Click"/>
                     <MenuItem Header="Report Book" x:Name="ReportItem" Click="ReportBook_Click"/>
@@ -91,7 +87,7 @@
                            Foreground="#FF1493" 
                            TextAlignment="Left"/>
 
-                <StackPanel Margin="0,200,0,0">
+                <StackPanel Margin="0,20,0,0">
                     <Button x:Name="BuyBtn" 
                             Content="Buy Now" 
                             Style="{StaticResource PinkRoundedButton}" 
@@ -99,18 +95,18 @@
                             Margin="0,0,0,10" 
                             Click="Buy_Click"/>
                     <Button x:Name="AddReviewBtn"
-                            Content="Add Review"
-                            Style="{StaticResource PinkRoundedButton}"
-                            Height="45"
-                            Margin="0,0,0,10"
-                            Visibility="Collapsed"
-                            Click="AddReview_Click"/>
+            Content="Add Review"
+            Style="{StaticResource PinkRoundedButton}"
+            Height="45"
+            Margin="0,0,0,10"
+            Visibility="Collapsed"
+            Click="AddReview_Click"/>
                     <Button x:Name="AddToListBtn" 
-                            Content="Add to List" 
-                            Style="{StaticResource OutlineRoundedButton}" 
-                            Height="45" 
-                            Margin="0,0,0,10" 
-                            Click="AddToList_Click"/>
+            Content="Add to List" 
+            Style="{StaticResource OutlineRoundedButton}" 
+            Height="45" 
+            Margin="0,0,0,10" 
+            Click="AddToList_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>

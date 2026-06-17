@@ -165,7 +165,8 @@ namespace LitLink_FinalProject.Pages
             bool isAdmin = currentUser != null && allAdmins.Any(a => a.Id == currentUser.Id);
             bool isAuthor = currentUser != null && allAuthors.Any(a => a.Id == currentUser.Id);
 
-            BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin, isAuthor, currentUser);
+            BookPage detailsPage = new BookPage(selectedBook, ownsBook, isAdmin: false, isAuthor: false,
+             currentReader: currentUser, currentAuthor: null);
             this.NavigationService?.Navigate(detailsPage);
         }
 

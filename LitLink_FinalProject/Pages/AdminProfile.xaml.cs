@@ -20,7 +20,7 @@ namespace LitLink_FinalProject.Pages
         private List<Author> allAuthors = new List<Author>();
         private Admin currentAdmin;
 
-        private List<Reader> reportedUsers = new List<Reader>();
+        //private List<Reader> reportedUsers = new List<Reader>();
         private List<Book> reportedBooks = new List<Book>();
         private List<Reviews> reportedReviews = new List<Reviews>();
         private List<DiscountCodes> localCoupons = new List<DiscountCodes>();
@@ -66,7 +66,7 @@ namespace LitLink_FinalProject.Pages
                 List<Book> localBooks = await apiService.GetAllBooks() ?? new List<Book>();
                 List<Reviews> localReviews = await apiService.GetAllReviews() ?? new List<Reviews>();
 
-                reportedUsers = localReaders.Where(r => r.IsFlaged).ToList();
+                //reportedUsers = localReaders.Where(r => r.IsFlaged).ToList();
                 reportedBooks = localBooks.Where(b => b.IsFlaged).ToList();
                 reportedReviews = localReviews.Where(r => r.IsFlaged).ToList();
 
@@ -172,7 +172,7 @@ namespace LitLink_FinalProject.Pages
         private void LoadReportsData()
         {
             ReportsContainer.Children.Clear();
-            if (reportedBooks.Count == 0 && reportedReviews.Count == 0 && reportedUsers.Count == 0)
+            if (reportedBooks.Count == 0 && reportedReviews.Count == 0)// && reportedUsers.Count == 0)
             {
                 ReportsContainer.Children.Add(new TextBlock { Text = "No active reports pending review. ✨", FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) });
                 return;
@@ -199,27 +199,27 @@ namespace LitLink_FinalProject.Pages
                 );
             }
 
-            foreach (Reader reportU in reportedUsers.ToList())
-            {
-                ReportsContainer.Children.Add(
-                    CreateReportCard(
-                        $"[USER] Username: {reportU.Username} | ID: {reportU.Id}",
-                        async () =>
-                        {
-                            reportedUsers.Remove(reportU);
-                            reportU.IsFlaged = false;
+            //foreach (Reader reportU in reportedUsers.ToList())
+            //{
+            //    ReportsContainer.Children.Add(
+            //        CreateReportCard(
+            //            $"[USER] Username: {reportU.Username} | ID: {reportU.Id}",
+            //            async () =>
+            //            {
+            //                reportedUsers.Remove(reportU);
+            //                reportU.IsFlaged = false;
 
-                            ReaderUpdateDto dto = CreateReaderUpdateDto(reportU);
-                            await apiService.UpdateReader(dto);
-                        },
-                        async () =>
-                        {
-                            reportedUsers.Remove(reportU);
-                            await apiService.DeleteReader(reportU.Id);
-                        }
-                    )
-                );
-            }
+            //                ReaderUpdateDto dto = CreateReaderUpdateDto(reportU);
+            //                await apiService.UpdateReader(dto);
+            //            },
+            //            async () =>
+            //            {
+            //                reportedUsers.Remove(reportU);
+            //                await apiService.DeleteReader(reportU.Id);
+            //            }
+            //        )
+            //    );
+            //}
             foreach (Reviews reportR in reportedReviews.ToList())
                 ReportsContainer.Children.Add(CreateReportCard($"[REVIEW] \"{reportR.Text}\" | ID: {reportR.Id}", async () => { reportedReviews.Remove(reportR); reportR.IsFlaged = false; await apiService.UpdateReview(reportR); }, async () => { reportedReviews.Remove(reportR); await apiService.DeleteReview(reportR.Id); }));
         }

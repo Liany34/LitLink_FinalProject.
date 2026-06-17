@@ -69,7 +69,7 @@ namespace LitLink_FinalProject.Pages
                     {
                         CartUserControl bookControl = new CartUserControl();
                         bookControl.DataContext = book;
-
+                        bookControl.IsSelectedChanged += (s, args) => RecalculateSelectedPrice(); // הוסיפי שורה זו
                         loadedControls.Add(bookControl);
                         LstCartItems.Items.Add(bookControl);
 
@@ -86,10 +86,29 @@ namespace LitLink_FinalProject.Pages
                 MessageBox.Show("Error loading cart items: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        // הוסיפי את זה אחרי LoadCartItemsAsync
+        private void RecalculateSelectedPrice()
+        {
+            double selectedTotal = 0;
+
+            foreach (CartUserControl control in loadedControls)
+            {
+                if (control.IsBookSelected)
+                {
+                    Book book = control.DataContext as Book;
+                    if (book != null)
+                        selectedTotal += book.Price.GetValueOrDefault();
+                }
+            }
+
+            UpdatePriceDisplay(selectedTotal);
+            TxtSummaryBooksCount.Text = loadedControls.Count(c => c.IsBookSelected).ToString();
+        }
 
         private void UpdatePriceDisplay(double price)
         {
             TxtFinalPrice.Text = price.ToString("C");
+            TxtSummaryBooksCount.Text = loadedControls.Count(c => c.IsBookSelected).ToString();
         }
 
         private void ChkSelectAll_Checked(object sender, RoutedEventArgs e)
@@ -103,12 +122,15 @@ namespace LitLink_FinalProject.Pages
                 if (book != null)
                     chosenBooks.Add(book);
             }
+
+            RecalculateSelectedPrice();
         }
 
         private void ChkSelectAll_Unchecked(object sender, RoutedEventArgs e)
         {
             SetAllItemsSelection(false);
             chosenBooks.Clear();
+            RecalculateSelectedPrice();
         }
 
         private void SetAllItemsSelection(bool isSelected)
@@ -200,8 +222,11 @@ namespace LitLink_FinalProject.Pages
                 }
 
                 Pages.CheckOut checkoutPage = new Pages.CheckOut();
-                checkoutPage.SetupCheckout(chosenBooks, currentReader.Email, currentReader.PhoneNumber, 0);
-                MainWindow.AppFrame.Navigate(checkoutPage);
+                checkoutPage.SetupCheckout(chosenBooks, currentReader.Email, currentReader.PhoneNumber, 0, currentReader);
+                if (this.NavigationService != null)
+                    this.NavigationService.Navigate(checkoutPage);
+                else
+                    MainWindow.AppFrame.Navigate(checkoutPage);
             }
             catch (Exception ex)
             {

@@ -28,18 +28,26 @@ namespace LitLink_FinalProject.UserControls
             InitializeComponent();
             this.Loaded += async (s, e) => {
                 Book currentBook = this.DataContext as Book;
-                string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
-                if (currentBook != null && !string.IsNullOrEmpty(currentBook.Cover))
+                if (currentBook == null) return;
+
+                try
                 {
-                    try
+                    string st = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
+                    if (!string.IsNullOrEmpty(st))
                     {
                         byte[] imgStr = Convert.FromBase64String(st);
                         this.BookCoverImage.Source = ByteImageConverter.ByteToImage(imgStr);
                     }
-                    catch (Exception)
+                    else
                     {
-                        this.BookCoverImage.Source = new BitmapImage(new Uri("pack://application:,,,/Covers/To_be_revealed.png", UriKind.RelativeOrAbsolute));
+                        this.BookCoverImage.Source = new BitmapImage(
+                            new Uri("pack://application:,,,/Covers/To_be_revealed.png", UriKind.RelativeOrAbsolute));
                     }
+                }
+                catch (Exception)
+                {
+                    this.BookCoverImage.Source = new BitmapImage(
+                        new Uri("pack://application:,,,/Covers/To_be_revealed.png", UriKind.RelativeOrAbsolute));
                 }
             };
         }
