@@ -220,16 +220,10 @@ namespace LitLink_FinalProject.Pages
             if (currentUser == null) return;
             try
             {
-                List<Author> allAuthors = await apiService.GetAllAuthors();
-                Author existingAuthor = allAuthors.FirstOrDefault(a => a.Id == currentUser.Id);
-                if (existingAuthor != null)
-                    MainWindow.AppFrame.Navigate(new AuthorProfile(existingAuthor));
-                else
-                {
-                    var becomeAuthorPage = new BecomeAuthorPage();
-                    becomeAuthorPage.DataContext = currentUser;
-                    MainWindow.AppFrame.Navigate(becomeAuthorPage);
-                }
+                
+               var becomeAuthorPage = new BecomeAuthorPage();
+               becomeAuthorPage.DataContext = currentUser;
+               MainWindow.AppFrame.Navigate(becomeAuthorPage);
             }
             catch (Exception ex)
             {

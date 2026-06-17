@@ -87,9 +87,14 @@ namespace LitLink_FinalProject.WindowsFile
                 if (!string.IsNullOrEmpty(selectedReaderImagePath))
                 {
                     dto.FileName = System.IO.Path.GetFileName(selectedReaderImagePath);
-
                     byte[] imageBytes = File.ReadAllBytes(selectedReaderImagePath);
                     dto.Base64Image = Convert.ToBase64String(imageBytes);
+                }
+                else
+                {
+                    // שמירה על התמונה הקיימת
+                    dto.FileName = currentReader.PicturePath;
+                    dto.Base64Image = currentReader.Picture;
                 }
 
                 bool success = await apiService.UpdateReader(dto);
