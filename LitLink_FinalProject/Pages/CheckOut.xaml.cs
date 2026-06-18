@@ -2,74 +2,60 @@
 using Service;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Converters;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace LitLink_FinalProject.Pages
 {
     public partial class CheckOut : Page
     {
-        public static List<object> MyBooks { get; set; } = new List<object>();
+        public static List<Book> MyBooks { get; set; } = new List<Book>();
 
-        private List<Book> selectedBooks;
-        private double discountCodeAmount = 0;
-        private Reader curretReader;
+        private static readonly Regex CardNumberRegex = new(@"^\d{13,19}$");
+        private static readonly Regex ExpirationRegex = new(@"^(0[1-9]|1[0-2])\/\d{2}$");
+        private static readonly Regex CvvRegex = new(@"^\d{3,4}$");
+
+        private List<Book> _selectedBooks;
+        private List<Cart_Detail> _selectedCartDetails;
+        private double _discountCodeAmount;
+        private Reader _currentReader;
+        private readonly Apiservice _api = new Apiservice();
 
         public CheckOut()
         {
             InitializeComponent();
         }
 
-        public void SetupCheckout(List<Book> cartBooks, string currentUserEmail, string currentUserPhone, double discountAmount = 0, Reader reader = null)
+        public void SetupCheckout(
+            List<Book> cartBooks,
+            List<Cart_Detail> cartDetails,
+            string currentUserEmail,
+            string currentUserPhone,
+            double discountAmount = 0,
+            Reader reader = null)
         {
-            selectedBooks = cartBooks ?? new List<Book>();
-            discountCodeAmount = discountAmount;
-            BooksItemsControl.ItemsSource = selectedBooks;
+            _selectedBooks = cartBooks ?? new List<Book>();
+            _selectedCartDetails = cartDetails ?? new List<Cart_Detail>();
+            _discountCodeAmount = discountAmount;
+            _currentReader = reader;
+
+            BooksItemsControl.ItemsSource = _selectedBooks;
             TxtConfirmEmail.Text = currentUserEmail;
             TxtConfirmPhone.Text = currentUserPhone;
-            this.curretReader = reader;
-            CalculatePrices();
-        }
 
-        private async Task<Reader> GetID(string email)
-        {
-            Apiservice apiservice = new Apiservice();
-            List<Reader> allReader = await apiservice.GetAllReaders();
-            Reader current = allReader.Find(r => r.Email == email);
-            return current;
+            CalculatePrices();
         }
 
         private void CalculatePrices()
         {
-            double subTotal = 0;
-
-            foreach (var book in selectedBooks)
-            {
-                var priceProp = book.GetType().GetProperty("Price");
-                if (priceProp != null)
-                {
-                    subTotal += Convert.ToDouble(priceProp.GetValue(book, null));
-                }
-            }
-
-            double total = subTotal - discountCodeAmount;
-            if (total < 0) total = 0;
+            double subTotal = _selectedBooks.Sum(b => b.Price ?? 0);
+            double total = Math.Max(subTotal - _discountCodeAmount, 0);
 
             TxtSubTotal.Text = $"{subTotal:F2} ₪";
-            TxtDiscount.Text = $"{discountCodeAmount:F2} ₪";
+            TxtDiscount.Text = $"{_discountCodeAmount:F2} ₪";
             TxtTotal.Text = $"{total:F2} ₪";
         }
 
@@ -97,30 +83,111 @@ namespace LitLink_FinalProject.Pages
             ConfirmInfoPanel.Visibility = Visibility.Visible;
         }
 
-        private void PayNow_Click(object sender, RoutedEventArgs e)
+        private async void PayNow_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(TxtCardNumber.Text) || string.IsNullOrWhiteSpace(TxtCVV.Text))
+            if (!ValidateCreditCard()) return;
+
+            PayNowButton.IsEnabled = false;
+            PayNowButton.Content = "Processing...";
+
+            try
             {
-                MessageBox.Show(".אנא מלא את כל פרטי כרטיס האשראי לפני התשלום", "נתונים חסרים", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                await MarkBooksAsPurchasedAsync();
+
+                MyBooks.AddRange(_selectedBooks);
+
+                MessageBox.Show(
+                    "!הקנייה הושלמה בהצלחה\n.הספרים החדשים שלך נוספו לרשימת הספרים שלי",
+                    "LitLink – Success",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                MainWindow.AppFrame.Navigate(new HomePage(_currentReader));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"אירעה שגיאה במהלך הרכישה:\n{ex.Message}",
+                    "שגיאה",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                PayNowButton.IsEnabled = true;
+                PayNowButton.Content = "Pay Now";
+            }
+        }
+
+        private bool ValidateCreditCard()
+        {
+            string cardNumber = TxtCardNumber.Text.Trim().Replace(" ", "").Replace("-", "");
+            string expiration = TxtExpiration.Text.Trim();
+            string cvv = TxtCVV.Text.Trim();
+
+            if (!CardNumberRegex.IsMatch(cardNumber))
+            {
+                ShowCardError("מספר כרטיס אשראי לא תקין.\nאנא הכנס בין 13 ל-19 ספרות.");
+                TxtCardNumber.Focus();
+                return false;
             }
 
-            if (MyBooks == null) MyBooks = new List<object>();
+            if (!ExpirationRegex.IsMatch(expiration))
+            {
+                ShowCardError("תאריך תפוגה לא תקין.\nאנא הכנס בפורמט MM/YY.");
+                TxtExpiration.Focus();
+                return false;
+            }
 
-            MyBooks.AddRange(selectedBooks);
+            if (!IsExpirationValid(expiration))
+            {
+                ShowCardError("כרטיס האשראי פג תוקף.\nאנא השתמש בכרטיס בתוקף.");
+                TxtExpiration.Focus();
+                return false;
+            }
 
-            MessageBox.Show("!הקנייה הושלמה בהצלחה\n.הספרים החדשים שלך נוספו בהצלחה לרשימת הספרים שלי", "LitLink Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            HomePage homePage = new HomePage(curretReader);
-            homePage.DataContext = curretReader;
-            Window.GetWindow(this).Content = homePage;
+            if (!CvvRegex.IsMatch(cvv))
+            {
+                ShowCardError("CVV לא תקין.\nאנא הכנס 3 או 4 ספרות.");
+                TxtCVV.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsExpirationValid(string expiration)
+        {
+            var parts = expiration.Split('/');
+            int month = int.Parse(parts[0]);
+            int year = 2000 + int.Parse(parts[1]);
+            var cardExpiry = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+            return cardExpiry >= DateTime.Today;
+        }
+
+        private static void ShowCardError(string message)
+        {
+            MessageBox.Show(message, "פרטי כרטיס אשראי שגויים", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        private async Task MarkBooksAsPurchasedAsync()
+        {
+            var updateTasks = _selectedCartDetails
+                .Where(cd => !cd.IsPurchased)
+                .Select(cd =>
+                {
+                    cd.IsPurchased = true;
+                    cd.PurchaseDate = DateTime.Today;
+                    return _api.UpdateCartDetail(cd);
+                });
+
+            await Task.WhenAll(updateTasks);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.NavigationService != null && this.NavigationService.CanGoBack)
-                this.NavigationService.GoBack();
+            if (NavigationService?.CanGoBack == true)
+                NavigationService.GoBack();
             else
-                MainWindow.AppFrame.Navigate(new CartPage(curretReader)); 
+                MainWindow.AppFrame.Navigate(new CartPage(_currentReader));
         }
     }
 }

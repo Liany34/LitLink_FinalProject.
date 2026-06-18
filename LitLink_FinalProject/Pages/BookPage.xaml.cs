@@ -42,28 +42,4 @@ namespace LitLink_FinalProject.Pages
                 this.NavigationService.GoBack();
         }
     }
-
-    //public partial class BookPage : Page
-    //{
-    //    private Reader currentUser;
-
-    //    public BookPage(Book bookData, bool userOwnsBook, bool isAdmin, bool isAuthor, Reader currentUser)
-    //    {
-    //        InitializeComponent();
-
-    //        this.currentUser = currentUser;
-
-    //        BookUserControl bookUserControl =
-    //            new BookUserControl(bookData, userOwnsBook, isAdmin, isAuthor, currentUser);
-
-    //        MainContainer.Children.Clear();
-    //        MainContainer.Children.Add(bookUserControl);
-    //    }
-
-    //    private void BackButton_Click(object sender, RoutedEventArgs e)
-    //    {
-    //        if (this.NavigationService != null && this.NavigationService.CanGoBack)
-    //            this.NavigationService.GoBack();
-    //    }
-    //}
 }

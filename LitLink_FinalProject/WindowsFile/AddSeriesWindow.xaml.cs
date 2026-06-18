@@ -6,19 +6,19 @@ namespace LitLink_FinalProject.WindowsFile
 {
     public partial class AddSeriesWindow : Window
     {
-        private Apiservice apiService = new Apiservice();
-        private int ownerId;
+        private readonly Apiservice _apiService = new Apiservice();
+        private readonly int _ownerId;
 
         public AddSeriesWindow(Reader reader)
         {
             InitializeComponent();
-            this.ownerId = reader.Id;
+            _ownerId = reader.Id;
         }
 
         public AddSeriesWindow(Author author)
         {
             InitializeComponent();
-            this.ownerId = author.Id;
+            _ownerId = author.Id;
         }
 
         private async void Create_Click(object sender, RoutedEventArgs e)
@@ -29,15 +29,21 @@ namespace LitLink_FinalProject.WindowsFile
                 MessageBox.Show("Please enter a list name.", "LitLink");
                 return;
             }
+
             try
             {
-                Book_Series newSeries = new Book_Series
+                var dto = new BookSeriesInsertDto
                 {
                     NameSeries = name,
-                    IdUser = new User { Id = ownerId }
+                    IdUser = _ownerId
                 };
-                await apiService.InsertBookSeries(newSeries);
-                DialogResult = true;
+
+                int result = await _apiService.InsertBookSeries(dto);
+
+                if (result > 0)
+                    DialogResult = true;
+                else
+                    MessageBox.Show("Failed to create list. Please try again.", "LitLink");
             }
             catch (System.Exception ex)
             {

@@ -3,11 +3,16 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
+      xmlns:local="clr-namespace:LitLink_FinalProject"
+      xmlns:converters="clr-namespace:LitLink_FinalProject"
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="800"
       Title="CheckOut"
       Background="#FAFAFA">
+
+    <Page.Resources>
+        <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+    </Page.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -44,11 +49,14 @@
                                         </Grid.ColumnDefinitions>
 
                                         <Border Grid.Column="0" CornerRadius="5" ClipToBounds="True" Margin="0,0,12,0" VerticalAlignment="Center">
-                                            <Image Source="{Binding Cover}" Width="50" Height="72" Stretch="UniformToFill"/>
+                                            <Image Source="{Binding Cover, Converter={StaticResource Base64ToImageConverter}}"
+                                                   Width="50" 
+                                                   Height="72" 
+                                                   Stretch="UniformToFill"/>
                                         </Border>
 
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Title}" 
+                                            <TextBlock Text="{Binding BookName}" 
                                                        FontSize="14" 
                                                        FontWeight="SemiBold" 
                                                        Foreground="#333333" 
@@ -146,7 +154,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <Button Content="Pay Now" Width="150" Height="40" Background="#2ECC71" Foreground="White" FontWeight="SemiBold" BorderThickness="0" HorizontalAlignment="Center" Margin="0,15,0,0" Click="PayNow_Click">
+                        <Button x:Name="PayNowButton" Content="Pay Now" Width="150" Height="40" Background="#2ECC71" Foreground="White" FontWeight="SemiBold" BorderThickness="0" HorizontalAlignment="Center" Margin="0,15,0,0" Click="PayNow_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="20"/>

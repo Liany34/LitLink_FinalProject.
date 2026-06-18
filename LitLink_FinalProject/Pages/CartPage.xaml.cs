@@ -3,17 +3,10 @@ using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using LitLink_FinalProject.UserControls;
 
 namespace LitLink_FinalProject.Pages
@@ -25,13 +18,16 @@ namespace LitLink_FinalProject.Pages
         private List<CartUserControl> loadedControls = new List<CartUserControl>();
         private List<Book> chosenBooks = new List<Book>();
         private int currentUserId;
-        private Reader currentReader; 
+        private Reader currentReader;
 
-        public CartPage(Reader loggedInReader) 
+        // *** שינוי 1: שמור את ה-Cart_Details להעברה ל-CheckOut ***
+        private List<Cart_Detail> allUserCartDetails = new List<Cart_Detail>();
+
+        public CartPage(Reader loggedInReader)
         {
             InitializeComponent();
             this.currentReader = loggedInReader;
-            this.currentUserId = loggedInReader.Id; 
+            this.currentUserId = loggedInReader.Id;
             LoadCartItemsAsync();
         }
 
@@ -48,14 +44,17 @@ namespace LitLink_FinalProject.Pages
                 {
                     List<Cart_Detail> cartDetails = await apiService.GetAllCartDetails();
 
-                    List<Cart_Detail> userCartDetails = cartDetails.Where(cd => cd.IdCart.Id == userCart.Id).ToList();
+                    // *** שינוי 2: סנן רק ספרים שעדיין לא נרכשו ***
+                    List<Cart_Detail> userCartDetails = cartDetails
+                        .Where(cd => cd.IdCart.Id == userCart.Id && !cd.IsPurchased)
+                        .ToList();
+
+                    allUserCartDetails = userCartDetails;
 
                     foreach (Cart_Detail detail in userCartDetails)
                     {
                         if (detail.IdBook != null)
-                        {
                             cartBooks.Add(detail.IdBook);
-                        }
                     }
                 }
 
@@ -69,11 +68,10 @@ namespace LitLink_FinalProject.Pages
                     {
                         CartUserControl bookControl = new CartUserControl();
                         bookControl.DataContext = book;
-                        bookControl.IsSelectedChanged += (s, args) => RecalculateSelectedPrice(); // הוסיפי שורה זו
+                        bookControl.IsSelectedChanged += (s, args) => RecalculateSelectedPrice();
                         loadedControls.Add(bookControl);
                         LstCartItems.Items.Add(bookControl);
-
-                        totalCartPrice += book.Price.GetValueOrDefault(); ;
+                        totalCartPrice += book.Price.GetValueOrDefault();
                     }
                 }
 
@@ -86,11 +84,10 @@ namespace LitLink_FinalProject.Pages
                 MessageBox.Show("Error loading cart items: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        // הוסיפי את זה אחרי LoadCartItemsAsync
+
         private void RecalculateSelectedPrice()
         {
             double selectedTotal = 0;
-
             foreach (CartUserControl control in loadedControls)
             {
                 if (control.IsBookSelected)
@@ -100,7 +97,6 @@ namespace LitLink_FinalProject.Pages
                         selectedTotal += book.Price.GetValueOrDefault();
                 }
             }
-
             UpdatePriceDisplay(selectedTotal);
             TxtSummaryBooksCount.Text = loadedControls.Count(c => c.IsBookSelected).ToString();
         }
@@ -115,14 +111,12 @@ namespace LitLink_FinalProject.Pages
         {
             chosenBooks.Clear();
             SetAllItemsSelection(true);
-
             foreach (CartUserControl bookControl in loadedControls)
             {
                 Book book = bookControl.DataContext as Book;
                 if (book != null)
                     chosenBooks.Add(book);
             }
-
             RecalculateSelectedPrice();
         }
 
@@ -136,9 +130,7 @@ namespace LitLink_FinalProject.Pages
         private void SetAllItemsSelection(bool isSelected)
         {
             foreach (CartUserControl bookControl in loadedControls)
-            {
                 bookControl.IsBookSelected = isSelected;
-            }
         }
 
         private void BtnApplyDiscount_Click(object sender, RoutedEventArgs e)
@@ -151,7 +143,6 @@ namespace LitLink_FinalProject.Pages
                 try
                 {
                     ListDiscountCodes codes = await apiService.GetAllDiscountCodes();
-
                     DiscountCodes matchingCoupon = codes.FirstOrDefault(c => c.CodeText.ToUpper() == enteredCode);
 
                     Dispatcher.Invoke(() =>
@@ -159,7 +150,6 @@ namespace LitLink_FinalProject.Pages
                         if (matchingCoupon != null)
                         {
                             TxtInvalidCodeError.Visibility = Visibility.Collapsed;
-
                             double discountPercentage = matchingCoupon.Amount / 100.0;
                             double discount = totalCartPrice * discountPercentage;
                             double finalPrice = totalCartPrice - discount;
@@ -170,10 +160,9 @@ namespace LitLink_FinalProject.Pages
 
                             MessageBox.Show($"Coupon '{enteredCode}' applied successfully! You received a {matchingCoupon.Amount}% discount.",
                                             "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+
                             foreach (CartUserControl bookControl in loadedControls)
-                            {
                                 bookControl.ApplyDiscount(matchingCoupon.Amount);
-                            }
                         }
                         else
                         {
@@ -186,9 +175,7 @@ namespace LitLink_FinalProject.Pages
                 catch (Exception ex)
                 {
                     Dispatcher.Invoke(() =>
-                    {
-                        MessageBox.Show("Error validating discount code: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    });
+                        MessageBox.Show("Error validating discount code: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error));
                 }
             });
         }
@@ -221,8 +208,22 @@ namespace LitLink_FinalProject.Pages
                     return;
                 }
 
+                // *** שינוי 3: מצא את ה-Cart_Details שמתאימים לספרים שנבחרו ***
+                List<Cart_Detail> selectedCartDetails = allUserCartDetails
+                    .Where(cd => chosenBooks.Any(b => b.Id == cd.IdBook.Id))
+                    .ToList();
+
                 Pages.CheckOut checkoutPage = new Pages.CheckOut();
-                checkoutPage.SetupCheckout(chosenBooks, currentReader.Email, currentReader.PhoneNumber, 0, currentReader);
+
+                // *** שינוי 4: העבר גם selectedCartDetails ***
+                checkoutPage.SetupCheckout(
+                    chosenBooks,
+                    selectedCartDetails,
+                    currentReader.Email,
+                    currentReader.PhoneNumber,
+                    0,
+                    currentReader);
+
                 if (this.NavigationService != null)
                     this.NavigationService.Navigate(checkoutPage);
                 else
@@ -233,6 +234,7 @@ namespace LitLink_FinalProject.Pages
                 MessageBox.Show("Could not open checkout page: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (this.NavigationService != null && this.NavigationService.CanGoBack)
