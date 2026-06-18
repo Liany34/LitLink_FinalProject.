@@ -13,6 +13,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.Win32;
+using System.IO;
 
 namespace LitLink_FinalProject.WindowsFile
 {
@@ -21,6 +23,8 @@ namespace LitLink_FinalProject.WindowsFile
         private Apiservice apiService = new Apiservice();
         private Author currentAuthor;
         private User currentUser;
+
+        private string selectedCoverImagePath = null;
 
         public class GenreSelectionWrapper
         {
@@ -62,6 +66,21 @@ namespace LitLink_FinalProject.WindowsFile
                 System.Diagnostics.Debug.WriteLine("Error loading database lists: " + ex.Message);
             }
         }
+        private void BrowseCoverImage_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                selectedCoverImagePath = openFileDialog.FileName;
+
+                TxtCoverUrl.Text = System.IO.Path.GetFileName(selectedCoverImagePath);
+
+                byte[] imageBytes = File.ReadAllBytes(selectedCoverImagePath);
+                ImgCoverPreview.Source = ByteImageConverter.ByteToImage(imageBytes);
+            }
+        }
 
         private async void BtnPublish_Click(object sender, RoutedEventArgs e)
         {
@@ -72,7 +91,7 @@ namespace LitLink_FinalProject.WindowsFile
             Language selectedLanguage = CmbLanguages.SelectedItem as Language;
             DateTime? publishDate = DpPublishDate.SelectedDate;
 
-            if (string.IsNullOrEmpty(bookName) || string.IsNullOrEmpty(coverUrl) || selectedLanguage == null || !publishDate.HasValue)
+            if (string.IsNullOrEmpty(bookName) || selectedLanguage == null || !publishDate.HasValue)
             {
                 MessageBox.Show("Please fill out all required fields (Title, Cover, Language, Date) 🌸", "LitLink", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -96,14 +115,21 @@ namespace LitLink_FinalProject.WindowsFile
                 Book newBook = new Book
                 {
                     BookName = bookName,
-                    Cover = coverUrl,
                     Information = description,
-                    BookLink = bookLink, 
+                    BookLink = bookLink,
                     Price = price,
                     PublicationDate = publishDate.Value,
-                    IdAuthor = currentAuthor, 
+                    IdAuthor = currentAuthor,
                     IdLanguage = selectedLanguage
                 };
+
+                // אם נבחרה תמונה — שולחים אותה כ-Base64 דרך BookUpdateDto
+                if (!string.IsNullOrEmpty(selectedCoverImagePath))
+                {
+                    byte[] imageBytes = File.ReadAllBytes(selectedCoverImagePath);
+                    newBook.Cover = Convert.ToBase64String(imageBytes);
+                    newBook.CoverPath = System.IO.Path.GetFileName(selectedCoverImagePath);
+                }
 
                 await apiService.InsertBook(newBook);
                 List<Book> allBooks = await apiService.GetAllBooks();

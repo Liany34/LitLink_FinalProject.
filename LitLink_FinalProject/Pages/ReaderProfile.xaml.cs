@@ -279,11 +279,17 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void EditDetails_Click(object sender, RoutedEventArgs e) 
+        private async void EditDetails_Click(object sender, RoutedEventArgs e)
         {
             EditReaderProfileWindow win = new EditReaderProfileWindow(currentUser);
             if (win.ShowDialog() == true)
             {
+                // שליפת המשתמש המעודכן מחדש מה-API
+                List<Reader> allReaders = await apiService.GetAllReaders();
+                Reader updatedReader = allReaders.FirstOrDefault(r => r.Id == currentUser.Id);
+                if (updatedReader != null)
+                    currentUser = updatedReader;
+
                 LoadAllData();
             }
         }

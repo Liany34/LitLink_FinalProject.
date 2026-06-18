@@ -13,8 +13,8 @@
             <Setter Property="Background" Value="#AA3954"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Padding" Value="15,5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12,4"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -67,8 +67,12 @@
 
         <Border Grid.Column="0" Padding="0,0,20,0">
             <StackPanel>
-                <Border CornerRadius="15" ClipToBounds="True" Background="White" 
-                        BorderBrush="#FFC0CB" BorderThickness="2" Height="420">
+                <Border CornerRadius="15" 
+                        ClipToBounds="True" 
+                        Background="White" 
+                        BorderBrush="#FFC0CB" 
+                        BorderThickness="2" 
+                        Height="320">
                     <Grid>
                         <Image x:Name="BookCoverImage" Stretch="UniformToFill"/>
                     </Grid>
@@ -91,22 +95,24 @@
                     <Button x:Name="BuyBtn" 
                             Content="Buy Now" 
                             Style="{StaticResource PinkRoundedButton}" 
-                            Height="45" 
-                            Margin="0,0,0,10" 
+                            Height="38"
+                            Margin="0,0,0,8" 
                             Click="Buy_Click"/>
+
                     <Button x:Name="AddReviewBtn"
-            Content="Add Review"
-            Style="{StaticResource PinkRoundedButton}"
-            Height="45"
-            Margin="0,0,0,10"
-            Visibility="Collapsed"
-            Click="AddReview_Click"/>
+                            Content="✍️ Add Review"
+                            Style="{StaticResource PinkRoundedButton}"
+                            Height="38"
+                            Margin="0,0,0,8"
+                            Visibility="Collapsed"
+                            Click="AddReview_Click"/>
+
                     <Button x:Name="AddToListBtn" 
-            Content="Add to List" 
-            Style="{StaticResource OutlineRoundedButton}" 
-            Height="45" 
-            Margin="0,0,0,10" 
-            Click="AddToList_Click"/>
+                            Content="Add to List" 
+                            Style="{StaticResource OutlineRoundedButton}" 
+                            Height="38"
+                            Margin="0,0,0,8"
+                            Click="AddToList_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>

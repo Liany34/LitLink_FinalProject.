@@ -54,7 +54,7 @@
 
   <ItemGroup>
     <Reference Include="Model">
-      <HintPath>..\..\Liany34\LitLink_Liany\ViewModel\bin\Debug\net8.0\Model.dll</HintPath>
+      <HintPath>..\..\Liany34\LitLink_Liany\Service\bin\Debug\net8.0\Model.dll</HintPath>
     </Reference>
     <Reference Include="Service">
       <HintPath>..\..\Liany34\LitLink_Liany\Service\bin\Debug\net8.0\Service.dll</HintPath>

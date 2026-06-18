@@ -47,21 +47,16 @@ namespace LitLink_FinalProject.UserControls
 
             try
             {
-                // 1. בדיקת Read More
                 ReadMoreBtn.Visibility = DescriptionTextBlock.ActualHeight < 120
                     ? Visibility.Collapsed
                     : Visibility.Visible;
 
-                // 2. שליפת סטטוס קנייה/עגלה — חייב לפני SetActionButtons
                 await CheckReaderBookStatus();
 
-                // 3. עדכון כפתורים אחרי שיש מידע אמיתי
                 SetActionButtons();
 
-                // 4. הרשאות תפריט 3 נקודות
                 SetupPermissions();
 
-                // 5. טעינת ביקורות
                 ReviewsStackPanel.Children.Clear();
                 TotalReviewsTextBlock.Text = "(0)";
 
@@ -82,9 +77,11 @@ namespace LitLink_FinalProject.UserControls
                         StarsTextBlock.FontSize = 22;
                         StarsTextBlock.Foreground = Brushes.Gold;
 
+                        int currentUserId = currentReader?.Id ?? 0;
+
                         foreach (Reviews reviewItem in bookReviews)
                         {
-                            ReviewsUserControl reviewControl = new ReviewsUserControl(reviewItem, 0, isAdmin);
+                            ReviewsUserControl reviewControl = new ReviewsUserControl(reviewItem, currentUserId, isAdmin);
                             ReviewsStackPanel.Children.Add(reviewControl);
                         }
                     }
@@ -96,7 +93,6 @@ namespace LitLink_FinalProject.UserControls
                     }
                 }
 
-                // 6. טעינת תמונת כריכה
                 string coverBase64 = await apiService.GetBookCoverByBookIDByte64(currentBook.Id);
                 if (!string.IsNullOrEmpty(coverBase64))
                 {
@@ -116,38 +112,20 @@ namespace LitLink_FinalProject.UserControls
             AddReviewBtn.Visibility = Visibility.Collapsed;
             AddToListBtn.Visibility = Visibility.Collapsed;
 
-            // מנהל וסופר לא רואים כפתורי קנייה
             if (isAdmin || isAuthor)
                 return;
 
-            // קורא — כפתור "הוסף לרשימה" תמיד מוצג
             AddToListBtn.Visibility = Visibility.Visible;
+            AddReviewBtn.Visibility = Visibility.Visible;
 
-            if (userAlreadyPurchasedBook)
-            {
-                // קנה כבר → הצג הוספת ביקורת
-                AddReviewBtn.Visibility = Visibility.Visible;
-                BuyBtn.Visibility = Visibility.Collapsed;
-            }
-            else if (bookAlreadyInCart)
-            {
-                // בעגלה אבל לא קנה → הסתר הכל חוץ מ"הוסף לרשימה"
-                BuyBtn.Visibility = Visibility.Collapsed;
-                AddReviewBtn.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // לא קנה ולא בעגלה → הצג קנייה
+            if (!userAlreadyPurchasedBook && !bookAlreadyInCart)
                 BuyBtn.Visibility = Visibility.Visible;
-                AddReviewBtn.Visibility = Visibility.Collapsed;
-            }
         }
 
         private void SetupPermissions()
         {
             Book currentBook = this.DataContext as Book;
 
-            // סופר רואה עריכה/מחיקה רק על הספרים שלו
             bool canEditOrDelete = isAdmin ||
                 (isAuthor && currentAuthor != null && currentBook != null &&
                  currentBook.IdAuthor?.Id == currentAuthor.Id);
@@ -392,12 +370,52 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        private void AddReview_Click(object sender, RoutedEventArgs e)
+        private async void AddReview_Click(object sender, RoutedEventArgs e)
         {
             Book currentBook = this.DataContext as Book;
             if (currentBook == null || currentReader == null) return;
 
-            MessageBox.Show("Open add review window here.", "LitLink");
+            var reviewWindow = new AddReviewWindow(currentReader, currentBook);
+            bool? result = reviewWindow.ShowDialog();
+
+            if (result == true)
+            {
+                // רענון הביקורות אחרי הוספה
+                ReviewsStackPanel.Children.Clear();
+                TotalReviewsTextBlock.Text = "(0)";
+                StarsTextBlock.Text = "";
+
+                List<Reviews> allReviews = await apiService.GetAllReviews();
+
+                if (allReviews != null)
+                {
+                    List<Reviews> bookReviews = allReviews
+                        .Where(r => r != null && r.IdBook != null && r.IdBook.Id == currentBook.Id)
+                        .ToList();
+
+                    TotalReviewsTextBlock.Text = $"({bookReviews.Count})";
+
+                    if (bookReviews.Count > 0)
+                    {
+                        double average = bookReviews.Average(r => r.Stars);
+                        StarsTextBlock.Text = $"{average:0.0} ★";
+                        StarsTextBlock.FontSize = 22;
+                        StarsTextBlock.Foreground = Brushes.Gold;
+
+                        foreach (Reviews reviewItem in bookReviews)
+                        {
+                            ReviewsUserControl reviewControl = new ReviewsUserControl(reviewItem, currentReader.Id, isAdmin);
+                            ReviewsStackPanel.Children.Add(reviewControl);
+                        }
+                    }
+                    else
+                    {
+                        StarsTextBlock.Text = "No reviews yet";
+                        StarsTextBlock.FontSize = 14;
+                        StarsTextBlock.Foreground = Brushes.Gray;
+                    }
+                }
+            }
         }
 
         private BookUpdateDto CreateBookUpdateDto(Book book) => new BookUpdateDto

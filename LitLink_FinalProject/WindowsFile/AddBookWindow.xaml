@@ -21,8 +21,41 @@
                     <TextBlock Text="Book Title" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
                     <TextBox x:Name="TxtBookName" Height="30" Padding="5,2" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,12"/>
 
-                    <TextBlock Text="Cover Image URL / Path" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
-                    <TextBox x:Name="TxtCoverUrl" Height="30" Padding="5,2" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,12"/>
+                    <TextBlock Text="Cover Image" 
+                               FontSize="13" 
+                               FontWeight="SemiBold" 
+                               Foreground="#4A4A4A" 
+                               Margin="0,0,0,5"/>
+
+                    <Image x:Name="ImgCoverPreview"
+                           Height="120" 
+                           Width="100"
+                           Stretch="UniformToFill"
+                           HorizontalAlignment="Left"
+                           Margin="0,0,0,8"/>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="90"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="TxtCoverUrl"
+                                 Grid.Column="0"
+                                 Height="30" 
+                                 Padding="5,2"
+                                 BorderBrush="#FFC0CB" 
+                                 BorderThickness="1.5"
+                                 IsReadOnly="True"/>
+
+                        <Button Content="Browse..."
+                                Grid.Column="1"
+                                Margin="5,0,0,0"
+                                Background="#D06A8D"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Click="BrowseCoverImage_Click"/>
+                    </Grid>
 
                     <TextBlock Text="Book Summary / Description" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
                     <TextBox x:Name="TxtDescription" Height="70" Padding="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" BorderBrush="#FFC0CB" BorderThickness="1.5" Margin="0,0,0,12"/>

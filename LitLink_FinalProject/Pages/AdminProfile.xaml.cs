@@ -20,7 +20,6 @@ namespace LitLink_FinalProject.Pages
         private List<Author> allAuthors = new List<Author>();
         private Admin currentAdmin;
 
-        //private List<Reader> reportedUsers = new List<Reader>();
         private List<Book> reportedBooks = new List<Book>();
         private List<Reviews> reportedReviews = new List<Reviews>();
         private List<DiscountCodes> localCoupons = new List<DiscountCodes>();
@@ -62,11 +61,9 @@ namespace LitLink_FinalProject.Pages
                 allAuthors = await apiService.GetAllAuthors() ?? new List<Author>();
                 localCoupons = await apiService.GetAllDiscountCodes() ?? new List<DiscountCodes>();
 
-                List<Reader> localReaders = await apiService.GetAllReaders() ?? new List<Reader>();
                 List<Book> localBooks = await apiService.GetAllBooks() ?? new List<Book>();
                 List<Reviews> localReviews = await apiService.GetAllReviews() ?? new List<Reviews>();
 
-                //reportedUsers = localReaders.Where(r => r.IsFlaged).ToList();
                 reportedBooks = localBooks.Where(b => b.IsFlaged).ToList();
                 reportedReviews = localReviews.Where(r => r.IsFlaged).ToList();
 
@@ -172,11 +169,20 @@ namespace LitLink_FinalProject.Pages
         private void LoadReportsData()
         {
             ReportsContainer.Children.Clear();
-            if (reportedBooks.Count == 0 && reportedReviews.Count == 0)// && reportedUsers.Count == 0)
+
+            if (reportedBooks.Count == 0 && reportedReviews.Count == 0)
             {
-                ReportsContainer.Children.Add(new TextBlock { Text = "No active reports pending review. ✨", FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) });
+                ReportsContainer.Children.Add(new TextBlock
+                {
+                    Text = "No active reports pending review. ✨",
+                    FontSize = 14,
+                    Foreground = Brushes.Gray,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 40, 0, 0)
+                });
                 return;
             }
+
             foreach (Book report in reportedBooks.ToList())
             {
                 ReportsContainer.Children.Add(
@@ -186,7 +192,6 @@ namespace LitLink_FinalProject.Pages
                         {
                             reportedBooks.Remove(report);
                             report.IsFlaged = false;
-
                             BookUpdateDto dto = CreateBookUpdateDto(report);
                             await apiService.UpdateBook(dto);
                         },
@@ -199,29 +204,25 @@ namespace LitLink_FinalProject.Pages
                 );
             }
 
-            //foreach (Reader reportU in reportedUsers.ToList())
-            //{
-            //    ReportsContainer.Children.Add(
-            //        CreateReportCard(
-            //            $"[USER] Username: {reportU.Username} | ID: {reportU.Id}",
-            //            async () =>
-            //            {
-            //                reportedUsers.Remove(reportU);
-            //                reportU.IsFlaged = false;
-
-            //                ReaderUpdateDto dto = CreateReaderUpdateDto(reportU);
-            //                await apiService.UpdateReader(dto);
-            //            },
-            //            async () =>
-            //            {
-            //                reportedUsers.Remove(reportU);
-            //                await apiService.DeleteReader(reportU.Id);
-            //            }
-            //        )
-            //    );
-            //}
             foreach (Reviews reportR in reportedReviews.ToList())
-                ReportsContainer.Children.Add(CreateReportCard($"[REVIEW] \"{reportR.Text}\" | ID: {reportR.Id}", async () => { reportedReviews.Remove(reportR); reportR.IsFlaged = false; await apiService.UpdateReview(reportR); }, async () => { reportedReviews.Remove(reportR); await apiService.DeleteReview(reportR.Id); }));
+            {
+                ReportsContainer.Children.Add(
+                    CreateReportCard(
+                        $"[REVIEW] \"{reportR.Text}\" | ID: {reportR.Id}",
+                        async () =>
+                        {
+                            reportedReviews.Remove(reportR);
+                            reportR.IsFlaged = false;
+                            await apiService.UpdateReview(reportR);
+                        },
+                        async () =>
+                        {
+                            reportedReviews.Remove(reportR);
+                            await apiService.DeleteReview(reportR.Id);
+                        }
+                    )
+                );
+            }
         }
 
         private Border CreateReportCard(string infoText, Func<Task> onDismiss, Func<Task> onDelete)
@@ -275,17 +276,36 @@ namespace LitLink_FinalProject.Pages
             try
             {
                 List<News> allNews = await apiService.GetAllNews();
-                List<News> adminNews = allNews.Where(n => n.IdUser != null && n.IdUser.Id == currentAdmin.Id).ToList();
-                if (adminNews.Count == 0) { NewsContainer.Children.Add(new TextBlock { Text = "No news published yet.", FontSize = 14, Foreground = Brushes.Gray, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40, 0, 0) }); return; }
-                foreach (var news in adminNews)
+
+                if (allNews == null || allNews.Count == 0)
                 {
-                    LitLink_FinalProject.UserControls.NewsUserControl nc = new LitLink_FinalProject.UserControls.NewsUserControl();
+                    NewsContainer.Children.Add(new TextBlock
+                    {
+                        Text = "No news published yet.",
+                        FontSize = 14,
+                        Foreground = Brushes.Gray,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 40, 0, 0)
+                    });
+                    return;
+                }
+
+                foreach (var news in allNews)
+                {
+                    LitLink_FinalProject.UserControls.NewsUserControl nc =
+                        new LitLink_FinalProject.UserControls.NewsUserControl();
                     nc.DataContext = news;
+                    nc.LoggedInUser = currentAdmin;
+                    nc.IsLoggedInUserAdmin = true;
+                    nc.IsLoggedInUserAuthor = false;
                     nc.NewsChanged += () => { LoadNewsTab(); };
                     NewsContainer.Children.Add(nc);
                 }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Error loading admin news: " + ex.Message); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading admin news: " + ex.Message);
+            }
         }
 
         private void HighlightTab(Button activeBtn)
@@ -335,29 +355,6 @@ namespace LitLink_FinalProject.Pages
                 CoverPath = book.CoverPath,
                 FileName = null,
                 Base64Image = null
-            };
-        }
-
-        private ReaderUpdateDto CreateReaderUpdateDto(Reader reader)
-        {
-            return new ReaderUpdateDto
-            {
-                Id = reader.Id,
-
-                FirstName = reader.FirstName,
-                LastName = reader.LastName,
-                PhoneNumber = reader.PhoneNumber,
-                Email = reader.Email,
-                Username = reader.Username,
-                Pass = reader.Pass,
-                Birthdate = reader.Birthdate,
-
-                PicturePath = reader.PicturePath,
-                FileName = null,
-                Base64Image = null,
-
-                Nickname = reader.Nickname,
-                IsFlaged = reader.IsFlaged
             };
         }
     }

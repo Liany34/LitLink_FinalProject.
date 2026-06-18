@@ -331,11 +331,20 @@ namespace LitLink_FinalProject.Pages
                 AuthorMenuPopup.Visibility = Visibility.Collapsed; 
         }
 
-        private void BtnEditProfile_Click(object sender, RoutedEventArgs e)
+        private async void BtnEditProfile_Click(object sender, RoutedEventArgs e)
         {
             if (currentAuthor == null) return;
             EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(currentAuthor);
-            if (editWin.ShowDialog() == true) LoadAuthorData();
+            if (editWin.ShowDialog() == true)
+            {
+                // שליפת הסופר המעודכן מחדש מה-API
+                List<Author> allAuthors = await apiService.GetAllAuthors();
+                Author updatedAuthor = allAuthors.FirstOrDefault(a => a.Id == currentAuthor.Id);
+                if (updatedAuthor != null)
+                    currentAuthor = updatedAuthor;
+
+                LoadAuthorData();
+            }
         }
 
         private void AddBook_Click(object sender, RoutedEventArgs e)
