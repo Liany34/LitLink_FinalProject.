@@ -106,20 +106,6 @@ namespace LitLink_FinalProject.Pages
                     System.Diagnostics.Debug.WriteLine("Image loading failed: " + imgEx.Message);
                     SetDefaultProfilePicture();
                 }
-
-                try
-                {
-                    List<Author> allAuthors = await apiService.GetAllAuthors();
-                    if (allAuthors.Any(a => a.Id == currentUser.Id))
-                        BecomeAuthorItem.Header = "Author Dashboard";
-                    else
-                        BecomeAuthorItem.Header = "Become Author";
-                    BecomeAuthorItem.Visibility = Visibility.Visible;
-                }
-                catch (Exception authorEx)
-                {
-                    System.Diagnostics.Debug.WriteLine("Author check failed: " + authorEx.Message);
-                }
             }
             else
             {
@@ -127,7 +113,6 @@ namespace LitLink_FinalProject.Pages
                 MenuSeparator.Visibility = Visibility.Collapsed;
                 CartItem.Visibility = Visibility.Collapsed;
                 ProfileItem.Visibility = Visibility.Collapsed;
-                BecomeAuthorItem.Visibility = Visibility.Collapsed;
                 LogOutItem.Visibility = Visibility.Collapsed;
             }
         }
@@ -214,22 +199,6 @@ namespace LitLink_FinalProject.Pages
             }
 
             MainWindow.AppFrame.Navigate(new ReaderProfile(currentUser));
-        }
-
-        private async void BecomeAuthor_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentUser == null) return;
-            try
-            {
-                
-               var becomeAuthorPage = new BecomeAuthorPage();
-               becomeAuthorPage.DataContext = currentUser;
-               MainWindow.AppFrame.Navigate(becomeAuthorPage);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message, "LitLink", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
 
         private void LogOut_Click(object sender, RoutedEventArgs e)

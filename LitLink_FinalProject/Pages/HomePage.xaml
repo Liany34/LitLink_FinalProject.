@@ -71,7 +71,6 @@
                         <Separator x:Name="MenuSeparator" Visibility="Collapsed"/>
                         <MenuItem Header="Cart" x:Name="CartItem"  Click="Cart_Click"/>
                         <MenuItem Header="My Profile" x:Name="ProfileItem" Click="Profile_Click"/>
-                        <MenuItem Header="Become Author" x:Name="BecomeAuthorItem" Click="BecomeAuthor_Click"/>
                         <MenuItem Header="Log Out" x:Name="LogOutItem" Foreground="Red" Click="LogOut_Click"/>
                     </ContextMenu>
                 </Button.ContextMenu>

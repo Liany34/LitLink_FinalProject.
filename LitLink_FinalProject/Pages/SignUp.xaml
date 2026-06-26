@@ -6,27 +6,37 @@
       xmlns:local="clr-namespace:LitLink_FinalProject.Pages"
       mc:Ignorable="d" 
       Title="SignUp"
-      Background="White">
-    <Grid>
-        <Grid.Background>
-            <ImageBrush ImageSource="/Covers/SingUp.png" Stretch="Fill"/>
-        </Grid.Background>
+      Background="#f6dadd">
 
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1.8*"/>
-            <RowDefinition Height="6.5*"/>
-            <RowDefinition Height="1.7*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2.8*"/>
-            <ColumnDefinition Width="3.6*"/>
-            <ColumnDefinition Width="3.6*"/>
-        </Grid.ColumnDefinitions>
+
+        <Image Grid.RowSpan="3"
+               Source="/Covers/Flower.png"
+               Width="90" Height="90"
+               Opacity="0.9"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Bottom"
+               Panel.ZIndex="-1"
+               Margin="10,0,0,90"
+               Stretch="Uniform"/>
+        <Image Grid.RowSpan="3"
+               Source="/Covers/Flower.png"
+               Width="120" Height="120"
+               Opacity="0.9"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Bottom"
+               Panel.ZIndex="-1"
+               Margin="60,0,0,10"
+               Stretch="Uniform"/>
 
         <Button x:Name="BackButton"
                 Content="← back"
                 Grid.Row="0"
-                Grid.Column="0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Margin="20,20,0,0"
@@ -40,259 +50,314 @@
                 FontFamily="/Fonts/Roboto Slab"
                 Click="BackButton_Click"/>
 
-        <Grid Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,12,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="44.5"/>
-                <RowDefinition Height="44.5"/>
-                <RowDefinition Height="44.5"/>
-                <RowDefinition Height="44.5"/>
-                <RowDefinition Height="44.5"/>
-                <RowDefinition Height="44.5"/>
-                <RowDefinition Height="44.5"/>
-                <RowDefinition Height="44.5"/>
-            </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,25,0,10">
+            <TextBlock Text="Welcome to LitLink"
+                       FontFamily="/Fonts/#Alex Brush"
+                       FontSize="34"
+                       Foreground="#aa3954"
+                       HorizontalAlignment="Center"/>
+            <Border BorderBrush="#aa3954" BorderThickness="0,1,0,0" Width="340" Margin="0,8,0,0"/>
+        </StackPanel>
 
-            <Grid Grid.Row="0" VerticalAlignment="Center" Margin="5,0,0,0">
-                <TextBox x:Name="FirstNameInput"
-                         Height="30"
-                         Text="First Name"
-                         Foreground="#6c3134"
-                         FontSize="14"
-                         FontFamily="/Fonts/#Alex Brush"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         VerticalContentAlignment="Center"
-                         GotFocus="FirstNameInput_GotFocus"
-                         LostFocus="FirstNameInput_LostFocus"/>
-            </Grid>
+        <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="330"/>
+                <ColumnDefinition Width="330"/>
+            </Grid.ColumnDefinitions>
 
-            <Grid Grid.Row="1" VerticalAlignment="Center" Margin="5,0,0,0">
-                <TextBox x:Name="LastNameInput"
-                         Height="30"
-                         Text="Last Name"
-                         Foreground="#6c3134"
-                         FontSize="14"
-                         FontFamily="/Fonts/#Alex Brush"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         VerticalContentAlignment="Center"
-                         GotFocus="LastNameInput_GotFocus"
-                         LostFocus="LastNameInput_LostFocus"/>
-            </Grid>
+            <StackPanel Grid.Column="0" Margin="10,0,30,0">
 
-            <Grid Grid.Row="2" VerticalAlignment="Center" Margin="5,0,0,0">
-                <StackPanel>
-                    <TextBox x:Name="PhoneInput"
+                <StackPanel Margin="0,0,0,22">
+                    <TextBox x:Name="FirstNameInput"
                              Height="30"
-                             Text="000-0000000"
-                             Foreground="#6c3134"
-                             FontSize="14"
+                             Text="Please enter your First Name"
+                             Foreground="#aa3954"
+                             FontSize="15"
                              FontFamily="/Fonts/#Alex Brush"
                              Background="Transparent"
-                             BorderThickness="0"
+                             BorderThickness="0,0,0,1"
+                             BorderBrush="#aa3954"
+                             VerticalContentAlignment="Center"
+                             GotFocus="FirstNameInput_GotFocus"
+                             LostFocus="FirstNameInput_LostFocus"/>
+                    <TextBlock x:Name="ExistingNameWarning"
+                               Text="First name is required"
+                               Foreground="#aa3954"
+                               FontSize="10"
+                               Visibility="Collapsed"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               Margin="2,3,0,0"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,22">
+                    <TextBox x:Name="LastNameInput"
+                             Height="30"
+                             Text="Please enter your LastName"
+                             Foreground="#aa3954"
+                             FontSize="15"
+                             FontFamily="/Fonts/#Alex Brush"
+                             Background="Transparent"
+                             BorderThickness="0,0,0,1"
+                             BorderBrush="#aa3954"
+                             VerticalContentAlignment="Center"
+                             GotFocus="LastNameInput_GotFocus"
+                             LostFocus="LastNameInput_LostFocus"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,22">
+                    <StackPanel Margin="0,0,0,22">
+                        <TextBox x:Name="EmailInput"
+                             Height="30"
+                             Text="Please enter your Email"
+                             Foreground="#aa3954"
+                             FontSize="15"
+                             FontFamily="/Fonts/#Alex Brush"
+                             Background="Transparent"
+                             BorderThickness="0,0,0,1"
+                             BorderBrush="#aa3954"
+                             VerticalContentAlignment="Center"
+                             GotFocus="EmailInput_GotFocus"
+                             LostFocus="EmailInput_LostFocus"
+                             TextChanged="EmailInput_TextChanged"/>
+                        <TextBlock x:Name="InvalidEmail"
+                               Text="Invalid email format"
+                               Foreground="#c0392b"
+                               FontSize="10"
+                               Visibility="Collapsed"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               Margin="2,3,0,0"/>
+                        <TextBlock x:Name="ExistingEmail"
+                               Text="Email already exists"
+                               Foreground="#c0392b"
+                               FontSize="10"
+                               Visibility="Collapsed"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               Margin="2,3,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,22">
+                    <TextBox x:Name="PhoneInput"
+                             Height="30"
+                             Text="Please enter your Phone Number"
+                             Foreground="#aa3954"
+                             FontSize="15"
+                             FontFamily="/Fonts/#Alex Brush"
+                             Background="Transparent"
+                             BorderThickness="0,0,0,1"
+                             BorderBrush="#aa3954"
                              VerticalContentAlignment="Center"
                              GotFocus="PhoneInput_GotFocus"
                              LostFocus="PhoneInput_LostFocus"/>
                     <TextBlock x:Name="InvaildPhone"
-                               Text="Invalid phone Number" 
-                               Foreground="#aa3954" 
-                               FontSize="9" 
+                               Text="Invalid phone Number"
+                               Foreground="#c0392b"
+                               FontSize="10"
                                Visibility="Collapsed"
                                FontFamily="/Fonts/#Roboto Slab"
-                               Margin="0,2,0,0"/>
+                               Margin="2,3,0,0"/>
                     <TextBlock x:Name="ExistingPhone"
-                               Text="Phone number already exists" 
-                               Foreground="#aa3954" 
-                               FontSize="9" 
+                               Text="Phone number already exists"
+                               Foreground="#c0392b"
+                               FontSize="10"
                                Visibility="Collapsed"
                                FontFamily="/Fonts/#Roboto Slab"
-                               Margin="0,2,0,0"/>
+                               Margin="2,3,0,0"/>
                 </StackPanel>
-            </Grid>
 
-            <Grid Grid.Row="3" VerticalAlignment="Center" Margin="5,0,0,0">
-                <StackPanel>
-                    <TextBox x:Name="EmailInput" 
+                <Grid Margin="0,0,0,22">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <PasswordBox x:Name="PasswordInput"
+                                     Background="Transparent"
+                                     BorderThickness="0,0,0,1"
+                                     BorderBrush="#aa3954"
+                                     Foreground="#aa3954"
+                                     FontFamily="/Fonts/Alex Brush"
+                                     FontSize="15"
+                                     VerticalContentAlignment="Center"
+                                     GotFocus="PasswordInput_GotFocus"
+                                     LostFocus="PasswordInput_LostFocus"
+                                     PasswordChanged="PasswordInput_PasswordChanged"/>
+                        <TextBox x:Name="VisiblePasswordInput"
+                                 Visibility="Collapsed"
+                                 Background="Transparent"
+                                 BorderThickness="0,0,0,1"
+                                 BorderBrush="#aa3954"
+                                 Foreground="#aa3954"
+                                 FontFamily="/Fonts/Roboto Slab"
+                                 FontSize="15"
+                                 VerticalContentAlignment="Center"/>
+                        <TextBlock x:Name="PasswordPlaceholder"
+                                   Text="Please enter your Password"
+                                   Foreground="#aa3954"
+                                   FontSize="15"
+                                   FontFamily="/Fonts/#Alex Brush"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False"/>
+                        <Button x:Name="TogglePasswordButton"
+                                Content="👁"
+                                HorizontalAlignment="Right"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Opacity="0.5"
+                                Margin="0,0,5,0"
+                                PreviewMouseDown="TogglePasswordButton_PreviewMouseDown"
+                                PreviewMouseUp="TogglePasswordButton_PreviewMouseUp"/>
+                    </Grid>
+
+                    <TextBlock x:Name="WeakPassword"
+                               Grid.Row="1"
+                               Text="Password must be at least 6 characters"
+                               Foreground="#c0392b"
+                               FontSize="10"
+                               Visibility="Collapsed"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               Margin="2,3,0,0"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <PasswordBox x:Name="ReenterInput"
+                                     Background="Transparent"
+                                     BorderThickness="0,0,0,1"
+                                     BorderBrush="#aa3954"
+                                     Foreground="#aa3954"
+                                     FontFamily="/Fonts/#Alex Brush"
+                                     FontSize="15"
+                                     VerticalContentAlignment="Center"
+                                     GotFocus="ReenterInput_GotFocus"
+                                     LostFocus="ReenterInput_LostFocus"
+                                     PasswordChanged="ReenterInput_PasswordChanged"/>
+                        <TextBox x:Name="VisibleReenterInput"
+                                 Visibility="Collapsed"
+                                 Background="Transparent"
+                                 BorderThickness="0,0,0,1"
+                                 BorderBrush="#aa3954"
+                                 Foreground="#aa3954"
+                                 FontFamily="/Fonts/Roboto Slab"
+                                 FontSize="15"
+                                 VerticalContentAlignment="Center"/>
+                        <TextBlock x:Name="ReenterPlaceholder"
+                                   Text="Please confirm your Password"
+                                   Foreground="#aa3954"
+                                   FontSize="15"
+                                   FontFamily="/Fonts/#Alex Brush"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False"/>
+                        <Button x:Name="ToggleReenterButton"
+                                Content="👁"
+                                HorizontalAlignment="Right"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Opacity="0.5"
+                                Margin="0,0,5,0"
+                                PreviewMouseDown="ToggleReenterButton_PreviewMouseDown"
+                                PreviewMouseUp="ToggleReenterButton_PreviewMouseUp"/>
+                    </Grid>
+
+                    <TextBlock x:Name="DiffPass"
+                               Grid.Row="1"
+                               Text="Passwords do not match"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               FontSize="10"
+                               Foreground="#c0392b"
+                               Visibility="Collapsed"
+                               Margin="2,3,0,0"/>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="30,0,10,0">
+
+                <StackPanel Margin="0,0,0,22">
+                    <TextBlock Text="Please enter your Date of Birth"
+                               Foreground="#aa3954"
+                               FontSize="15"
+                               FontFamily="/Fonts/#Alex Brush"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,4"/>
+                    <DatePicker x:Name="BirthDatePicker"
+                                Height="26"
+                                Foreground="#aa3954"
+                                FontSize="13"
+                                FontFamily="/Fonts/#Alex Brush"
+                                Background="Transparent"
+                                BorderThickness="0,0,0,1"
+                                BorderBrush="#aa3954"/>
+                    <TextBlock x:Name="InvalidBirthDate"
+                               Text="You must choose your birthdate"
+                               Foreground="#c0392b"
+                               FontSize="10"
+                               Visibility="Collapsed"
+                               FontFamily="/Fonts/#Roboto Slab"
+                               Margin="2,3,0,0"/>
+                </StackPanel>
+
+                <Border Height="120"/>
+
+                <StackPanel Margin="0,0,0,22">
+                    <TextBox x:Name="NicknameInput"
                              Height="30"
-                             Text="litlink@gmail.com"
-                             Foreground="#6c3134" 
-                             FontSize="14" 
+                             Text="Please enter your Nickname"
+                             Foreground="#aa3954"
+                             FontSize="15"
                              FontFamily="/Fonts/#Alex Brush"
                              Background="Transparent"
-                             BorderThickness="0"
+                             BorderThickness="0,0,0,1"
+                             BorderBrush="#aa3954"
                              VerticalContentAlignment="Center"
-                             GotFocus="EmailInput_GotFocus" 
-                             LostFocus="EmailInput_LostFocus"/>
-                    <TextBlock x:Name="InvalidEmail"
-                               Text="Invalid email format" 
-                               Foreground="#aa3954" 
-                               FontSize="9" 
-                               Visibility="Collapsed"
-                               FontFamily="/Fonts/#Roboto Slab"
-                               Margin="0,2,0,0"/>
-                    <TextBlock x:Name="ExistingEmail"
-                               Text="Email already exists" 
-                               Foreground="#aa3954" 
-                               FontSize="9" 
-                               Visibility="Collapsed"
-                               FontFamily="/Fonts/#Roboto Slab"
-                               Margin="0,2,0,0"/>
+                             GotFocus="NicknameInput_GotFocus"
+                             LostFocus="NicknameInput_LostFocus"/>
                 </StackPanel>
-            </Grid>
 
-            <Grid Grid.Row="4" VerticalAlignment="Center" Margin="5,0,0,0">
-                <PasswordBox x:Name="PasswordInput" 
-                             Background="Transparent" 
-                             BorderThickness="0"
-                             Foreground="#6c3134" 
-                             FontFamily="/Fonts/Alex Brush"
-                             FontSize="14"
-                             VerticalContentAlignment="Center"
-                             PasswordChanged="PasswordInput_PasswordChanged"/>
-                <TextBox x:Name="VisiblePasswordInput" 
-                         Visibility="Collapsed"
-                         Background="Transparent" 
-                         BorderThickness="0"
-                         Foreground="#6c3134" 
-                         FontFamily="/Fonts/Roboto Slab"
-                         FontSize="14"
-                         VerticalContentAlignment="Center"/>
-                <TextBlock x:Name="PasswordPlaceholder" 
-                           Text="****" 
-                           Foreground="#6c3134" 
-                           FontSize="14" 
-                           FontFamily="/Fonts/Alex Brush"
-                           VerticalAlignment="Center" 
-                           IsHitTestVisible="False"/>
-                <Button x:Name="TogglePasswordButton" 
-                        Content="👁" 
-                        HorizontalAlignment="Right" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Cursor="Hand" 
-                        Opacity="0.5"
-                        Margin="0,0,5,0"
-                        PreviewMouseDown="TogglePasswordButton_PreviewMouseDown"
-                        PreviewMouseUp="TogglePasswordButton_PreviewMouseUp"/>
-            </Grid>
-
-            <Grid Grid.Row="5" VerticalAlignment="Center" Margin="5,0,0,0">
-                <Grid>
-                    <PasswordBox x:Name="ReenterInput" 
-                                 Background="Transparent" 
-                                 BorderThickness="0"
-                                 Foreground="#6c3134" 
-                                 FontFamily="/Fonts/Alex Brush"
-                                 FontSize="14"
-                                 VerticalContentAlignment="Center"
-                                 PasswordChanged="ReenterInput_PasswordChanged"/>
-                    <TextBox x:Name="VisibleReenterInput" 
-                             Visibility="Collapsed"
-                             Background="Transparent" 
-                             BorderThickness="0"
-                             Foreground="#6c3134" 
-                             FontFamily="/Fonts/Roboto Slab"
-                             FontSize="14"
-                             VerticalContentAlignment="Center"/>
-                    <TextBlock x:Name="ReenterPlaceholder" 
-                               Text="****" 
-                               Foreground="#6c3134" 
-                               FontSize="14" 
-                               FontFamily="/Fonts/Alex Brush"
-                               VerticalAlignment="Center" 
-                               IsHitTestVisible="False"/>
-                    <Button x:Name="ToggleReenterButton"
-                            Content="👁" 
-                            HorizontalAlignment="Right" 
-                            Background="Transparent" 
-                            BorderThickness="0" 
-                            Cursor="Hand" 
-                            Opacity="0.5"
-                            Margin="0,0,5,0"
-                            PreviewMouseDown="ToggleReenterButton_PreviewMouseDown"
-                            PreviewMouseUp="ToggleReenterButton_PreviewMouseUp"/>
-                </Grid>
-                <TextBlock x:Name="DiffPass"
-                           Text="Passwords do not match"
-                           FontFamily="/Fonts/#Roboto Slab"
-                           FontSize="10"
-                           Foreground="#aa3954"
-                           Visibility="Collapsed"
-                           VerticalAlignment="Bottom"
-                           Margin="0,0,0,-12"/>
-            </Grid>
-
-            <Grid Grid.Row="6" VerticalAlignment="Center" Margin="5,0,0,0">
-                <StackPanel Orientation="Vertical">
+                <StackPanel Margin="0,0,0,22">
                     <TextBox x:Name="UsernameInput"
                              Height="30"
-                             Text="Username"
-                             Foreground="#6c3134"
-                             FontSize="14"
+                             Text="Please enter your Username"
+                             Foreground="#aa3954"
+                             FontSize="15"
                              FontFamily="/Fonts/#Alex Brush"
                              Background="Transparent"
-                             BorderThickness="0"
+                             BorderThickness="0,0,0,1"
+                             BorderBrush="#aa3954"
                              VerticalContentAlignment="Center"
                              GotFocus="UsernameInput_GotFocus"
                              LostFocus="UsernameInput_LostFocus"/>
                     <TextBlock x:Name="InvalidUsername"
-                               Text="Username already exists" 
-                               Foreground="#aa3954" 
-                               FontSize="9" 
+                               Text="Username already exists"
+                               Foreground="#c0392b"
+                               FontSize="10"
                                Visibility="Collapsed"
                                FontFamily="/Fonts/#Roboto Slab"
-                               Margin="0,2,0,0"/>
+                               Margin="2,3,0,0"/>
                 </StackPanel>
-            </Grid>
-
-            <Grid Grid.Row="7" VerticalAlignment="Center" Margin="5,0,0,0">
-                <TextBox x:Name="NicknameInput"
-                         Height="30"
-                         Text="Nickname"
-                         Foreground="#6c3134"
-                         FontSize="14"
-                         FontFamily="/Fonts/#Alex Brush"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         VerticalContentAlignment="Center"
-                         GotFocus="NicknameInput_GotFocus"
-                         LostFocus="NicknameInput_LostFocus"/>
-            </Grid>
-        </Grid>
-
-        <Grid Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,105,0,0">
-            <StackPanel>
-                <DatePicker x:Name="BirthDatePicker"
-                            Width="170"
-                            Height="25"
-                            Foreground="#6c3134"
-                            FontSize="12"
-                            FontFamily="/Fonts/#Alex Brush"
-                            Background="Transparent"
-                            BorderThickness="0"/>
-                <TextBlock x:Name="InvalidBirthDate"
-                           Text="You must choose your birthdate" 
-                           Foreground="#aa3954" 
-                           FontSize="10" 
-                           Visibility="Collapsed"
-                           FontFamily="/Fonts/#Roboto Slab"
-                           Margin="0,4,0,0"/>
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" Margin="0,30,0,0">
-            <Button x:Name="SignUpButton"
-                    Content="Sign Up"
-                    Width="120" 
-                    Height="40" 
-                    HorizontalAlignment="Center"
-                    Background="#aa3954"
-                    Foreground="White"
-                    FontFamily="/Fonts/#Alex Brush"
-                    FontSize="20"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="SignUpButton_Click"/>
-        </Grid>
+        <Button x:Name="SignUpButton"
+                Grid.Row="2"
+                Content="Sign Up"
+                Width="140"
+                Height="42"
+                HorizontalAlignment="Center"
+                Margin="0,15,0,30"
+                Background="#aa3954"
+                Foreground="White"
+                FontFamily="/Fonts/#Alex Brush"
+                FontSize="20"
+                BorderThickness="0"
+                Cursor="Hand"
+                Click="SignUpButton_Click"/>
     </Grid>
 </Page>
