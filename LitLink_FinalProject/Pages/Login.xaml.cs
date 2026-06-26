@@ -127,12 +127,27 @@ namespace LitLink_FinalProject.Pages
         {
             try
             {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                void Log(string label)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[LOGIN-TIMING] {label}: {sw.ElapsedMilliseconds} ms");
+                }
+
                 Apiservice service = new Apiservice();
 
+                Log("Start");
+
                 var users = await service.GetAllUsers();
+                Log("After GetAllUsers");
+
                 var readers = await service.GetAllReaders();
+                Log("After GetAllReaders");
+
                 var authors = await service.GetAllAuthors();
+                Log("After GetAllAuthors");
+
                 var admins = await service.GetAllAdmins();
+                Log("After GetAllAdmins");
 
                 string email = EmailInput.Text.Trim();
                 string password = PasswordInput.Password.Trim();
@@ -149,6 +164,8 @@ namespace LitLink_FinalProject.Pages
                     u.Email.Trim().Equals(email, StringComparison.OrdinalIgnoreCase) &&
                     u.Pass.Trim() == password);
 
+                Log("After matching user");
+
                 if (loggedUser == null)
                 {
                     MessageBox.Show("Invalid email or password. Please try again.", "LitLink");
@@ -158,6 +175,8 @@ namespace LitLink_FinalProject.Pages
                 Reader loggedReader = readers.FirstOrDefault(r => r.Id == loggedUser.Id);
                 if (loggedReader != null)
                 {
+                    Log("Navigating as Reader");
+                    System.Diagnostics.Debug.WriteLine($"[LOGIN-NAVIGATE] Using AppFrame HashCode={MainWindow.AppFrame.GetHashCode()}, IsLoaded={MainWindow.AppFrame.IsLoaded}");
                     MainWindow.AppFrame.Navigate(new HomePage(loggedReader));
                     return;
                 }
@@ -165,6 +184,7 @@ namespace LitLink_FinalProject.Pages
                 Author loggedAuthor = authors.FirstOrDefault(a => a.Id == loggedUser.Id);
                 if (loggedAuthor != null)
                 {
+                    Log("Navigating as Author");
                     MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
                     return;
                 }
@@ -172,6 +192,7 @@ namespace LitLink_FinalProject.Pages
                 Admin loggedAdmin = admins.FirstOrDefault(a => a.Id == loggedUser.Id);
                 if (loggedAdmin != null)
                 {
+                    Log("Navigating as Admin");
                     MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
                     return;
                 }
@@ -183,6 +204,67 @@ namespace LitLink_FinalProject.Pages
                 MessageBox.Show($"Error while logging in: {ex.Message}", "LitLink Error");
             }
         }
+
+        //private async void Login_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        Apiservice service = new Apiservice();
+
+        //        var users = await service.GetAllUsers();
+        //        var readers = await service.GetAllReaders();
+        //        var authors = await service.GetAllAuthors();
+        //        var admins = await service.GetAllAdmins();
+
+        //        string email = EmailInput.Text.Trim();
+        //        string password = PasswordInput.Password.Trim();
+
+        //        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        //        {
+        //            MessageBox.Show("Please enter email and password.", "LitLink");
+        //            return;
+        //        }
+
+        //        User loggedUser = users.FirstOrDefault(u =>
+        //            u.Email != null &&
+        //            u.Pass != null &&
+        //            u.Email.Trim().Equals(email, StringComparison.OrdinalIgnoreCase) &&
+        //            u.Pass.Trim() == password);
+
+        //        if (loggedUser == null)
+        //        {
+        //            MessageBox.Show("Invalid email or password. Please try again.", "LitLink");
+        //            return;
+        //        }
+
+        //        Reader loggedReader = readers.FirstOrDefault(r => r.Id == loggedUser.Id);
+        //        if (loggedReader != null)
+        //        {
+        //            MainWindow.AppFrame.Navigate(new HomePage(loggedReader));
+        //            return;
+        //        }
+
+        //        Author loggedAuthor = authors.FirstOrDefault(a => a.Id == loggedUser.Id);
+        //        if (loggedAuthor != null)
+        //        {
+        //            MainWindow.AppFrame.Navigate(new AuthorProfile(loggedAuthor));
+        //            return;
+        //        }
+
+        //        Admin loggedAdmin = admins.FirstOrDefault(a => a.Id == loggedUser.Id);
+        //        if (loggedAdmin != null)
+        //        {
+        //            MainWindow.AppFrame.Navigate(new AdminProfile(loggedAdmin));
+        //            return;
+        //        }
+
+        //        MessageBox.Show("User exists, but no matching Reader / Author / Admin record was found.", "LitLink");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error while logging in: {ex.Message}", "LitLink Error");
+        //    }
+        //}
 
         private async void Navigate_SignUp(object sender, RoutedEventArgs e) 
         {

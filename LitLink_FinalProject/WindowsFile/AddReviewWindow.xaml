@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LitLink_FinalProject.WindowsFile"
         mc:Ignorable="d"
-        Title="Write a Review" Height="520" Width="460"
+        Title="Write a Review" Height="550" Width="460"
         WindowStartupLocation="CenterScreen" Background="#FFF5F7" ResizeMode="NoResize">
 
     <Window.Resources>

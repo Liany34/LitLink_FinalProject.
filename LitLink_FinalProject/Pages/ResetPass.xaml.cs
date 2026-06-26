@@ -144,8 +144,7 @@ namespace LitLink_FinalProject.Pages
                 {
                     MessageBox.Show("Password reset successful! Please log in with your new password.");
 
-                    var loginPage = new Login();
-                    Window.GetWindow(this).Content = loginPage;
+                    MainWindow.AppFrame.Navigate(new Login());
                 }
                 else
                 {
@@ -157,10 +156,10 @@ namespace LitLink_FinalProject.Pages
                 MessageBox.Show($"An error occurred while resetting the password: {ex.Message}");
             }
         }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            var loginPage = new Login();
-            Window.GetWindow(this).Content = loginPage;
+            MainWindow.AppFrame.Navigate(new Login());
         }
     }
 }

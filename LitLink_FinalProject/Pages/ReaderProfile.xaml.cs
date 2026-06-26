@@ -293,9 +293,5 @@ namespace LitLink_FinalProject.Pages
                 LoadAllData();
             }
         }
-        private void ResetPassword_Click(object sender, RoutedEventArgs e) 
-        {
-            MainWindow.AppFrame.Navigate(new ResetPass()); 
-        }
     }
 }

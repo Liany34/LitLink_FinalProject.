@@ -20,8 +20,9 @@ namespace LitLink_FinalProject.Pages
         private int currentUserId;
         private Reader currentReader;
 
-        // *** שינוי 1: שמור את ה-Cart_Details להעברה ל-CheckOut ***
         private List<Cart_Detail> allUserCartDetails = new List<Cart_Detail>();
+
+        private DiscountCodes appliedCoupon = null;
 
         public CartPage(Reader loggedInReader)
         {
@@ -44,7 +45,6 @@ namespace LitLink_FinalProject.Pages
                 {
                     List<Cart_Detail> cartDetails = await apiService.GetAllCartDetails();
 
-                    // *** שינוי 2: סנן רק ספרים שעדיין לא נרכשו ***
                     List<Cart_Detail> userCartDetails = cartDetails
                         .Where(cd => cd.IdCart.Id == userCart.Id && !cd.IsPurchased)
                         .ToList();
@@ -66,9 +66,15 @@ namespace LitLink_FinalProject.Pages
                 {
                     foreach (Book book in cartBooks)
                     {
+                        Cart_Detail matchingDetail = allUserCartDetails
+                            .FirstOrDefault(cd => cd.IdBook != null && cd.IdBook.Id == book.Id);
+
                         CartUserControl bookControl = new CartUserControl();
                         bookControl.DataContext = book;
+                        bookControl.CurrentReader = currentReader;
+                        bookControl.CartDetailRef = matchingDetail;
                         bookControl.IsSelectedChanged += (s, args) => RecalculateSelectedPrice();
+                        bookControl.MoveToWishListRequested += (s, args) => LoadCartItemsAsync();
                         loadedControls.Add(bookControl);
                         LstCartItems.Items.Add(bookControl);
                         totalCartPrice += book.Price.GetValueOrDefault();
@@ -97,7 +103,23 @@ namespace LitLink_FinalProject.Pages
                         selectedTotal += book.Price.GetValueOrDefault();
                 }
             }
-            UpdatePriceDisplay(selectedTotal);
+
+            if (appliedCoupon != null)
+            {
+                double discountPercentage = appliedCoupon.Amount / 100.0;
+                double discount = selectedTotal * discountPercentage;
+                double finalPrice = selectedTotal - discount;
+
+                TxtOriginalPrice.Visibility = Visibility.Visible;
+                TxtOriginalPrice.Text = selectedTotal.ToString("C");
+                TxtFinalPrice.Text = finalPrice.ToString("C");
+            }
+            else
+            {
+                TxtOriginalPrice.Visibility = Visibility.Collapsed;
+                TxtFinalPrice.Text = selectedTotal.ToString("C");
+            }
+
             TxtSummaryBooksCount.Text = loadedControls.Count(c => c.IsBookSelected).ToString();
         }
 
@@ -147,28 +169,37 @@ namespace LitLink_FinalProject.Pages
 
                     Dispatcher.Invoke(() =>
                     {
+                        double selectedTotal = loadedControls
+                            .Where(c => c.IsBookSelected)
+                            .Select(c => c.DataContext as Book)
+                            .Where(b => b != null)
+                            .Sum(b => b.Price.GetValueOrDefault());
+
                         if (matchingCoupon != null)
                         {
+                            appliedCoupon = matchingCoupon;
+
                             TxtInvalidCodeError.Visibility = Visibility.Collapsed;
                             double discountPercentage = matchingCoupon.Amount / 100.0;
-                            double discount = totalCartPrice * discountPercentage;
-                            double finalPrice = totalCartPrice - discount;
+                            double discount = selectedTotal * discountPercentage;
+                            double finalPrice = selectedTotal - discount;
 
                             TxtOriginalPrice.Visibility = Visibility.Visible;
-                            TxtOriginalPrice.Text = totalCartPrice.ToString("C");
+                            TxtOriginalPrice.Text = selectedTotal.ToString("C");
                             TxtFinalPrice.Text = finalPrice.ToString("C");
 
                             MessageBox.Show($"Coupon '{enteredCode}' applied successfully! You received a {matchingCoupon.Amount}% discount.",
                                             "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                            foreach (CartUserControl bookControl in loadedControls)
+                            foreach (CartUserControl bookControl in loadedControls.Where(c => c.IsBookSelected))
                                 bookControl.ApplyDiscount(matchingCoupon.Amount);
                         }
                         else
                         {
+                            appliedCoupon = null;
                             TxtInvalidCodeError.Visibility = Visibility.Visible;
                             TxtOriginalPrice.Visibility = Visibility.Collapsed;
-                            TxtFinalPrice.Text = totalCartPrice.ToString("C");
+                            TxtFinalPrice.Text = selectedTotal.ToString("C");
                         }
                     });
                 }
@@ -213,15 +244,20 @@ namespace LitLink_FinalProject.Pages
                     .Where(cd => chosenBooks.Any(b => b.Id == cd.IdBook.Id))
                     .ToList();
 
+                double selectedSubTotal = chosenBooks.Sum(b => b.Price.GetValueOrDefault());
+                double discountAmount = appliedCoupon != null
+                    ? selectedSubTotal * (appliedCoupon.Amount / 100.0)
+                    : 0;
+
                 Pages.CheckOut checkoutPage = new Pages.CheckOut();
 
-                // *** שינוי 4: העבר גם selectedCartDetails ***
+                // *** שינוי 4: העבר גם selectedCartDetails וה-discount בפועל ***
                 checkoutPage.SetupCheckout(
                     chosenBooks,
                     selectedCartDetails,
                     currentReader.Email,
                     currentReader.PhoneNumber,
-                    0,
+                    discountAmount,
                     currentReader);
 
                 if (this.NavigationService != null)

@@ -36,7 +36,6 @@ namespace LitLink_FinalProject.UserControls
             this.currentAuthor = currentAuthor;
             this.userAlreadyPurchasedBook = userOwnsBook;
 
-            // לא קוראים SetActionButtons כאן — נקרא רק אחרי CheckReaderBookStatus
             this.Loaded += BookUserControl_Loaded;
         }
 
@@ -208,7 +207,6 @@ namespace LitLink_FinalProject.UserControls
                 Cart readerCart = allCarts?.FirstOrDefault(c =>
                     c.IdReader != null && c.IdReader.Id == currentReader.Id);
 
-                // אם אין עגלה לקורא — יוצרים אחת ואז שולפים אותה מחדש מהשרת
                 if (readerCart == null)
                 {
                     Cart newCart = new Cart
@@ -226,7 +224,6 @@ namespace LitLink_FinalProject.UserControls
                         return;
                     }
 
-                    // שליפה מחדש כדי לקבל את ה-Id האמיתי מהדאטאבייס
                     List<Cart> updatedCarts = await apiService.GetAllCarts();
                     readerCart = updatedCarts?.FirstOrDefault(c =>
                         c.IdReader != null && c.IdReader.Id == currentReader.Id);
@@ -269,13 +266,95 @@ namespace LitLink_FinalProject.UserControls
             }
         }
 
-        private void AddToList_Click(object sender, RoutedEventArgs e)
+        private async void AddToList_Click(object sender, RoutedEventArgs e)
         {
             Book currentBook = this.DataContext as Book;
-            if (currentBook == null) return;
+            if (currentBook == null || currentReader == null) return;
 
-            MessageBox.Show($"'{currentBook.BookName}' has been successfully added to your Reading List!",
-                            "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                const string WantToReadListName = "Want To Read";
+
+                List<Book_Series> allSeries = await apiService.GetAllBookSeries();
+
+                Book_Series wantToReadList = allSeries?.FirstOrDefault(s =>
+                    s.IdUser != null &&
+                    s.IdUser.Id == currentReader.Id &&
+                    s.NameSeries == WantToReadListName);
+
+                if (wantToReadList == null)
+                {
+                    BookSeriesInsertDto newList = new BookSeriesInsertDto
+                    {
+                        NameSeries = WantToReadListName,
+                        IdUser = currentReader.Id
+                    };
+
+                    int inserted = await apiService.InsertBookSeries(newList);
+
+                    if (inserted != 1)
+                    {
+                        MessageBox.Show("Failed to create your 'Want To Read' list.", "Error",
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    List<Book_Series> updatedSeries = await apiService.GetAllBookSeries();
+                    wantToReadList = updatedSeries?.FirstOrDefault(s =>
+                        s.IdUser != null &&
+                        s.IdUser.Id == currentReader.Id &&
+                        s.NameSeries == WantToReadListName);
+
+                    if (wantToReadList == null)
+                    {
+                        MessageBox.Show("Failed to retrieve 'Want To Read' list after creation.", "Error",
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                }
+
+                List<Series_Detail> allDetails = await apiService.GetAllSeriesDetails();
+
+                List<Series_Detail> listDetails = allDetails
+                    .Where(d => d.IdSeries != null && d.IdSeries.Id == wantToReadList.Id)
+                    .ToList();
+
+                bool alreadyInList = listDetails.Any(d => d.IdBook != null && d.IdBook.Id == currentBook.Id);
+
+                if (alreadyInList)
+                {
+                    MessageBox.Show($"'{currentBook.BookName}' is already in your 'Want To Read' list.",
+                                    "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                int nextNumber = listDetails.Count + 1;
+
+                Series_Detail newDetail = new Series_Detail
+                {
+                    IdSeries = wantToReadList,
+                    IdBook = currentBook,
+                    Number = nextNumber
+                };
+
+                int result = await apiService.InsertSeriesDetail(newDetail);
+
+                if (result == 1)
+                {
+                    MessageBox.Show($"'{currentBook.BookName}' has been added to your 'Want To Read' list!",
+                                    "LitLink", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Failed to add book to your list.", "Error",
+                                    MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to add book to list: " + ex.Message,
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void DeleteBook_Click(object sender, RoutedEventArgs e)

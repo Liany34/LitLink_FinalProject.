@@ -55,7 +55,7 @@ namespace LitLink_FinalProject.Pages
             double total = Math.Max(subTotal - _discountCodeAmount, 0);
 
             TxtSubTotal.Text = $"{subTotal:F2} ₪";
-            TxtDiscount.Text = $"{_discountCodeAmount:F2} ₪";
+            TxtDiscount.Text = $"{_discountCodeAmount:F2} ₪";   // זה כבר מציג את הסכום שירד, לא אחוז
             TxtTotal.Text = $"{total:F2} ₪";
         }
 

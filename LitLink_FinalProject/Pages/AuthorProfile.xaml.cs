@@ -159,8 +159,17 @@ namespace LitLink_FinalProject.Pages
         private void AuthorRow_BookSelected(object sender, Book selectedBook)
         {
             if (selectedBook == null) return;
-            BookPage bookPage = new BookPage(selectedBook, true, isAdmin: false, isAuthor: true,
-             currentReader: null, currentAuthor: currentAuthor);
+
+            bool isReaderViewing = viewingReader != null;
+
+            BookPage bookPage = new BookPage(
+                selectedBook,
+                userOwnsBook: false,
+                isAdmin: false,
+                isAuthor: !isReaderViewing,
+                currentReader: isReaderViewing ? viewingReader : null,
+                currentAuthor: isReaderViewing ? null : currentAuthor);
+
             this.NavigationService?.Navigate(bookPage);
         }
 
@@ -229,7 +238,6 @@ namespace LitLink_FinalProject.Pages
                     if (cd == null || cd.IdBook == null)
                         continue;
 
-                    // למצוא את הספר המלא לפי ה-ID
                     Book fullBook = allBooks.FirstOrDefault(b => b.Id == cd.IdBook.Id);
 
                     if (fullBook == null || fullBook.IdAuthor == null)
@@ -292,7 +300,6 @@ namespace LitLink_FinalProject.Pages
 
                 List<Series_Detail> allDetails = await apiService.GetAllSeriesDetails();
 
-                // טוענים ספרים מלאים, לא רק Book עם Id
                 List<Book> allBooks = await apiService.GetAllBooks();
 
                 foreach (Book_Series series in authorSeries)
@@ -337,7 +344,6 @@ namespace LitLink_FinalProject.Pages
             EditAuthorProfileWindow editWin = new EditAuthorProfileWindow(currentAuthor);
             if (editWin.ShowDialog() == true)
             {
-                // שליפת הסופר המעודכן מחדש מה-API
                 List<Author> allAuthors = await apiService.GetAllAuthors();
                 Author updatedAuthor = allAuthors.FirstOrDefault(a => a.Id == currentAuthor.Id);
                 if (updatedAuthor != null)
@@ -347,10 +353,15 @@ namespace LitLink_FinalProject.Pages
             }
         }
 
-        private void AddBook_Click(object sender, RoutedEventArgs e)
+        private async void AddBook_Click(object sender, RoutedEventArgs e)
         {
             AddBookWindow win = new AddBookWindow(currentAuthor);
-            win.ShowDialog();
+            if (win.ShowDialog() == true)
+            {
+                List<Book> allBooks = await apiService.GetAllBooks();
+                authorBooks = allBooks.Where(b => b.IdAuthor != null && b.IdAuthor.Id == currentAuthor.Id).ToList();
+                LoadMyBooksTab();
+            }
         }
 
         private void AddNews_Click(object sender, RoutedEventArgs e)
